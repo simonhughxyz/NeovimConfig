@@ -27,4 +27,4 @@ require('lazy').setup({
 }, {})
 
 -- open lazy menu
-map("n", "<leader>l", "<cmd>Lazy<cr>", { desc = "Lazy" })
+vim.keymap.set("n", "<leader>l", "<cmd>Lazy<cr>", { desc = "Lazy Plugin Manager" })
