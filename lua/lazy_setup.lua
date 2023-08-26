@@ -25,3 +25,6 @@ require('lazy').setup({
   -- Import any plugin inside the plugins directory
   { import = 'plugins' },
 }, {})
+
+-- open lazy menu
+map("n", "<leader>l", "<cmd>Lazy<cr>", { desc = "Lazy" })
