@@ -21,26 +21,6 @@ vim.opt.rtp:prepend(lazypath)
 -- Plugins to be installed
 -- Help with plugin setup: https://github.com/folke/lazy.nvim#-structuring-your-plugins
 require('lazy').setup({
-  -- Plugins that don't require a lot of configuration
-
-  -- Useful plugin to show you pending keybinds.
-  { 'folke/which-key.nvim',  opts = {} },
-
-  -- "gc" to comment visual regions/lines
-  { 'numToStr/Comment.nvim', opts = {} },
-
-  {
-    -- Add indentation guides even on blank lines
-    'lukas-reineke/indent-blankline.nvim',
-    enabled = true,
-    -- Enable `lukas-reineke/indent-blankline.nvim`
-    -- See `:help indent_blankline.txt`
-    opts = {
-      char = '┊',
-      show_trailing_blankline_indent = false,
-    },
-  },
-
   -- Import any plugin inside the plugins directory
   { import = 'plugins' },
 }, {})
