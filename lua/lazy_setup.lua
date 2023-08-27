@@ -21,10 +21,13 @@ vim.opt.rtp:prepend(lazypath)
 -- Plugins to be installed
 -- Help with plugin setup: https://github.com/folke/lazy.nvim#-structuring-your-plugins
 require('lazy').setup({
-  -- Plugins that don't require any configuration
+  -- Plugins that don't require a lot of configuration
 
   -- Useful plugin to show you pending keybinds.
   { 'folke/which-key.nvim',  opts = {} },
+
+  -- "gc" to comment visual regions/lines
+  { 'numToStr/Comment.nvim', opts = {} },
 
   -- Import any plugin inside the plugins directory
   { import = 'plugins' },
