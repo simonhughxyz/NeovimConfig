@@ -20,4 +20,7 @@ return {
       show_trailing_blankline_indent = false,
     },
   },
+
+  -- Git plugin
+  'tpope/vim-fugitive',
 }
