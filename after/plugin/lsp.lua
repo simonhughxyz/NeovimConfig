@@ -2,9 +2,7 @@
 --
 -- lsp relating config
 
-local lsp = require('lsp-zero')
-
-lsp.preset("recommended")
+local lsp = require('lsp-zero').preset('recommended')
 
 lsp.ensure_installed({
   'html',
