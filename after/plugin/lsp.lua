@@ -9,13 +9,14 @@ lsp.ensure_installed({
   'lua_ls',
   'pylsp',
   'bashls',
+  'clangd',
 })
 
 -- Fix Undefined global 'vim'
 lsp.nvim_workspace()
 
 local cmp = require('cmp')
-local cmp_select = {behavior = cmp.SelectBehavior.Select}
+local cmp_select = { behavior = cmp.SelectBehavior.Select }
 local cmp_mappings = lsp.defaults.cmp_mappings({
   ['<C-p>'] = cmp.mapping.select_prev_item(cmp_select),
   ['<C-n>'] = cmp.mapping.select_next_item(cmp_select),
@@ -39,7 +40,7 @@ lsp.on_attach(function(client, bufnr)
   lsp.buffer_autoformat(client, bufnr)
 
   local opts = function(desc)
-    return {buffer = bufnr, remap = false, desc = desc}
+    return { buffer = bufnr, remap = false, desc = desc }
   end
 
   vim.keymap.set("n", "gd", function() vim.lsp.buf.definition() end, opts("Go To Definition"))
