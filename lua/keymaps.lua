@@ -130,3 +130,7 @@ map("n", "<leader><tab><tab>", "<cmd>tabnew<cr>", { desc = "New Tab" })
 map("n", "<leader><tab>]", "<cmd>tabnext<cr>", { desc = "Next Tab" })
 map("n", "<leader><tab>d", "<cmd>tabclose<cr>", { desc = "Close Tab" })
 map("n", "<leader><tab>[", "<cmd>tabprevious<cr>", { desc = "Previous Tab" })
+
+-- Convenience
+map('n', '\\', ':%s//g<left><left>', { desc = "Search buffer" })
+map('v', '\\', ':s//g<Left><Left>', { desc = "Search selection" })
