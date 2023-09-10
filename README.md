@@ -31,11 +31,12 @@ All of my lua config is either in the `/lua` directory or the `/after/plugin` di
 ### package manager
 - [lazy.nvim](https://github.com/folke/lazy.nvim)
 
-### coding enhancement plugins
+### coding aids & enhancement plugins
 - [indent-blankline.nvim](https://github.com/lukas-reineke/indent-blankline.nvim)
 - [nvim-colorizer](https://github.com/norcalli/nvim-colorizer.lua)
 - [nvim-surround](https://github.com/kylechui/nvim-surround)
 - [todo-comments.nvim](https://github.com/folke/todo-comments.nvim)
+- [unblevable/quick-scope](https://github.com/unblevable/quick-scope)
 - [vim-illuminate](https://github.com/RRethy/vim-illuminate)
 - [yanky.nvim](https://github.com/gbprod/yanky.nvim)
 
