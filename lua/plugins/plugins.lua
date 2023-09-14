@@ -30,4 +30,10 @@ return {
 
   -- Git plugin
   'tpope/vim-fugitive',
+
+  { -- Use the w, e, b motions like a spider. Move by subwords and skip insignificant punctuation.
+    "chrisgrieser/nvim-spider",
+    enabled = true,
+    lazy = true,
+  },
 }
