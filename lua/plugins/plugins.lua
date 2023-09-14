@@ -36,4 +36,10 @@ return {
     enabled = true,
     lazy = true,
   },
+
+  { -- Bundle of more than two dozen new textobjects for Neovim.
+    "chrisgrieser/nvim-various-textobjs",
+    lazy = false,
+    opts = { useDefaultKeymaps = true },
+  },
 }
