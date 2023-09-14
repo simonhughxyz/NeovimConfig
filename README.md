@@ -32,6 +32,8 @@ All of my lua config is either in the `/lua` directory or the `/after/plugin` di
 - [lazy.nvim](https://github.com/folke/lazy.nvim)
 
 ### coding aids & enhancement plugins
+- [chrisgrieser/nvim-spider](https://github.com/chrisgrieser/nvim-spider)
+- [chrisgrieser/nvim-various-textobjs](https://github.com/chrisgrieser/nvim-various-textobjs)
 - [indent-blankline.nvim](https://github.com/lukas-reineke/indent-blankline.nvim)
 - [nvim-colorizer](https://github.com/norcalli/nvim-colorizer.lua)
 - [nvim-surround](https://github.com/kylechui/nvim-surround)
