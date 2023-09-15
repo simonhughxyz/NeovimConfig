@@ -13,4 +13,5 @@ return {
   { "neomutt/neomutt.vim",        ft = { "muttrc" } },
   { "pangloss/vim-javascript",    ft = { "javascript" } },
   { "leafgarland/typescript-vim", ft = { "typescript" } },
+  { "MTDL9/vim-log-highlighting", ft = "log" },
 }
