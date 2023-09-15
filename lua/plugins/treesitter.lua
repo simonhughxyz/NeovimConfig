@@ -114,4 +114,35 @@ return {
     -- event = "InsertEnter",
     dependencies = "nvim-treesitter/nvim-treesitter",
   },
+
+  { -- virtual text context at the end of a scope
+    "haringsrob/nvim_context_vt",
+    event = "VeryLazy",
+    dependencies = "nvim-treesitter/nvim-treesitter",
+    opts = {
+      prefix = "󱞷",
+      highlight = "NonText",
+      min_rows = 1,
+      disable_ft = { "markdown" },
+      min_rows_ft = { python = 10, yaml = 15, css = 15 },
+
+      -- set up custom parser to return the whole line for context
+      custom_parser = function(node, _, opts)
+        -- If you return `nil`, no virtual text will be displayed.
+        if node:type() == 'function' then
+          return nil
+        end
+
+        -- get the context line
+        local bufnr = vim.api.nvim_get_current_buf()
+        local start_row, _, _, _ = vim.treesitter.get_node_range(node)
+        local line = vim.api.nvim_buf_get_lines(bufnr, start_row, start_row + 1, false)[1]
+
+        -- remove whitespace before context
+        local context = string.gsub(line, '^%s*', '')
+
+        return opts.prefix .. ' ' .. context
+      end,
+    },
+  },
 }
