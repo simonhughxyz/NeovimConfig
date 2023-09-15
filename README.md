@@ -67,9 +67,9 @@ All of my lua config is either in the `/lua` directory or the `/after/plugin` di
 - [tpope/vim-fugitive](https://github.com/tpope/vim-fugitive)
 
 ### lsp & related plugins
-- [LuaSnip](https://github.com/L3MON4D3/LuaSnip)
 - [cmp-nvim-lsp](https://github.com/hrsh7th/cmp-nvim-lsp)
 - [lsp-zero.nvim](https://github.com/VonHeikemen/lsp-zero.nvim)
+- [LuaSnip](https://github.com/L3MON4D3/LuaSnip)
 - [mason-lspconfig.nvim](https://github.com/williamboman/mason-lspconfig.nvim)
 - [mason.nvim](https://github.com/williamboman/mason.nvim)
 - [nvim-cmp](https://github.com/hrsh7th/nvim-cmp)
