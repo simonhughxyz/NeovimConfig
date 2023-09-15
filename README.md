@@ -76,6 +76,7 @@ All of my lua config is either in the `/lua` directory or the `/after/plugin` di
 
 ### treesitter & related plugins
 - [mini.ai](https://github.com/echasnovski/mini.ai)
+- [nvim-treesitter-endwise](https://github.com/RRethy/nvim-treesitter-endwise)
 - [nvim-treesitter-textobjects](https://github.com/nvim-treesitter/nvim-treesitter-textobjects)
 - [nvim-treesitter](https://github.com/nvim-treesitter/nvim-treesitter)
 - [nvim-ts-context-commentstring](https://github.com/JoosepAlviste/nvim-ts-context-commentstring)
