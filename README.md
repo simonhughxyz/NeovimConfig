@@ -55,6 +55,7 @@ All of my lua config is either in the `/lua` directory or the `/after/plugin` di
 - [fourjay/vim-password-store](https://github.com/fourjay/vim-password-store)
 - [leafgarland/typescript-vim](https://github.com/leafgarland/typescript-vim)
 - [ledger/vim-ledger](https://github.com/ledger/vim-ledger)
+- [MTDL9/vim-log-highlighting](https://github.com/MTDL9/vim-log-highlighting)
 - [neomutt/neomutt.vim](https://github.com/neomutt/neomutt.vim)
 - [pangloss/vim-javascript](https://github.com/pangloss/vim-javascript)
 - [tmhedberg/SimpylFold](https://github.com/tmhedberg/SimpylFold)
