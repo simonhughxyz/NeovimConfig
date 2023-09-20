@@ -36,6 +36,7 @@ All of my lua config is either in the `/lua` directory or the `/after/plugin` di
 - [chrisgrieser/nvim-various-textobjs](https://github.com/chrisgrieser/nvim-various-textobjs)
 - [indent-blankline.nvim](https://github.com/lukas-reineke/indent-blankline.nvim)
 - [nvim-colorizer](https://github.com/norcalli/nvim-colorizer.lua)
+- [nvim-hlslens](https://github.com/kevinhwang91/nvim-hlslens)
 - [nvim-surround](https://github.com/kylechui/nvim-surround)
 - [todo-comments.nvim](https://github.com/folke/todo-comments.nvim)
 - [unblevable/quick-scope](https://github.com/unblevable/quick-scope)

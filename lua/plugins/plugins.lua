@@ -42,4 +42,8 @@ return {
     lazy = false,
     opts = { useDefaultKeymaps = true },
   },
+
+  { -- when searching, search count is shown next to the cursor
+    "kevinhwang91/nvim-hlslens",
+  },
 }
