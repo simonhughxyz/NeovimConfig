@@ -46,4 +46,12 @@ return {
   { -- when searching, search count is shown next to the cursor
     "kevinhwang91/nvim-hlslens",
   },
+
+  { -- split-join lines
+    "Wansmer/treesj",
+    dependencies = "nvim-treesitter/nvim-treesitter",
+    keys = {
+      { "<leader>j", function() require("treesj").toggle() end, desc = "󰗈 Split-join lines" },
+    },
+  },
 }
