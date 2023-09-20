@@ -134,3 +134,4 @@ map("n", "<leader><tab>[", "<cmd>tabprevious<cr>", { desc = "Previous Tab" })
 -- Convenience
 map('n', '\\', ':%s//g<left><left>', { desc = "Search buffer" })
 map('v', '\\', ':s//g<Left><Left>', { desc = "Search selection" })
+map("n", "<leader>S", "<cmd>set spell!<cr>", { desc = "Toggle spell" })
