@@ -54,4 +54,47 @@ return {
       { "<leader>j", function() require("treesj").toggle() end, desc = "󰗈 Split-join lines" },
     },
   },
+  { -- case conversion
+  { -- converts a piece of text to an indicated string case
+    "johmsalas/text-case.nvim",
+    init = function()
+      local casings = {
+        { char = "u", arg = "upper",      desc = "UPPER CASE" },
+        { char = "l", arg = "lower",      desc = "lower case" },
+        { char = "t", arg = "title",      desc = "Title Case" },
+        { char = "c", arg = "camel",      desc = "camelCase" },
+        { char = "C", arg = "pascal",     desc = "CamelCase" },
+        { char = "s", arg = "snake",      desc = "snake_case" },
+        { char = "_", arg = "snake",      desc = "snake_case" },
+        { char = "d", arg = "dash",       desc = "dash-case" },
+        { char = "D", arg = "title_dash", desc = "Title-Dash-Case" },
+        { char = "-", arg = "dash",       desc = "dash-case" },
+        { char = "p", arg = "phrase",     desc = "Phrase case" },
+        { char = "/", arg = "path",       desc = "path/case" },
+        { char = "S", arg = "constant",   desc = "UPPER_SNAKE_CASE" },
+        { char = ".", arg = "dot",        desc = "dot.case" },
+      }
+
+      for _, case in pairs(casings) do
+        vim.keymap.set(
+          "n",
+          "<leader>t" .. case.char,
+          ("<cmd>lua require('textcase').current_word('to_%s_case')<CR>"):format(case.arg),
+          { desc = case.desc }
+        )
+        vim.keymap.set(
+          "v",
+          "<leader>t" .. case.char,
+          ("<cmd>lua require('textcase').operator('to_%s_case')<CR>"):format(case.arg),
+          { desc = case.desc }
+        )
+        vim.keymap.set(
+          "n",
+          "<leader>T" .. case.char,
+          ("<cmd>lua require('textcase').lsp_rename('to_%s_case')<CR>"):format(case.arg),
+          { desc = "󰒕 " .. case.desc }
+        )
+      end
+    end,
+  },
 }

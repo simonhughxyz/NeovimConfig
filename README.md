@@ -38,6 +38,7 @@ All of my lua config is either in the `/lua` directory or the `/after/plugin` di
 - [nvim-colorizer](https://github.com/norcalli/nvim-colorizer.lua)
 - [nvim-hlslens](https://github.com/kevinhwang91/nvim-hlslens)
 - [nvim-surround](https://github.com/kylechui/nvim-surround)
+- [text-case.nvim](https://github.com/johmsalas/text-case.nvim)
 - [todo-comments.nvim](https://github.com/folke/todo-comments.nvim)
 - [treesj](https://github.com/Wansmer/treesj)
 - [unblevable/quick-scope](https://github.com/unblevable/quick-scope)
