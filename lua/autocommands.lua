@@ -6,6 +6,13 @@ local function augroup(name)
   return vim.api.nvim_create_augroup("lazyvim_" .. name, { clear = true })
 end
 
+-- Use internal formatting for bindings like gq.
+vim.api.nvim_create_autocmd('LspAttach', {
+  callback = function(args)
+    vim.bo[args.buf].formatexpr = nil
+  end,
+})
+
 -- Check if we need to reload the file when it changed
 vim.api.nvim_create_autocmd({ "FocusGained", "TermClose", "TermLeave" }, {
   group = augroup("checktime"),
