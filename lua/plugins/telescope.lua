@@ -1,3 +1,0 @@
--- telescope.lua
-
-return
