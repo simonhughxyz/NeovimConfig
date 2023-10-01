@@ -1,6 +1,6 @@
--- gruvbox.lua
+-- colorscheme.lua
 --
--- A colorscheme
+-- plugins that change the neovim colorscheme
 
 
 local o = vim.opt
@@ -8,7 +8,7 @@ local g = vim.g
 local cmd = vim.cmd
 
 return {
-  {
+  { -- A port of gruvbox community theme to lua with treesitter and semantic highlights support
     "ellisonleao/gruvbox.nvim",
     enabled = true,
     lazy = false,
