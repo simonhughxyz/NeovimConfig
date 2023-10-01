@@ -1,8 +1,9 @@
--- lsp-zero.lua
+-- lsp.lua
 --
--- Set up language server protocol
+-- language server protocol plugins
 
 return {
+  -- Collection of functions that will help you setup Neovim's LSP client
   'VonHeikemen/lsp-zero.nvim',
   branch = 'v2.x',
   dependencies = {
