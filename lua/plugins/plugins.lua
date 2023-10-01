@@ -28,20 +28,10 @@ return {
     dependencies = { "nvim-tree/nvim-web-devicons" },
   },
 
-  { -- Use the w, e, b motions like a spider. Move by subwords and skip insignificant punctuation.
-    "chrisgrieser/nvim-spider",
-    enabled = true,
-    lazy = true,
-  },
-
   { -- Bundle of more than two dozen new textobjects for Neovim.
     "chrisgrieser/nvim-various-textobjs",
     lazy = false,
     opts = { useDefaultKeymaps = true },
-  },
-
-  { -- when searching, search count is shown next to the cursor
-    "kevinhwang91/nvim-hlslens",
   },
 
   { -- split-join lines
