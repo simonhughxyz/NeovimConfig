@@ -3,9 +3,6 @@
 -- Plugins that don't require a lot of configuration go here
 
 return {
-  -- Useful plugin to show you pending keybinds.
-  { 'folke/which-key.nvim', opts = {} },
-
   {
     "folke/trouble.nvim",
     dependencies = { "nvim-tree/nvim-web-devicons" },

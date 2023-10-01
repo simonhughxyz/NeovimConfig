@@ -9,11 +9,6 @@ return {
     lazy = true,
   },
 
-  { -- when searching, search count is shown next to the cursor
-    "kevinhwang91/nvim-hlslens",
-    enabled = true,
-  },
-
   { -- to highlight and search for todo comments like TODO, HACK, BUG in your code base.
     "folke/todo-comments.nvim",
     enabled = true,
