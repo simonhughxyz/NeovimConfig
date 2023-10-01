@@ -70,18 +70,22 @@ return {
     end,
   },
 
-  { -- show character highlights to help navigate
-    "unblevable/quick-scope",
-    priority = 11000, -- needs to load before ColorScheme
-    config = function()
-      vim.cmd([[
-            augroup qs_colors
-              autocmd!
-              autocmd ColorScheme * highlight QuickScopePrimary guifg='#aa00aa' gui=underline ctermfg=155 cterm=underline
-              autocmd ColorScheme * highlight QuickScopeSecondary guifg='#a0f050' gui=underline ctermfg=81 cterm=underline
-            augroup END
-           ]])
-      vim.keymap.set("n", "<leader>cq", "<cmd>QuickScopeToggle<cr>", { desc = "Toggle quick scope" })
+  { -- highlights for ftFT motion
+    "jinh0/eyeliner.nvim",
+    priority = 200,
+    keys = { "f", "F", "t", "T" },
+    opts = {
+      highlight_on_key = true,
+      dim = true
+    },
+    init = function()
+      vim.api.nvim_create_autocmd('ColorScheme', {
+        pattern = '*',
+        callback = function()
+          vim.api.nvim_set_hl(0, 'EyelinerPrimary', { fg = '#aa00aa', bold = true, underline = false })
+          vim.api.nvim_set_hl(0, 'EyelinerSecondary', { fg = '#a0f050', bold = true, underline = false })
+        end,
+      })
     end,
   },
 
