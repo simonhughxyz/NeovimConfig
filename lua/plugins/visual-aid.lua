@@ -38,6 +38,25 @@ return {
     },
   },
 
+  { -- color highlighter, shows color of color codes
+    "norcalli/nvim-colorizer.lua",
+    enabled = true,
+    opts = {
+      default_options = {
+        RGB = true,
+        RRGGBB = true,
+        names = true,
+        RRGGBBAA = true,
+        rgb_fn = true,
+        hsl_fn = true,
+        css = true,
+        css_fn = true,
+        mode = "background",
+      },
+      "*", -- highlight all files
+    },
+  },
+
   { -- show character highlights to help navigate
     "unblevable/quick-scope",
     priority = 11000, -- needs to load before ColorScheme
