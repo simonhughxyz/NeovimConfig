@@ -135,3 +135,11 @@ map("n", "<leader><tab>[", "<cmd>tabprevious<cr>", { desc = "Previous Tab" })
 map('n', '\\', ':%s//g<left><left>', { desc = "Search buffer" })
 map('v', '\\', ':s//g<Left><Left>', { desc = "Search selection" })
 map("n", "<leader>S", "<cmd>set spell!<cr>", { desc = "Toggle spell" })
+
+-- Insert file name
+map("i", "<C-f>f", '<C-R>=expand("%:t")<cr>', { desc = "Insert current filename" })
+map("i", "<C-f>F", '<C-R>=expand("%:t:r")<cr>', { desc = "Insert current filename without extension" })
+map("i", "<C-f>e", '<C-R>=expand("%:e")<cr>', { desc = "Insert extendion of current file" })
+map("i", "<C-f>p", '<C-R>=expand("%:p:h")<cr>', { desc = "Insert absolute path of current directory" })
+map("i", "<C-f>P", '<C-R>=expand("%:h")<cr>', { desc = "Insert relative path of current directory" })
+map("i", "<C-f>d", '<C-R>=expand("%:p:h:t")<cr>', { desc = "Insert parent directory of current file" })
