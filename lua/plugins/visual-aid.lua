@@ -12,6 +12,7 @@ return {
   { -- when searching, search count is shown next to the cursor
     "kevinhwang91/nvim-hlslens",
     enabled = true,
+    opts = {},
   },
 
   { -- this plugin adds indentation guides to all lines (including empty lines).
