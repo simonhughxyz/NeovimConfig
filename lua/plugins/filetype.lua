@@ -14,4 +14,51 @@ return {
   { "pangloss/vim-javascript",    ft = { "javascript" } },
   { "leafgarland/typescript-vim", ft = { "typescript" } },
   { "MTDL9/vim-log-highlighting", ft = "log" },
+  {
+    "nvim-neorg/neorg",
+    build = ":Neorg sync-parsers",
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+    },
+    config = function()
+      require("neorg").setup {
+        load = {
+          ["core.defaults"] = {}, -- Loads default behaviour
+          ["core.concealer"] = {  -- Adds pretty icons to your documents
+            config = {
+              foldlevelstart = "1",
+              icon_preset = "diamond",
+            },
+          },
+          ["core.dirman"] = { -- Manages Neorg workspaces
+            config = {
+              workspaces = {
+                documents = "~/Documents",
+                health = "~/Documents/health",
+                career = "~/Documents/career",
+              },
+              default_workspace = "documents",
+            },
+          },
+          ["core.completion"] = {
+            config = {
+              engine = 'nvim-cmp',
+            }
+          },
+          ["core.qol.toc"] = {
+            config = {
+              close_split_on_jump = true,
+              toc_split_placement = "right",
+            }
+          },
+          ["core.export"] = {},
+          ["core.export.markdown"] = {
+            config = {
+              extensions = "all",
+            }
+          },
+        },
+      }
+    end,
+  },
 }
