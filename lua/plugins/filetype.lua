@@ -19,6 +19,7 @@ return {
     build = ":Neorg sync-parsers",
     dependencies = {
       "nvim-lua/plenary.nvim",
+      "Pocco81/true-zen.nvim",
       "nvim-neorg/neorg-telescope",
     },
     config = function()
@@ -59,6 +60,11 @@ return {
             }
           },
           ["core.integrations.telescope"] = {},
+          ["core.presenter"] = {
+            config = {
+              zen_mode = "truezen",
+            }
+          },
         },
       }
     end,
