@@ -18,6 +18,8 @@ vim.keymap.set('n', '<leader>/', function()
 end, { desc = 'Fuzzily search in current buffer' })
 
 vim.keymap.set('n', '<leader>gf', ts.git_files, { desc = 'Search Git Files' })
+vim.keymap.set('n', '<leader>gs', ts.git_status, { desc = 'Search Git Status' })
+vim.keymap.set('n', '<leader>gc', ts.git_commits, { desc = 'Search Git Commits' })
 vim.keymap.set('n', '<leader>ff', ts.find_files, { desc = 'Search Files' })
 vim.keymap.set('n', '<leader>sh', ts.help_tags, { desc = 'Search Help' })
 vim.keymap.set('n', '<leader>sw', ts.grep_string, { desc = 'Search Current Word' })
