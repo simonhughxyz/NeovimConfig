@@ -72,6 +72,7 @@ return {
             }
           },
           ["core.summary"] = {},
+          ["core.esupports.hop"] = {},
         },
       }
     end,
