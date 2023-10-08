@@ -71,6 +71,7 @@ return {
               strategy = "nested",
             }
           },
+          ["core.summary"] = {},
         },
       }
     end,
