@@ -19,6 +19,7 @@ return {
     build = ":Neorg sync-parsers",
     dependencies = {
       "nvim-lua/plenary.nvim",
+      "nvim-neorg/neorg-telescope",
     },
     config = function()
       require("neorg").setup {
@@ -57,6 +58,7 @@ return {
               extensions = "all",
             }
           },
+          ["core.integrations.telescope"] = {},
         },
       }
     end,
