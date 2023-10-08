@@ -65,6 +65,12 @@ return {
               zen_mode = "truezen",
             }
           },
+          ["core.journal"] = {
+            config = {
+              workspace = "home",
+              strategy = "nested",
+            }
+          },
         },
       }
     end,
