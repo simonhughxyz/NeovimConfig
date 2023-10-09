@@ -50,4 +50,9 @@ return {
       end,
     },
   },
+
+  { -- Single tabpage interface for cycling through diffs
+    "sindrets/diffview.nvim",
+    enabled = true,
+  },
 }
