@@ -143,3 +143,17 @@ map("i", "<C-f>e", '<C-R>=expand("%:e")<cr>', { desc = "Insert extendion of curr
 map("i", "<C-f>p", '<C-R>=expand("%:p:h")<cr>', { desc = "Insert absolute path of current directory" })
 map("i", "<C-f>P", '<C-R>=expand("%:h")<cr>', { desc = "Insert relative path of current directory" })
 map("i", "<C-f>d", '<C-R>=expand("%:p:h:t")<cr>', { desc = "Insert parent directory of current file" })
+
+-- termial mappings
+function _G.set_terminal_keymaps()
+  local opts = { buffer = 0 }
+  map('t', '<esc>', [[<C-\><C-n>]], { desc = "Escape terminal" })
+  map('t', '<C-h>', [[<Cmd>wincmd h<CR>]], { desc = "Go to left window" })
+  map('t', '<C-j>', [[<Cmd>wincmd j<CR>]], { desc = "Go to lower window" })
+  map('t', '<C-k>', [[<Cmd>wincmd k<CR>]], { desc = "Go to upper window" })
+  map('t', '<C-l>', [[<Cmd>wincmd l<CR>]], { desc = "Go yo right window" })
+  map('t', '<C-w>', [[<C-\><C-n><C-w>]], { desc = "Window options" })
+end
+
+-- if you only want these mappings for toggle term use term://*toggleterm#* instead
+vim.cmd('autocmd! TermOpen term://* lua set_terminal_keymaps()')
