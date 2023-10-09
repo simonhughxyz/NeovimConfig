@@ -77,6 +77,13 @@ return {
     },
   },
 
+  { --  a per project file bookmark plugin
+    'ThePrimeagen/harpoon',
+    enabled = true,
+    dependencies = { 'nvim-lua/plenary.nvim' },
+    opts = {},
+  },
+
   { -- persist and toggle multiple terminals during an editing session
     'akinsho/toggleterm.nvim',
     version = "*",
