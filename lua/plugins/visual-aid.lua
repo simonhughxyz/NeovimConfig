@@ -6,7 +6,26 @@ return {
   { -- useful plugin to show you pending keybinds.
     'folke/which-key.nvim',
     enabled = true,
-    opts = {}
+    config = function()
+      local wk = require('which-key')
+
+      wk.register({
+        ['<leader>'] = {
+          ['<Tab>'] = { name = '+tab' },
+          b = { name = '+Buffer' },
+          d = { name = '+Debug' },
+          f = { name = '+Find' },
+          g = { name = '+Git' },
+          h = { name = '+Hunk' },
+          H = { name = '+Harpoon' },
+          t = { name = '+Text' },
+          T = { name = '+Text' },
+          w = { name = '+Window' },
+          w = { name = '+Window' },
+          x = { name = '+Diagnostics' },
+        },
+      })
+    end,
   },
 
   { -- when searching, search count is shown next to the cursor
