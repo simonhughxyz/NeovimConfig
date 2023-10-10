@@ -24,6 +24,7 @@ return {
     },
   },
 
+  -- TODO: change default mappings to be more consistent with vim
   { -- to browse the file system and other tree like structures
     "nvim-neo-tree/neo-tree.nvim",
     branch = "v3.x",
