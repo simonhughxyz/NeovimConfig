@@ -12,6 +12,9 @@ return {
     { 'williamboman/mason.nvim' },           -- Optional
     { 'williamboman/mason-lspconfig.nvim' }, -- Optional
 
+    -- Format
+    { 'onsails/lspkind.nvim' },
+
     -- Autocompletion
     { 'hrsh7th/nvim-cmp' },
     { 'hrsh7th/cmp-nvim-lsp' },
@@ -91,8 +94,14 @@ return {
         ['<C-f>'] = cmp_action.luasnip_jump_forward(),
         ['<C-b>'] = cmp_action.luasnip_jump_backward(),
       }),
-      --- (Optional) Show source name in completion menu
-      formatting = cmp_format,
+      formatting = {
+        fields = { 'abbr', 'kind', 'menu' },
+        format = require('lspkind').cmp_format({
+          mode = 'symbol_text',  -- show only symbol annotations
+          maxwidth = 50,         -- prevent the popup from showing more than provided characters
+          ellipsis_char = '...', -- when popup menu exceed maxwidth, the truncated part would show ellipsis_char instead
+        })
+      }
     })
   end,
 }
