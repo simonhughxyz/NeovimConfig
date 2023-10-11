@@ -18,6 +18,7 @@ return {
     { 'L3MON4D3/LuaSnip' },     -- Required
 
     { 'hrsh7th/cmp-buffer' },
+    { 'hrsh7th/cmp-path' },
   },
   config = function()
     local lsp_zero = require('lsp-zero')
