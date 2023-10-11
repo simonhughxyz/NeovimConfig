@@ -88,6 +88,7 @@ return {
         end,
       },
       mapping = cmp.mapping.preset.insert({
+        ['<CR>'] = cmp.mapping.confirm({ select = false }),
         -- scroll up and down the documentation window
         ['<C-u>'] = cmp.mapping.scroll_docs(-4),
         ['<C-d>'] = cmp.mapping.scroll_docs(4),
