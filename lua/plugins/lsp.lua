@@ -16,6 +16,7 @@ return {
     { 'hrsh7th/nvim-cmp' },     -- Required
     { 'hrsh7th/cmp-nvim-lsp' }, -- Requred
     { 'L3MON4D3/LuaSnip' },     -- Required
+    { 'saadparwaiz1/cmp_luasnip' },
 
     { 'hrsh7th/cmp-nvim-lua' },
     { 'hrsh7th/cmp-buffer' },
@@ -63,6 +64,7 @@ return {
       sources = {
         { name = 'nvim_lsp' }, -- completion for neovim
         { name = 'nvim_lua' }, -- completion for neovim lua api
+        { name = 'luasnip' }, -- show snippets
         { name = 'buffer' }, -- show elements from your buffer
         { name = 'path' }, -- show file paths
         { name = 'emoji' }, -- show emoji's
