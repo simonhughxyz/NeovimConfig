@@ -20,6 +20,7 @@ return {
     { 'hrsh7th/cmp-nvim-lua' },
     { 'hrsh7th/cmp-buffer' },
     { 'hrsh7th/cmp-path' },
+    { 'hrsh7th/cmp-emoji' },
   },
   config = function()
     local lsp_zero = require('lsp-zero')
@@ -64,6 +65,7 @@ return {
         { name = 'nvim_lua' }, -- completion for neovim lua api
         { name = 'buffer' }, -- show elements from your buffer
         { name = 'path' }, -- show file paths
+        { name = 'emoji' }, -- show emoji's
       },
       snippet = {
         expand = function(args)
