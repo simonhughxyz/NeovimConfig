@@ -13,11 +13,14 @@ return {
     { 'williamboman/mason-lspconfig.nvim' }, -- Optional
 
     -- Autocompletion
-    { 'hrsh7th/nvim-cmp' },     -- Required
-    { 'hrsh7th/cmp-nvim-lsp' }, -- Requred
-    { 'L3MON4D3/LuaSnip' },     -- Required
-    { 'saadparwaiz1/cmp_luasnip' },
+    { 'hrsh7th/nvim-cmp' },
+    { 'hrsh7th/cmp-nvim-lsp' },
+    {
+      'L3MON4D3/LuaSnip',
+      dependencies = { "rafamadriz/friendly-snippets" },
+    },
 
+    { 'saadparwaiz1/cmp_luasnip' },
     { 'hrsh7th/cmp-nvim-lua' },
     { 'hrsh7th/cmp-buffer' },
     { 'hrsh7th/cmp-path' },
@@ -30,12 +33,15 @@ return {
       -- see :help lsp-zero-keybindings
       -- to learn the available actions
       lsp_zero.default_keymaps({ buffer = bufnr })
-      local opts = {buffer = bufnr}
+      local opts = { buffer = bufnr }
 
-      vim.keymap.set({'n', 'x'}, 'gq', function()
-        vim.lsp.buf.format({async = false, timeout_ms = 10000})
-      end, {buffer = burnr, desc = 'Lsp format buffer'})
+      vim.keymap.set({ 'n', 'x' }, 'gq', function()
+        vim.lsp.buf.format({ async = false, timeout_ms = 10000 })
+      end, { buffer = burnr, desc = 'Lsp format buffer' })
 
+      vim.keymap.set({ 'n', 'x' }, 'gq', function()
+        vim.lsp.buf.format({ async = false, timeout_ms = 10000 })
+      end, { buffer = burnr, desc = 'Lsp format buffer' })
     end)
 
     require('mason').setup({})
@@ -60,14 +66,17 @@ return {
     local cmp_action = require('lsp-zero').cmp_action()
     local cmp_format = lsp_zero.cmp_format()
 
+    -- load snippets
+    require('luasnip.loaders.from_vscode').lazy_load()
+
     cmp.setup({
       sources = {
         { name = 'nvim_lsp' }, -- completion for neovim
         { name = 'nvim_lua' }, -- completion for neovim lua api
-        { name = 'luasnip' }, -- show snippets
-        { name = 'buffer' }, -- show elements from your buffer
-        { name = 'path' }, -- show file paths
-        { name = 'emoji' }, -- show emoji's
+        { name = 'luasnip' },  -- show snippets
+        { name = 'buffer' },   -- show elements from your buffer
+        { name = 'path' },     -- show file paths
+        { name = 'emoji' },    -- show emoji's
       },
       snippet = {
         expand = function(args)
@@ -77,7 +86,7 @@ return {
       mapping = cmp.mapping.preset.insert({
         -- scroll up and down the documentation window
         ['<C-u>'] = cmp.mapping.scroll_docs(-4),
-        ['<C-d>'] = cmp.mapping.scroll_docs(4), 
+        ['<C-d>'] = cmp.mapping.scroll_docs(4),
 
         ['<C-f>'] = cmp_action.luasnip_jump_forward(),
         ['<C-b>'] = cmp_action.luasnip_jump_backward(),
