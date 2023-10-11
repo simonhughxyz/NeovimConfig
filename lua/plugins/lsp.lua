@@ -5,7 +5,7 @@
 return {
   -- Collection of functions that will help you setup Neovim's LSP client
   'VonHeikemen/lsp-zero.nvim',
-  branch = 'v2.x',
+  branch = 'v3.x',
   dependencies = {
     -- LSP Support
     { 'neovim/nvim-lspconfig' },             -- Required
@@ -18,62 +18,61 @@ return {
     { 'L3MON4D3/LuaSnip' },     -- Required
   },
   config = function()
-    local lsp = require('lsp-zero').preset('recommended')
+    local lsp_zero = require('lsp-zero')
 
-    lsp.ensure_installed({
-      'html',
-      'lua_ls',
-      'pylsp',
-      'bashls',
-      'clangd',
-    })
-
-    -- Fix Undefined global 'vim'
-    lsp.nvim_workspace()
-
-    local cmp = require('cmp')
-    local cmp_select = { behavior = cmp.SelectBehavior.Select }
-    local cmp_mappings = lsp.defaults.cmp_mappings({
-      ['<C-p>'] = cmp.mapping.select_prev_item(cmp_select),
-      ['<C-n>'] = cmp.mapping.select_next_item(cmp_select),
-      ['<C-y>'] = cmp.mapping.confirm({ select = true }),
-      ["<C-Space>"] = cmp.mapping.complete(),
-    })
-
-    cmp_mappings['<Tab>'] = nil
-    cmp_mappings['<S-Tab>'] = nil
-
-    lsp.setup_nvim_cmp({
-      mapping = cmp_mappings
-    })
-
-    lsp.on_attach(function(client, bufnr)
+    lsp_zero.on_attach(function(client, bufnr)
       -- see :help lsp-zero-keybindings
       -- to learn the available actions
-      -- lsp.default_keymaps({buffer = bufnr})
+      lsp_zero.default_keymaps({ buffer = bufnr })
+      local opts = {buffer = bufnr}
 
-      -- Autoformat code on write
-      lsp.buffer_autoformat(client, bufnr)
+      vim.keymap.set({'n', 'x'}, 'gq', function()
+        vim.lsp.buf.format({async = false, timeout_ms = 10000})
+      end, {buffer = burnr, desc = 'Lsp format buffer'})
 
-      local opts = function(desc)
-        return { buffer = bufnr, remap = false, desc = desc }
-      end
-
-      vim.keymap.set("n", "gd", function() vim.lsp.buf.definition() end, opts("Go To Definition"))
-      vim.keymap.set("n", "K", function() vim.lsp.buf.hover() end, opts("Hover"))
-      vim.keymap.set("n", "<leader>vws", function() vim.lsp.buf.workspace_symbol() end, opts("Workspace Symbol"))
-      vim.keymap.set("n", "<leader>vd", function() vim.diagnostic.open_float() end, opts("Open Float"))
-      vim.keymap.set("n", "[d", function() vim.diagnostic.goto_next() end, opts("Go To Next"))
-      vim.keymap.set("n", "]d", function() vim.diagnostic.goto_prev() end, opts("Go To Previous"))
-      vim.keymap.set("n", "<leader>vca", function() vim.lsp.buf.code_action() end, opts("Code Action"))
-      vim.keymap.set("n", "<leader>vrr", function() vim.lsp.buf.references() end, opts("References"))
-      vim.keymap.set("n", "<leader>vrn", function() vim.lsp.buf.rename() end, opts("Rename"))
-      vim.keymap.set("i", "<C-h>", function() vim.lsp.buf.signature_help() end, opts("Signiture Help"))
     end)
 
-    -- (Optional) Configure lua language server for neovim
-    require('lspconfig').lua_ls.setup(lsp.nvim_lua_ls())
+    require('mason').setup({})
+    require('mason-lspconfig').setup({
+      ensure_installed = {
+        'html',
+        'pylsp',
+        'lua_ls',
+        'bashls',
+        'clangd',
+      },
+      handlers = {
+        lsp_zero.default_setup,
+        lua_ls = function()
+          local lua_opts = lsp_zero.nvim_lua_ls()
+          require('lspconfig').lua_ls.setup(lua_opts)
+        end,
+      }
+    })
 
-    lsp.setup()
+    local cmp = require('cmp')
+    local cmp_action = require('lsp-zero').cmp_action()
+    local cmp_format = lsp_zero.cmp_format()
+
+    cmp.setup({
+      sources = {
+        { name = 'nvim_lsp' },
+      },
+      snippet = {
+        expand = function(args)
+          require('luasnip').lsp_expand(args.body)
+        end,
+      },
+      mapping = cmp.mapping.preset.insert({
+        -- scroll up and down the documentation window
+        ['<C-u>'] = cmp.mapping.scroll_docs(-4),
+        ['<C-d>'] = cmp.mapping.scroll_docs(4), 
+
+        ['<C-f>'] = cmp_action.luasnip_jump_forward(),
+        ['<C-b>'] = cmp_action.luasnip_jump_backward(),
+      }),
+      --- (Optional) Show source name in completion menu
+      formatting = cmp_format,
+    })
   end,
 }
