@@ -13,7 +13,7 @@ return {
     { 'williamboman/mason-lspconfig.nvim' }, -- Optional
 
     -- Format
-    { 'onsails/lspkind.nvim' },
+    { 'onsails/lspkind.nvim' }, -- shows icons on completion menu
 
     -- Autocompletion
     { 'hrsh7th/nvim-cmp' },
@@ -71,6 +71,7 @@ return {
 
     -- load snippets
     require('luasnip.loaders.from_vscode').lazy_load()
+    require('luasnip.loaders.from_lua').lazy_load({ paths = './snippets/' })
 
     cmp.setup({
       sources = {
