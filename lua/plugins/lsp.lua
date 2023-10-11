@@ -58,8 +58,9 @@ return {
 
     cmp.setup({
       sources = {
-        { name = 'nvim_lsp' },
-        { name = 'buffer' },
+        { name = 'nvim_lsp' }, -- completion for neovim
+        { name = 'buffer' }, -- show elements from your buffer
+        { name = 'path' }, -- show file paths
       },
       snippet = {
         expand = function(args)
