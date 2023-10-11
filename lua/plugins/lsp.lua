@@ -41,10 +41,6 @@ return {
       vim.keymap.set({ 'n', 'x' }, 'gq', function()
         vim.lsp.buf.format({ async = false, timeout_ms = 10000 })
       end, { buffer = burnr, desc = 'Lsp format buffer' })
-
-      vim.keymap.set({ 'n', 'x' }, 'gq', function()
-        vim.lsp.buf.format({ async = false, timeout_ms = 10000 })
-      end, { buffer = burnr, desc = 'Lsp format buffer' })
     end)
 
     require('mason').setup({})
