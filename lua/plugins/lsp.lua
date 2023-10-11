@@ -16,6 +16,8 @@ return {
     { 'hrsh7th/nvim-cmp' },     -- Required
     { 'hrsh7th/cmp-nvim-lsp' }, -- Requred
     { 'L3MON4D3/LuaSnip' },     -- Required
+
+    { 'hrsh7th/cmp-buffer' },
   },
   config = function()
     local lsp_zero = require('lsp-zero')
@@ -57,6 +59,7 @@ return {
     cmp.setup({
       sources = {
         { name = 'nvim_lsp' },
+        { name = 'buffer' },
       },
       snippet = {
         expand = function(args)
