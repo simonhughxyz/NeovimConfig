@@ -26,6 +26,7 @@ return {
     { 'saadparwaiz1/cmp_luasnip' },
     { 'hrsh7th/cmp-nvim-lua' },
     { 'hrsh7th/cmp-buffer' },
+    { 'hrsh7th/cmp-cmdline' },
     { 'hrsh7th/cmp-path' },
     { 'hrsh7th/cmp-emoji' },
   },
@@ -76,6 +77,7 @@ return {
         { name = 'luasnip' },  -- show snippets
         { name = 'buffer' },   -- show elements from your buffer
         { name = 'path' },     -- show file paths
+        { name = 'cmdline' },  -- show completion for : commands and / searches
         { name = 'emoji' },    -- show emoji's
       },
       snippet = {
@@ -100,6 +102,24 @@ return {
           ellipsis_char = '...', -- when popup menu exceed maxwidth, the truncated part would show ellipsis_char instead
         })
       }
+    })
+
+    -- `/` cmdline setup.
+    cmp.setup.cmdline('/', {
+      mapping = cmp.mapping.preset.cmdline(),
+      sources = {
+        { name = 'buffer' }
+      }
+    })
+
+    -- `:` cmdline setup.
+    cmp.setup.cmdline(':', {
+      mapping = cmp.mapping.preset.cmdline(),
+      sources = cmp.config.sources({
+        { name = 'path' }
+      }, {
+        { name = 'cmdline' }
+      })
     })
   end,
 }
