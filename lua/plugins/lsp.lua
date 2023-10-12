@@ -22,6 +22,7 @@ return {
       'L3MON4D3/LuaSnip',
       dependencies = { "rafamadriz/friendly-snippets" },
     },
+    { 'nvimtools/none-ls.nvim',  dependencies = { 'nvim-lua/plenary.nvim' } },
 
     { 'saadparwaiz1/cmp_luasnip' },
     { 'hrsh7th/cmp-nvim-lua' },
@@ -60,6 +61,16 @@ return {
           require('lspconfig').lua_ls.setup(lua_opts)
         end,
       }
+    })
+
+    local null_ls = require("null-ls")
+
+    null_ls.setup({
+      sources = {
+        null_ls.builtins.formatting.stylua,
+        null_ls.builtins.diagnostics.eslint,
+        null_ls.builtins.completion.spell,
+      },
     })
 
     local cmp = require('cmp')
