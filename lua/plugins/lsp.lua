@@ -38,11 +38,19 @@ return {
       -- see :help lsp-zero-keybindings
       -- to learn the available actions
       lsp_zero.default_keymaps({ buffer = bufnr })
-      local opts = { buffer = bufnr }
 
+      local opts = function(desc)
+        return { buffer = bufnr, remap = false, desc = desc }
+      end
+      --
       vim.keymap.set({ 'n', 'x' }, 'gq', function()
         vim.lsp.buf.format({ async = false, timeout_ms = 10000 })
-      end, { buffer = burnr, desc = 'Lsp format buffer' })
+      end, opts('Lsp format buffer'))
+
+      vim.keymap.set("n", "gd", function() vim.lsp.buf.definition() end, opts("Go To Definition"))
+      vim.keymap.set("n", "[d", function() vim.diagnostic.goto_next() end, opts("Go To Next"))
+      vim.keymap.set("n", "]d", function() vim.diagnostic.goto_prev() end, opts("Go To Previous"))
+      vim.keymap.set("n", "<leader>la", function() vim.lsp.buf.code_action() end, opts("Code Action"))
     end)
 
     require('mason').setup({})
