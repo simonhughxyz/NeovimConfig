@@ -23,6 +23,7 @@ return {
       dependencies = { "rafamadriz/friendly-snippets" },
     },
     { 'nvimtools/none-ls.nvim',  dependencies = { 'nvim-lua/plenary.nvim' } },
+    { "jay-babu/mason-null-ls.nvim" },
 
     { 'saadparwaiz1/cmp_luasnip' },
     { 'hrsh7th/cmp-nvim-lua' },
@@ -83,6 +84,17 @@ return {
         null_ls.builtins.diagnostics.codespell,
         null_ls.builtins.diagnostics.write_good,
       },
+    })
+
+    require("mason-null-ls").setup({
+        ensure_installed = {
+        "stylua",
+        "eslint",
+        "trail_space",
+        "spell",
+        "codespell",
+        "write_good",
+      }
     })
 
     local cmp = require('cmp')
