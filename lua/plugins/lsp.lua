@@ -44,7 +44,7 @@ return {
         return { buffer = bufnr, remap = false, desc = desc }
       end
       --
-      vim.keymap.set({ 'n', 'x' }, 'gq', function()
+      vim.keymap.set({ 'n', 'x' }, '<leader>lf', function()
         vim.lsp.buf.format({ async = false, timeout_ms = 10000 })
       end, opts('Lsp format buffer'))
 
