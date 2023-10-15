@@ -108,7 +108,6 @@ return {
 
     local cmp = require('cmp')
     local cmp_action = require('lsp-zero').cmp_action()
-    local cmp_format = lsp_zero.cmp_format()
 
     -- load snippets
     require('luasnip.loaders.from_vscode').lazy_load()
