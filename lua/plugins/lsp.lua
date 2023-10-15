@@ -14,6 +14,7 @@ return {
 
     -- Format
     { 'onsails/lspkind.nvim' }, -- shows icons on completion menu
+    { 'kosayoda/nvim-lightbulb' },
 
     -- Autocompletion
     { 'hrsh7th/nvim-cmp' },
@@ -163,6 +164,14 @@ return {
       }, {
         { name = 'cmdline' }
       })
+    })
+
+    require("nvim-lightbulb").setup({
+      autocmd = { enabled = true },
+      virtual_text = {
+        enabled = true,
+        text = '󰌵'
+      },
     })
   end,
 }
