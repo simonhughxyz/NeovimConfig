@@ -52,8 +52,11 @@ return {
 
       vim.keymap.set('n', '<leader>fd', function() ts.find_files({ cwd = '~/Documents' }) end,
         { desc = 'Find Documents' })
+      vim.keymap.set('n', '<leader>fD', function() ts.find_files({ cwd = '~/Downloads' }) end,
+        { desc = 'Find Downloads' })
       vim.keymap.set('n', '<leader>fp', function() ts.find_files({ cwd = '~/Projects' }) end, { desc = 'Find Projects' })
-      vim.keymap.set('n', '<leader>fc', function() ts.find_files({ cwd = vim.fn.stdpath('config') }) end, { desc = 'Find Config' })
+      vim.keymap.set('n', '<leader>fc', function() ts.find_files({ cwd = vim.fn.stdpath('config') }) end,
+        { desc = 'Find Config' })
       vim.keymap.set('n', '<leader>fb', function() ts.find_files({ cwd = '~/.local/bin' }) end,
         { desc = 'Find Local Bin' })
     end,
