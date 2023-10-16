@@ -17,7 +17,6 @@ return {
           f = { name = '+Find' },
           g = { name = '+Git' },
           h = { name = '+Hunk' },
-          H = { name = '+Harpoon' },
           t = { name = '+Text' },
           T = { name = '+Text' },
           w = { name = '+Window' },

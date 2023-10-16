@@ -96,6 +96,12 @@ return {
       for i = 1, 9 do
         vim.keymap.set('n', "<leader>'" .. i, function() require('harpoon.ui').nav_file(i) end, { desc = 'Harpoon Nav File' })
       end
+
+      require('which-key').register({
+        ['<leader>'] = {
+          ["'"] = { name = "+Harpoon" },
+        },
+      })
     end,
   },
 
