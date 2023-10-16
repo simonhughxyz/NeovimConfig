@@ -85,13 +85,13 @@ return {
     opts = {},
     config = function()
       -- enable telescope extension
-      require("telescope").load_extension('harpoon')
+      local tsh = require("telescope").load_extension('harpoon')
 
       -- set keymaps
       vim.keymap.set('n', "<leader>'a", require('harpoon.mark').add_file, { desc = 'Harpoon Add File' })
       vim.keymap.set('n', "<leader>']", require('harpoon.ui').nav_next, { desc = 'Harpoon Next' })
       vim.keymap.set('n', "<leader>'[", require('harpoon.ui').nav_prev, { desc = 'Harpoon Previous' })
-      vim.keymap.set("n", "<leader>fh", ':Telescope harpoon marks<cr>', { desc = "Find Harpoon" })
+      vim.keymap.set("n", "<leader>fh", tsh.marks , { desc = "Find Harpoon" })
     end,
   },
 
