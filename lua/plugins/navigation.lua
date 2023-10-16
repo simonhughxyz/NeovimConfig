@@ -147,9 +147,9 @@ return {
       require("toggleterm").setup()
 
       -- set keymaps to toggle toggleterm
-      vim.keymap.set('n', '<c-cr>', [[<Cmd>ToggleTerm<CR>]], { desc = 'Toggle Term' })
-      vim.keymap.set('i', '<c-cr>', [[<Cmd>ToggleTerm<CR>]], { desc = 'Toggle Term' })
-      vim.keymap.set('t', '<c-cr>', [[<Cmd>ToggleTerm<CR>]], { desc = 'Toggle Term' })
+      vim.keymap.set('n', '<c-;>', [[<Cmd>ToggleTerm<CR>]], { desc = 'Toggle Term' })
+      vim.keymap.set('i', '<c-;>', [[<Cmd>ToggleTerm<CR>]], { desc = 'Toggle Term' })
+      vim.keymap.set('t', '<c-;>', [[<Cmd>ToggleTerm<CR>]], { desc = 'Toggle Term' })
     end,
   },
 }
