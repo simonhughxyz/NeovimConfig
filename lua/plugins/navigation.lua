@@ -92,6 +92,10 @@ return {
       vim.keymap.set('n', "<leader>']", require('harpoon.ui').nav_next, { desc = 'Harpoon Next' })
       vim.keymap.set('n', "<leader>'[", require('harpoon.ui').nav_prev, { desc = 'Harpoon Previous' })
       vim.keymap.set("n", "<leader>fh", tsh.marks , { desc = "Find Harpoon" })
+
+      for i = 1, 9 do
+        vim.keymap.set('n', "<leader>'" .. i, function() require('harpoon.ui').nav_file(i) end, { desc = 'Harpoon Nav File' })
+      end
     end,
   },
 
