@@ -44,7 +44,9 @@ return {
       local opts = function(desc)
         return { buffer = bufnr, remap = false, desc = desc }
       end
-      --
+
+      local ts = require('telescope.builtin')
+
       vim.keymap.set({ 'n', 'x' }, '<leader>lf', function()
         vim.lsp.buf.format({ async = false, timeout_ms = 10000 })
       end, opts('Lsp format buffer'))
