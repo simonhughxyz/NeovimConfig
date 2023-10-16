@@ -20,7 +20,6 @@ return {
           t = { name = '+Text' },
           T = { name = '+Text' },
           w = { name = '+Window' },
-          w = { name = '+Window' },
           x = { name = '+Diagnostics' },
         },
       })
