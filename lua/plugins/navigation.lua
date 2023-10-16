@@ -49,6 +49,8 @@ return {
       vim.keymap.set('n', '<leader>sg', ts.live_grep, { desc = 'Search by Grep' })
       vim.keymap.set('n', '<leader>sd', ts.diagnostics, { desc = 'Search Diagnostics' })
       vim.keymap.set('n', '<leader>sk', ts.keymaps, { desc = 'Search Keymaps' })
+      vim.keymap.set('n', "<leader>s'", ts.marks, { desc = 'Search Marks' })
+      vim.keymap.set('n', '<leader>s"', ts.registers, { desc = 'Search Registers' })
 
       vim.keymap.set('n', '<leader>fd', function() ts.find_files({ cwd = '~/Documents' }) end,
         { desc = 'Find Documents' })
