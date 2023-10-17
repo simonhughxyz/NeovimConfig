@@ -44,6 +44,7 @@ return {
       vim.keymap.set('n', '<leader>gS', ts.git_stash, { desc = 'Search Git Stash' })
       vim.keymap.set('n', '<leader>gc', ts.git_commits, { desc = 'Search Git Commits' })
       vim.keymap.set('n', '<leader>ff', ts.find_files, { desc = 'Find Files' })
+      vim.keymap.set('n', '<leader>sb', ts.builtin, { desc = 'Search Telescope Builtin' })
       vim.keymap.set('n', '<leader>sh', ts.help_tags, { desc = 'Search Help' })
       vim.keymap.set('n', '<leader>sw', ts.grep_string, { desc = 'Search Current Word' })
       vim.keymap.set('n', '<leader>sg', ts.live_grep, { desc = 'Search by Grep' })
