@@ -159,4 +159,15 @@ return {
       vim.keymap.set('t', '<c-;>', [[<Cmd>ToggleTerm<CR>]], { desc = 'Toggle Term' })
     end,
   },
+  { -- provides project management
+    "ahmedkhalf/project.nvim",
+    enabled = true,
+    config = function()
+      require("project_nvim").setup {}
+
+      local tsp = require('telescope').load_extension('projects')
+
+      vim.keymap.set('n', '<leader>sp', function() tsp.projects() end, { desc = 'Search for Project' })
+    end,
+  },
 }

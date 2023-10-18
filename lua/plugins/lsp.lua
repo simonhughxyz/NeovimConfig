@@ -15,6 +15,10 @@ return {
     -- Format
     { 'onsails/lspkind.nvim' }, -- shows icons on completion menu
     { 'kosayoda/nvim-lightbulb' },
+    {
+      'weilbith/nvim-code-action-menu',
+      cmd = 'CodeActionMenu',
+    },
 
     -- Autocompletion
     { 'hrsh7th/nvim-cmp' },
