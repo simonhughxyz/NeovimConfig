@@ -170,4 +170,15 @@ return {
       vim.keymap.set('n', '<leader>sp', function() tsp.projects() end, { desc = 'Search for Project' })
     end,
   },
+  { -- Interacting with and manipulating Vim marks, show marks in sign column
+    'chentoast/marks.nvim',
+    enabled = true,
+    config = function()
+      require 'marks'.setup {
+        default_mappings = true,
+        signs = true,
+        mappings = {}
+      }
+    end,
+  },
 }
