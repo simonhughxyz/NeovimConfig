@@ -129,7 +129,6 @@ return {
         { name = 'luasnip' },  -- show snippets
         { name = 'buffer' },   -- show elements from your buffer
         { name = 'path' },     -- show file paths
-        { name = 'cmdline' },  -- show completion for : commands and / searches
         { name = 'emoji' },    -- show emoji's
       },
       snippet = {
