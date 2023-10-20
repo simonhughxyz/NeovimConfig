@@ -187,6 +187,7 @@ return {
     config = function()
       require("urlview").setup({
         default_picker = "telescope",
+        log_level_min = 4,
       })
 
       vim.keymap.set("n", "su", "<Cmd>UrlView<CR>", { desc = "View buffer URLs" })
