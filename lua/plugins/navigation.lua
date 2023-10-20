@@ -181,4 +181,16 @@ return {
       }
     end,
   },
+  {
+    "axieax/urlview.nvim",
+    enabled = true,
+    config = function()
+      require("urlview").setup({
+        default_picker = "telescope",
+      })
+
+      vim.keymap.set("n", "su", "<Cmd>UrlView<CR>", { desc = "View buffer URLs" })
+      vim.keymap.set("n", "sU", "<Cmd>UrlView lazy<CR>", { desc = "View Packer plugin URLs" })
+    end,
+  },
 }
