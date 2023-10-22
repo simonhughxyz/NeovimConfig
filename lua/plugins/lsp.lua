@@ -92,9 +92,10 @@ return {
 
     local null_ls = require("null-ls")
 
+    local o = vim.o
     null_ls.setup({
       sources = {
-        null_ls.builtins.formatting.stylua.with({ extra_args = { '--indent_type=spaces' } }),
+        null_ls.builtins.formatting.stylua.with({ extra_args = { '--indent_type=spaces', '--indent_width=' .. o.tabstop } }),
         null_ls.builtins.diagnostics.eslint,
         null_ls.builtins.diagnostics.trail_space,
 
