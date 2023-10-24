@@ -22,7 +22,7 @@ return {
     })
   }),
   s({
-      trig = 'workemail',
+      trig = 'email',
       priority = 10000,
       desc = 'My email'
     },
