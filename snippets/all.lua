@@ -51,7 +51,14 @@ return {
         t("Simon H Moore <simonm@vigoitsolutions.com>"),
       }),
     }),
-  s('wsign', { t("Simon H Moore <simonm@vigoitsolutions.com>") }),
+  s({
+      trig = 'worksign',
+      priority = 10000,
+      desc = 'Work Sign'
+    },
+    {
+      t("Simon H Moore <simonm@vigoitsolutions.com>")
+    }),
   s({
       trig = 'date',
       priority = 10000,
