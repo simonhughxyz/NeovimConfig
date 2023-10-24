@@ -123,6 +123,10 @@ return {
     require('luasnip.loaders.from_lua').lazy_load({ paths = './snippets/' })
     require('luasnip.loaders.from_vscode').lazy_load()
 
+    -- snippet keymap
+    vim.keymap.set("i", "<c-u>", require "luasnip.extras.select_choice")
+    vim.keymap.set("n", "<leader>csc", require "luasnip.extras.select_choice")
+
     cmp.setup({
       sources = {
         { name = 'nvim_lsp' }, -- completion for neovim
