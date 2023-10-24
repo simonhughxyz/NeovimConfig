@@ -7,7 +7,12 @@ local c = ls.choice_node
 local f = ls.function_node
 
 return {
-  s('name', {
+  s({
+      trig = 'name',
+      priority = 10000,
+      desc = 'My name'
+    },
+    {
     c(1, {
       t("Simon H Moore"),
       t("Simon Hugh Moore"),
@@ -16,19 +21,36 @@ return {
       t("Simon"),
     })
   }),
-  s('email', {
-    c(1, {
-      t("simon@simonhugh.xyz"),
-      t("simonm@vigoitsolutions.com"),
+  s({
+      trig = 'workemail',
+      priority = 10000,
+      desc = 'My email'
+    },
+    {
+      c(1, {
+        t("simon@simonhugh.xyz"),
+        t("simonm@vigoitsolutions.com"),
+      }),
     }),
-  }),
-  s('wemail', { t("simonm@vigoitsolutions.com") }),
-  s('sign', {
-    c(1, {
-      t("Simon H Moore <simon@simonhugh.xyz>"),
-      t("Simon H Moore <simonm@vigoitsolutions.com>"),
+  s({
+      trig = 'workemail',
+      priority = 10000,
+      desc = 'Work Email'
+    },
+    {
+      t("simonm@vigoitsolutions.com")
     }),
-  }),
+  s({
+      trig = 'sign',
+      priority = 10000,
+      desc = 'My signiture'
+    },
+    {
+      c(1, {
+        t("Simon H Moore <simon@simonhugh.xyz>"),
+        t("Simon H Moore <simonm@vigoitsolutions.com>"),
+      }),
+    }),
   s('wsign', { t("Simon H Moore <simonm@vigoitsolutions.com>") }),
   s({
       trig = 'date',
