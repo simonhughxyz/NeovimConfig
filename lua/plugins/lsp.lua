@@ -123,6 +123,11 @@ return {
     require('luasnip.loaders.from_lua').lazy_load({ paths = './snippets/' })
     require('luasnip.loaders.from_vscode').lazy_load()
 
+    require('luasnip').config.set_config({
+      -- This one is cool cause if you have dynamic snippets, it updates as you type!
+      updateevents = "TextChanged,TextChangedI",
+    })
+
     -- snippet keymap
     vim.keymap.set("i", "<c-u>", require "luasnip.extras.select_choice")
     vim.keymap.set("n", "<leader>csc", require "luasnip.extras.select_choice")
