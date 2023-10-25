@@ -6,21 +6,17 @@ local t = ls.text_node
 local c = ls.choice_node
 local f = ls.function_node
 
+local shm = require("shm")
+local lls = require("shm.luasnip")
+
 return {
   s({
       trig = 'name',
       priority = 10000,
       desc = 'My name'
     },
-    {
-    c(1, {
-      t("Simon H Moore"),
-      t("Simon Hugh Moore"),
-      t("Simon Moore"),
-      t("Simon M"),
-      t("Simon"),
-    })
-  }),
+    { lls.get_name_choice()
+    }),
   s({
       trig = 'email',
       priority = 10000,
@@ -38,7 +34,7 @@ return {
       desc = 'Work Email'
     },
     {
-      t("simonm@vigoitsolutions.com")
+      t(shm.workemail)
     }),
   s({
       trig = 'sign',
@@ -47,8 +43,8 @@ return {
     },
     {
       c(1, {
-        t("Simon H Moore <simon@simonhugh.xyz>"),
-        t("Simon H Moore <simonm@vigoitsolutions.com>"),
+        t(shm.signiture),
+        t(shm.worksigniture),
       }),
     }),
   s({
