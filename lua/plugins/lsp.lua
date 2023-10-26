@@ -129,8 +129,12 @@ return {
     })
 
     -- snippet keymap
-    vim.keymap.set("i", "<c-u>", require "luasnip.extras.select_choice")
+    vim.keymap.set("i", "<c-o>", require "luasnip.extras.select_choice")
     vim.keymap.set("n", "<leader>csc", require "luasnip.extras.select_choice")
+    vim.keymap.set("i", "<c-d>", "<Plug>luasnip-next-choice")
+    vim.keymap.set("s", "<c-d>", "<Plug>luasnip-next-choice")
+    vim.keymap.set("i", "<c-u>", "<Plug>luasnip-prev-choice")
+    vim.keymap.set("s", "<c-u>", "<Plug>luasnip-prev-choice")
 
     cmp.setup({
       sources = {
