@@ -123,9 +123,25 @@ return {
     require('luasnip.loaders.from_lua').lazy_load({ paths = './snippets/' })
     require('luasnip.loaders.from_vscode').lazy_load()
 
+
+    local types = require("luasnip.util.types")
+
     require('luasnip').config.set_config({
       -- This one is cool cause if you have dynamic snippets, it updates as you type!
       updateevents = "TextChanged,TextChangedI",
+
+      ext_opts = {
+        [types.choiceNode] = {
+          active = {
+            virt_text = { { " ⬅️c ", "NonTest" } },
+          },
+        },
+        [types.insertNode] = {
+          active = {
+            virt_text = { { " ⬅️t", "NonTest" } },
+          },
+        },
+      },
     })
 
     -- snippet keymap
