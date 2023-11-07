@@ -7,7 +7,7 @@ local c = ls.choice_node
 local f = ls.function_node
 
 local shm = require("shm")
-local lls = require("shm.luasnip")
+local uls = require("utils.luasnip")
 
 return {
   s({
@@ -15,7 +15,7 @@ return {
       priority = 10000,
       desc = 'My name'
     },
-    { lls.get_name_choice()
+    { uls.get_name_choice()
     }),
   s({
       trig = 'email',
@@ -60,19 +60,7 @@ return {
       priority = 10000,
       desc = 'Current date'
     },
-    {
-      c(1, {
-        f(function() return os.date "%d %b %Y" end),
-        f(function() return os.date "%d %B %Y" end),
-        f(function() return os.date "%a %d %b %Y" end),
-        f(function() return os.date "%A %d %b %Y" end),
-        f(function() return os.date "%a %d %B %Y" end),
-        f(function() return os.date "%A %d %B %Y" end),
-        f(function() return os.date "%d-%m-%Y" end),
-        f(function() return os.date "%d/%m/%Y" end),
-        f(function() return os.date "%d-%m-%y" end),
-        f(function() return os.date "%d/%m/%y" end),
-      })
+    { uls.get_date_choice()
     }),
   s({
       trig = 'americandate',
