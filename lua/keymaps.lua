@@ -144,7 +144,7 @@ map("i", "<C-f>p", '<C-R>=expand("%:p:h")<cr>', { desc = "Insert absolute path o
 map("i", "<C-f>P", '<C-R>=expand("%:h")<cr>', { desc = "Insert relative path of current directory" })
 map("i", "<C-f>d", '<C-R>=expand("%:p:h:t")<cr>', { desc = "Insert parent directory of current file" })
 
--- termial mappings
+-- terminal mappings
 function _G.set_terminal_keymaps()
   local opts = { buffer = 0 }
   map('t', '<esc>', [[<C-\><C-n>]], { desc = "Escape terminal" })
