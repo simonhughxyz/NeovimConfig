@@ -8,6 +8,25 @@ return {
     'tpope/vim-fugitive',
     enabled = true,
   },
+  {
+    "NeogitOrg/neogit",
+    dependencies = {
+      "nvim-lua/plenary.nvim",         -- required
+      "nvim-telescope/telescope.nvim", -- optional
+      "sindrets/diffview.nvim",        -- optional
+      "ibhagwan/fzf-lua",              -- optional
+    },
+    config = function()
+      local ng = require("neogit")
+
+      ng.setup({
+        -- Change the default way of opening neogit
+        kind = "auto",
+      })
+
+      vim.keymap.set('n', '<leader>gg', function () ng.open() end, { desc = 'Neogit' })
+    end,
+  },
 
   { -- Adds git related signs to the gutter, as well as utilities for managing changes
     'lewis6991/gitsigns.nvim',
