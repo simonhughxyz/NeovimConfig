@@ -6,6 +6,9 @@ return {
     -- Creates a beautiful debugger UI
     'rcarriga/nvim-dap-ui',
 
+    -- add virtual text
+    'theHamsta/nvim-dap-virtual-text',
+
     -- Installs the debug adapters for you
     'williamboman/mason.nvim',
     'jay-babu/mason-nvim-dap.nvim',
@@ -19,7 +22,7 @@ return {
     local dapui = require("dapui")
     local mason_registry = require("mason-registry")
 
-    require('mason-nvim-dap').setup {
+    require("mason-nvim-dap").setup {
       -- Makes a best effort to setup the various debuggers with
       -- reasonable debug configurations
       automatic_setup = true,
@@ -46,6 +49,11 @@ return {
     vim.keymap.set('n', '<leader>dB', function()
       dap.set_breakpoint(vim.fn.input 'Breakpoint condition: ')
     end, { desc = 'Debug: Set Breakpoint' })
+    -- Add virtual text showing contained values
+    require("nvim-dap-virtual-text").setup({
+      highlight_new_as_changed = true, -- highlight new variables in the same way as changed variables (if highlight_changed_variables)
+      only_first_definition = false,   -- only show virtual text at first definition (if there are multiple)
+    })
 
     -- Dap UI setup
     -- For more information, see |:help nvim-dap-ui|
