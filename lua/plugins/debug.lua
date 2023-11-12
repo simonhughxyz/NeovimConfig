@@ -45,10 +45,14 @@ return {
     vim.keymap.set('n', '<F1>', dap.step_into, { desc = 'Debug: Step Into' })
     vim.keymap.set('n', '<F2>', dap.step_over, { desc = 'Debug: Step Over' })
     vim.keymap.set('n', '<F3>', dap.step_out, { desc = 'Debug: Step Out' })
+    vim.keymap.set('n', '<F4>', dap.step_back, { desc = 'Debug: Step Back' })
     vim.keymap.set('n', '<leader>db', dap.toggle_breakpoint, { desc = 'Debug: Toggle Breakpoint' })
-    vim.keymap.set('n', '<leader>dB', function()
+    vim.keymap.set('n', '<leader>dB', dap.set_breakpoint, { desc = 'Debug: Set Breakpoint' })
+    vim.keymap.set('n', '<leader>dl', dap.run_last, { desc = 'Debug: Run Last' })
+    vim.keymap.set('n', '<leader>dc', function()
       dap.set_breakpoint(vim.fn.input 'Breakpoint condition: ')
-    end, { desc = 'Debug: Set Breakpoint' })
+    end, { desc = 'Debug: Set Breakpoint Condition' })
+
     -- Add virtual text showing contained values
     require("nvim-dap-virtual-text").setup({
       highlight_new_as_changed = true, -- highlight new variables in the same way as changed variables (if highlight_changed_variables)
