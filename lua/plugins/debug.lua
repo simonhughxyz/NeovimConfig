@@ -19,7 +19,7 @@ return {
     'jay-babu/mason-nvim-dap.nvim',
 
     -- Add your own debuggers here
-    'leoluz/nvim-dap-go',
+    { 'leoluz/nvim-dap-go',           ft = { 'go' } },
   },
   config = function()
     local dap = require 'dap'
