@@ -110,9 +110,9 @@ return {
     require("mason-null-ls").setup({
       ensure_installed = {
         "stylua",
-        "ruff",     -- python linter
-        "mypy",     -- python type checker
-        "black",    -- python formatter
+        "ruff",  -- python linter
+        "mypy",  -- python type checker
+        "black", -- python formatter
         "eslint",
         "trail_space",
         "spell",
