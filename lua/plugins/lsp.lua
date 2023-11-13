@@ -36,6 +36,7 @@ return {
     { 'hrsh7th/cmp-cmdline' },
     { 'hrsh7th/cmp-path' },
     { 'hrsh7th/cmp-emoji' },
+    { 'hrsh7th/cmp-calc' },
   },
   config = function()
     local lsp_zero = require('lsp-zero')
@@ -164,6 +165,7 @@ return {
         { name = 'luasnip' },  -- show snippets
         { name = 'buffer' },   -- show elements from your buffer
         { name = 'path' },     -- show file paths
+        { name = 'calc' },     -- completion for math calculation
         { name = 'emoji' },    -- show emoji's
       },
       snippet = {
