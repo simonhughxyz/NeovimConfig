@@ -27,7 +27,7 @@ return {
       'L3MON4D3/LuaSnip',
       dependencies = { "rafamadriz/friendly-snippets" },
     },
-    { 'nvimtools/none-ls.nvim',  dependencies = { 'nvim-lua/plenary.nvim' } },
+    { 'nvimtools/none-ls.nvim',     dependencies = { 'nvim-lua/plenary.nvim' } },
     { "jay-babu/mason-null-ls.nvim" },
 
     { 'saadparwaiz1/cmp_luasnip' },
@@ -75,10 +75,10 @@ return {
     require('mason').setup({})
     require('mason-lspconfig').setup({
       ensure_installed = {
-        'html',
-        'pylsp',
         'lua_ls',
         'bashls',
+        'pyright',    -- python
+        'html',
         'clangd',
       },
       handlers = {
@@ -99,6 +99,8 @@ return {
         null_ls.builtins.diagnostics.eslint,
         null_ls.builtins.diagnostics.trail_space,
 
+        null_ls.builtins.formatting.black, -- python formatting
+
         null_ls.builtins.completion.spell,
         null_ls.builtins.diagnostics.codespell,
         null_ls.builtins.diagnostics.write_good,
@@ -106,8 +108,11 @@ return {
     })
 
     require("mason-null-ls").setup({
-        ensure_installed = {
+      ensure_installed = {
         "stylua",
+        "ruff",     -- python linter
+        "mypy",     -- python type checker
+        "black",    -- python formatter
         "eslint",
         "trail_space",
         "spell",
