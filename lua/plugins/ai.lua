@@ -12,5 +12,13 @@ return {
     "MunifTanjim/nui.nvim",
     "nvim-lua/plenary.nvim",
     "nvim-telescope/telescope.nvim"
-  }
+  },
+  {
+    "robitx/gp.nvim",
+    config = function()
+      require("gp").setup({
+        openai_api_key = vim.fn.system("gopass --password openai/neovim"),
+      })
+    end,
+  },
 }
