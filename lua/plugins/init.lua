@@ -145,6 +145,14 @@ return {
     "https://github.com/dhruvasagar/vim-table-mode",
   },
 
+  { -- Align text interactively
+    'echasnovski/mini.align',
+    version = '*',
+    config = function ()
+      require('mini.align').setup({})
+    end,
+  },
+
   { -- Use the w, e, b motions like a spider. Move by subwords and skip insignificant punctuation.
     "chrisgrieser/nvim-spider",
     enabled = true,
