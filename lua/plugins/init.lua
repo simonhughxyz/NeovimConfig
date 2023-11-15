@@ -141,6 +141,10 @@ return {
     end,
   },
 
+  { -- table creator & formatter allowing one to create neat tables as you type
+    "https://github.com/dhruvasagar/vim-table-mode",
+  },
+
   { -- Use the w, e, b motions like a spider. Move by subwords and skip insignificant punctuation.
     "chrisgrieser/nvim-spider",
     enabled = true,
