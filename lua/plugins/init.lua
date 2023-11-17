@@ -121,19 +121,19 @@ return {
       for _, case in pairs(casings) do
         vim.keymap.set(
           "n",
-          "<leader>t" .. case.char,
+          "<leader>c" .. case.char,
           ("<cmd>lua require('textcase').current_word('to_%s_case')<CR>"):format(case.arg),
           { desc = case.desc }
         )
         vim.keymap.set(
           "v",
-          "<leader>t" .. case.char,
+          "<leader>c" .. case.char,
           ("<cmd>lua require('textcase').operator('to_%s_case')<CR>"):format(case.arg),
           { desc = case.desc }
         )
         vim.keymap.set(
           "n",
-          "<leader>T" .. case.char,
+          "<leader>C" .. case.char,
           ("<cmd>lua require('textcase').lsp_rename('to_%s_case')<CR>"):format(case.arg),
           { desc = "󰒕 " .. case.desc }
         )
