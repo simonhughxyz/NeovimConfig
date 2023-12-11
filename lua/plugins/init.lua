@@ -87,7 +87,10 @@ return {
   { -- Bundle of more than two dozen new textobjects for Neovim.
     "chrisgrieser/nvim-various-textobjs",
     lazy = false,
-    opts = { useDefaultKeymaps = true },
+    opts = {
+      useDefaultKeymaps = true,
+      disabledKeymaps = { "gc" },
+    },
   },
 
   { -- split-join lines
