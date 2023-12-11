@@ -6,6 +6,7 @@ M.name = {
   'Simon H Moore',
   'Simon Hugh Moore',
   'Simon Moore',
+  'SH Moore',
 }
 
 M.initials = 'SHM'

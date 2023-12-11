@@ -337,9 +337,27 @@ return {
       require("toggleterm").setup()
 
       -- set keymaps to toggle toggleterm
-      vim.keymap.set('n', '<c-t>', [[<Cmd>exe v:count1 . "ToggleTerm"<CR>]], { desc = 'Toggle Term' })
-      vim.keymap.set('i', '<c-t>', [[<Cmd>exe v:count1 . "ToggleTerm"<CR>]], { desc = 'Toggle Term' })
-      vim.keymap.set('t', '<c-t>', [[<Cmd>exe v:count1 . "ToggleTerm"<CR>]], { desc = 'Toggle Term' })
+      vim.keymap.set('n', '<c-b>', [[<Cmd>exe v:count1 . "ToggleTerm size=12 direction=horizontal"<CR>]],
+        { desc = 'Toggle Term Horizontal' })
+      vim.keymap.set('i', '<c-b>', [[<Cmd>exe v:count1 . "ToggleTerm size=12 direction=horizontal"<CR>]],
+        { desc = 'Toggle Term Horizontal' })
+      vim.keymap.set('t', '<c-b>', [[<Cmd>exe v:count1 . "ToggleTerm size=12 direction=horizontal"<CR>]],
+        { desc = 'Toggle Term Horizontal' })
+
+      vim.keymap.set('n', '<c-t>', [[<Cmd>exe v:count1 . "ToggleTerm size=80 direction=vertical"<CR>]],
+        { desc = 'Toggle Term Vertical' })
+      vim.keymap.set('i', '<c-t>', [[<Cmd>exe v:count1 . "ToggleTerm size=80 direction=vertical"<CR>]],
+        { desc = 'Toggle Term Vertical' })
+      vim.keymap.set('t', '<c-t>', [[<Cmd>exe v:count1 . "ToggleTerm size=80 direction=vertical"<CR>]],
+        { desc = 'Toggle Term Vertical' })
+
+      vim.keymap.set('n', '<c-f>', [[<Cmd>exe v:count1 . "ToggleTerm size=80 direction=float"<CR>]],
+        { desc = 'Toggle Term Vertical' })
+      vim.keymap.set('i', '<c-f>', [[<Cmd>exe v:count1 . "ToggleTerm size=80 direction=float"<CR>]],
+        { desc = 'Toggle Term Vertical' })
+      vim.keymap.set('t', '<c-f>', [[<Cmd>exe v:count1 . "ToggleTerm size=80 direction=float"<CR>]],
+        { desc = 'Toggle Term Vertical' })
+
     end,
   },
   { -- provides project management
