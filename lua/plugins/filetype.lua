@@ -106,7 +106,7 @@ return {
       require('nvim-toc').setup({})
     end,
   },
-  {
+  { -- preview markdown with glow
     "ellisonleao/glow.nvim",
     config = true,
     cmd = "Glow",
