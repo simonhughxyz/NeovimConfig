@@ -111,4 +111,10 @@ return {
     config = true,
     cmd = "Glow",
   },
+  { -- preview markdown in browser
+    "iamcco/markdown-preview.nvim",
+    cmd = { "MarkdownPreviewToggle", "MarkdownPreview", "MarkdownPreviewStop" },
+    ft = { "markdown" },
+    build = function() vim.fn["mkdp#util#install"]() end,
+  }
 }
