@@ -13,6 +13,7 @@ local treesitter_opts = {
     'cpp',
     'make',
     'markdown',
+    'markdown_inline',
     'comment',
     'html',
     'php',
