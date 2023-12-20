@@ -3,6 +3,7 @@
 -- Declare basic neovim options that are non plugin specific
 
 local o = vim.opt
+local g = vim.g
 
 o.autowrite = true           -- Enable auto write
 o.clipboard = "unnamedplus"  -- Sync with system clipboard
