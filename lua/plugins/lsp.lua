@@ -81,12 +81,16 @@ return {
         'pyright',    -- python
         'html',
         'clangd',
+        "marksman",   -- markdown
       },
       handlers = {
         lsp_zero.default_setup,
         lua_ls = function()
           local lua_opts = lsp_zero.nvim_lua_ls()
           require('lspconfig').lua_ls.setup(lua_opts)
+        end,
+        marksman = function()
+          require('lspconfig').marksman.setup({})
         end,
       }
     })
@@ -105,6 +109,9 @@ return {
         null_ls.builtins.completion.spell,
         null_ls.builtins.diagnostics.codespell,
         null_ls.builtins.diagnostics.write_good,
+
+        null_ls.builtins.formatting.prettierd,
+        null_ls.builtins.diagnostics.markdownlint, -- markdown
       },
     })
 
@@ -119,6 +126,8 @@ return {
         "spell",
         "codespell",
         "write_good",
+        "prettierd",
+        "markdownlint", -- markdown linter
       }
     })
 
