@@ -101,7 +101,7 @@ return {
   },
   { -- Generate table of contents for markdown
     'richardbizik/nvim-toc',
-    ft = {'markdown'},
+    ft = { 'markdown' },
     config = function()
       require('nvim-toc').setup({})
     end,
