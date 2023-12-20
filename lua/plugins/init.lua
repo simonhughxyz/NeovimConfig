@@ -155,7 +155,7 @@ return {
   { -- Align text interactively
     'echasnovski/mini.align',
     version = '*',
-    config = function ()
+    config = function()
       require('mini.align').setup({})
     end,
   },
@@ -361,7 +361,6 @@ return {
         { desc = 'Toggle Term Vertical' })
       vim.keymap.set('t', '<c-f>', [[<Cmd>exe v:count1 . "ToggleTerm size=80 direction=float"<CR>]],
         { desc = 'Toggle Term Vertical' })
-
     end,
   },
   { -- provides project management
