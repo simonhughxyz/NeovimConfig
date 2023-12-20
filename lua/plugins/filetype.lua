@@ -116,5 +116,14 @@ return {
     cmd = { "MarkdownPreviewToggle", "MarkdownPreview", "MarkdownPreviewStop" },
     ft = { "markdown" },
     build = function() vim.fn["mkdp#util#install"]() end,
-  }
+  },
+  { -- add treesitter highlights to markdown code blocks
+    'yaocccc/nvim-hl-mdcodeblock.lua',
+    dependencies = {'nvim-treesitter/nvim-treesitter'},
+    config = function()
+      require('hl-mdcodeblock').setup({
+        -- option
+      })
+    end
+  },
 }
