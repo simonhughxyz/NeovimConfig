@@ -99,4 +99,10 @@ return {
       end)
     end,
   },
+  { -- Generate table of contents for markdown
+    'richardbizik/nvim-toc',
+    config = function()
+      require('nvim-toc').setup({})
+    end,
+  },
 }
