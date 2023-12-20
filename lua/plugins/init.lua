@@ -13,6 +13,10 @@ return {
     config = function()
       require("gruvbox").setup({
         transparent_mode = true,
+        overrides = {
+            -- fix markdown todo colors
+            ["@lsp.type.class.markdown"] = { fg = "#000000" },
+        }
       })
       o.background = "dark"
       g.gruvbox_italic = true
