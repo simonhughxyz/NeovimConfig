@@ -61,3 +61,23 @@ if vim.fn.has("win32") == 1 then
   o.shellquote = ""
   o.shellxquote = ""
 end
+
+-- if in a wsl environment WSL_DISTRO_NAME should be set
+local in_wsl = os.getenv('WSL_DISTRO_NAME') ~= nil
+
+if in_wsl then
+  -- Need to install win32yank in windows
+  -- see https://mitchellt.com/2022/05/15/WSL-Neovim-Lua-and-the-Windows-Clipboard.html
+  vim.g.clipboard = {
+    name = "win32yank-wsl",
+    copy = {
+      ["+"] = "win32yank.exe -i --crlf",
+      ["*"] = "win32yank.exe -i --crlf",
+    },
+    paste = {
+      ["+"] = "win32yank.exe -o --lf",
+      ["*"] = "win32yank.exe -o --lf",
+    },
+    cache_enabled = true,
+  }
+end
