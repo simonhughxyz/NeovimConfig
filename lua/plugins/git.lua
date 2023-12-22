@@ -24,7 +24,7 @@ return {
         kind = "auto",
       })
 
-      vim.keymap.set('n', '<leader>gg', function () ng.open() end, { desc = 'Neogit' })
+      vim.keymap.set('n', '<leader>gg', function() ng.open() end, { desc = 'Neogit' })
     end,
   },
 
