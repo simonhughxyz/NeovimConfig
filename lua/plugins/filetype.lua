@@ -79,6 +79,7 @@ return {
           },
           ["core.summary"] = {},
           ["core.esupports.metagen"] = { config = { type = "auto", update_date = true } },
+          ["core.ui.calendar"] = {},
         },
       }
 
