@@ -39,6 +39,7 @@ return {
             config = {
               workspaces = {
                 documents = "~/Documents",
+                journal = "~/Documents/journal",
                 health = "~/Documents/health",
                 career = "~/Documents/career",
               },
@@ -72,8 +73,8 @@ return {
           },
           ["core.journal"] = {
             config = {
-              workspace = "home",
-              strategy = "nested",
+              workspace = "journal",
+              strategy = "flat",
             }
           },
           ["core.summary"] = {},
