@@ -21,6 +21,9 @@ return {
       "nvim-lua/plenary.nvim",
       "Pocco81/true-zen.nvim",
       "nvim-neorg/neorg-telescope",
+      "nvim-treesitter/nvim-treesitter",
+      "nvim-treesitter/nvim-treesitter-textobjects",
+      "nvim-cmp",
     },
     config = function()
       require("neorg").setup {
@@ -45,8 +48,10 @@ return {
           ["core.completion"] = {
             config = {
               engine = 'nvim-cmp',
+              name = "[Norg]",
             }
           },
+          ["core.integrations.nvim-cmp"] = {},
           ["core.qol.toc"] = {
             config = {
               close_split_on_jump = true,
