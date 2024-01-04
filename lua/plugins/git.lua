@@ -8,7 +8,9 @@ return {
     'tpope/vim-fugitive',
     enabled = true,
     config = function()
-      vim.keymap.set("n", "<leader>gg", "<cmd>Git<cr>", { desc = "Neogit" })
+      vim.keymap.set("n", "<leader>gg", "<cmd>Git<cr>", { desc = "Fugitive" })
+      vim.keymap.set("n", "<leader>gp", "<cmd>Git push<cr>", { desc = "Git Push" })
+      vim.keymap.set("n", "<leader>gP", "<cmd>Git pull<cr>", { desc = "Git Pull" })
     end,
   },
   { -- Adds git related signs to the gutter, as well as utilities for managing changes
