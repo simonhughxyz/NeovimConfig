@@ -427,6 +427,7 @@ return {
       oil.setup({})
 
       vim.keymap.set("n", "<leader>o", function() oil.toggle_float() end, { desc = "Oil File Manager" })
+      vim.keymap.set("n", "<leader>o", function() oil.toggle_float(vim.fn.getcwd()) end, { desc = "Oil File Manager" })
     end
   },
 
