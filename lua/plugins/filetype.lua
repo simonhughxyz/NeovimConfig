@@ -2,32 +2,7 @@
 --
 -- Fileype specific plugins
 
-return {
-  { "chrisbra/csv.vim",           ft = { "csv" } },
-  { "ledger/vim-ledger",          ft = { "ledger" } },
-  { "tmux-plugins/vim-tmux",      ft = { "tmux" } },
-  -- { "baskerville/vim-sxhkdrc", ft = { "sxhkdrc" } },
-  { "fourjay/vim-password-store", ft = { "pass" } },
-  { "tmhedberg/SimpylFold",       ft = { "python" } },
-  { "tridactyl/vim-tridactyl",    ft = { "trydactyl" } },
-  { "neomutt/neomutt.vim",        ft = { "muttrc" } },
-  { "pangloss/vim-javascript",    ft = { "javascript" } },
-  { "leafgarland/typescript-vim", ft = { "typescript" } },
-  { "MTDL9/vim-log-highlighting", ft = "log" },
-  {
-    "nvim-neorg/neorg",
-    build = ":Neorg sync-parsers",
-    dependencies = {
-      "nvim-lua/plenary.nvim",
-      "Pocco81/true-zen.nvim",
-      "nvim-neorg/neorg-telescope",
-      "nvim-treesitter/nvim-treesitter",
-      "nvim-treesitter/nvim-treesitter-textobjects",
-      "nvim-cmp",
-    },
-    config = function()
-      require("neorg").setup {
-        load = {
+local neorg_opts = {
           ["core.defaults"] = {}, -- Loads default behaviour
           ["core.concealer"] = {  -- Adds pretty icons to your documents
             config = {
@@ -79,9 +54,37 @@ return {
           },
           ["core.summary"] = {},
           ["core.esupports.metagen"] = { config = { type = "auto", update_date = true } },
-          ["core.ui.calendar"] = {},
-        },
-      }
+}
+
+if vim.fn.has("nvim-0.10") == 1 then
+  neorg_opts["load"]["core.ui.calendar"] = {}
+end
+
+return {
+  { "chrisbra/csv.vim",           ft = { "csv" } },
+  { "ledger/vim-ledger",          ft = { "ledger" } },
+  { "tmux-plugins/vim-tmux",      ft = { "tmux" } },
+  -- { "baskerville/vim-sxhkdrc", ft = { "sxhkdrc" } },
+  { "fourjay/vim-password-store", ft = { "pass" } },
+  { "tmhedberg/SimpylFold",       ft = { "python" } },
+  { "tridactyl/vim-tridactyl",    ft = { "trydactyl" } },
+  { "neomutt/neomutt.vim",        ft = { "muttrc" } },
+  { "pangloss/vim-javascript",    ft = { "javascript" } },
+  { "leafgarland/typescript-vim", ft = { "typescript" } },
+  { "MTDL9/vim-log-highlighting", ft = "log" },
+  {
+    "nvim-neorg/neorg",
+    build = ":Neorg sync-parsers",
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+      "Pocco81/true-zen.nvim",
+      "nvim-neorg/neorg-telescope",
+      "nvim-treesitter/nvim-treesitter",
+      "nvim-treesitter/nvim-treesitter-textobjects",
+      "nvim-cmp",
+    },
+    config = function()
+      require("neorg").setup(neorg_opts)
 
       local neorg_callbacks = require("neorg.core.callbacks")
 
