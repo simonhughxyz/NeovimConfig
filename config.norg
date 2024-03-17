@@ -13,7 +13,7 @@ tangle: {
   }
 }
 created: 2024-03-06T23:01:44+0100
-updated: 2024-03-17T21:59:39+0100
+updated: 2024-03-17T22:22:56+0100
 version: 1.1.1
 @end
 
@@ -418,6 +418,117 @@ version: 1.1.1
      }
    })
    @end
+* NEORG
+  An all-encompassing tool based around structured note taking, project and task management, time tracking, slideshows, writing typeset documents and much more.
+  ___
+  [GitHub]{https://github.com/nvim-neorg/neorg}
+  [Spec]{https://github.com/nvim-neorg/norg-specs/blob/main/1.0-specification.norg}
+  @code lua
+  plug({
+    "nvim-neorg/neorg",
+    build = ":Neorg sync-parsers",
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+      "Pocco81/true-zen.nvim",
+      "nvim-neorg/neorg-telescope",
+      "nvim-treesitter/nvim-treesitter",
+      "nvim-treesitter/nvim-treesitter-textobjects",
+      "hrsh7th/nvim-cmp",
+    },
+    opts = {
+      load = {
+        ["core.defaults"] = {}, -- Loads default behaviour
+        ["core.concealer"] = {  -- Adds pretty icons to your documents
+          config = {
+            foldlevelstart = "0",
+            icon_preset = "diamond",
+            icons = {
+              code_block = {
+                width = "content",
+                min_width = 85,
+                conceal = true,
+                padding = {
+                  left = 1,
+                  right = 1,
+                }
+              },
+            },
+          },
+        },
+        ["core.dirman"] = { -- Manages Neorg workspaces
+          config = {
+            workspaces = {
+              documents = "~/Documents",
+              notes = "~/Documents/Notes",
+              career = "~/Documents/Career",
+              profiles = "~/Documents/Profiles",
+            },
+            default_workspace = "documents",
+          },
+        },
+        ["core.completion"] = {
+          config = {
+            engine = 'nvim-cmp',
+            name = "[Norg]",
+          }
+        },
+        ["core.integrations.nvim-cmp"] = {},
+        ["core.qol.toc"] = {
+          config = {
+            close_split_on_jump = true,
+            toc_split_placement = "right",
+          }
+        },
+        ["core.export"] = {},
+        ["core.export.markdown"] = {
+          config = {
+            extensions = "all",
+          }
+        },
+        ["core.integrations.telescope"] = {},
+        ["core.presenter"] = {
+          config = {
+            zen_mode = "truezen",
+          }
+        },
+        ["core.journal"] = {
+          config = {
+            workspace = "journal",
+            strategy = "flat",
+          }
+        },
+        ["core.summary"] = {},
+        ["core.esupports.metagen"] = { config = { type = "auto", update_date = true } },
+      }
+    },
+    config = function()
+      -- require("neorg").setup(neorg_opts)
+
+      local neorg_callbacks = require("neorg.core.callbacks")
+
+      neorg_callbacks.on_event("core.keybinds.events.enable_keybinds", function(_, keybinds)
+        -- Map all the below keybinds only when the "norg" mode is active
+        keybinds.map_event_to_mode("norg", {
+          n = { -- Bind keys in normal mode
+            { "<localleader>ff", "core.integrations.telescope.find_norg_files",  opts = { desc = 'Find Norg Files' } },
+            { "<localleader>fl", "core.integrations.telescope.find_linkable",    opts = { desc = 'Find Linkable' } },
+            { "<localleader>sh", "core.integrations.telescope.search_headings",  opts = { desc = 'Search Headings' } },
+            { "<localleader>sw", "core.integrations.telescope.switch_workspace", opts = { desc = 'Switch Workspace' } },
+            { "<localleader>cg", "core.looking-glass.magnify-code-block", opts = { desc = 'Looking Glass' } },
+          },
+
+          i = { -- Bind in insert mode
+            { "<C-l>",  "core.integrations.telescope.insert_link",      opts = { desc = 'Insert Link' } },
+            { "<C-L>", "core.integrations.telescope.insert_file_link", opts = { desc = 'Insert Neorg File Link' } },
+          },
+        }, {
+          silent = true,
+          noremap = true,
+        })
+      end)
+    end,
+  })
+  @end
 * LAZY
   Set up the `lazy.nvim` plugin manager, use the `plugins` table to install and load plugins.
   See {** Lazy Helper Function} for the `plugin()` function.
