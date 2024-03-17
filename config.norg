@@ -13,7 +13,7 @@ tangle: {
   }
 }
 created: 2024-03-06T23:01:44+0100
-updated: 2024-03-17T22:22:56+0100
+updated: 2024-03-17T22:29:56+0100
 version: 1.1.1
 @end
 
@@ -529,6 +529,161 @@ version: 1.1.1
     end,
   })
   @end
+* TELESCOPE
+** Telescope
+   A highly extendable fuzzy finder over lists, files, buffers, git status and more.
+   ___
+   [GitHub]{https://github.com/nvim-telescope/telescope.nvim}
+   @code lua
+   plug({
+    "nvim-telescope/telescope.nvim",
+    enabled = true,
+    lazy = false,
+    dependencies = {
+      'nvim-lua/plenary.nvim',
+      -- Fuzzy Finder Algorithm which requires local dependencies to be built.
+      -- Only load if `make` is available. Make sure you have the system
+      -- requirements installed.
+      {
+        'nvim-telescope/telescope-fzf-native.nvim',
+        -- NOTE: If you are having trouble with this installation,
+        --       refer to the README for telescope-fzf-native for more instructions.
+        build = 'make',
+        cond = function()
+          return vim.fn.executable 'make' == 1
+        end,
+      },
+    },
+    config = function()
+      require('telescope').setup{
+        defaults = {
+          mappings = {
+            n = {
+              ['<c-d>'] = require('telescope.actions').delete_buffer
+            }, -- n
+            i = {
+              ["<C-h>"] = "which_key",
+              ['<c-d>'] = require('telescope.actions').delete_buffer
+            } -- i
+          } -- mappings
+        }, -- defaults
+      }
+   
+      -- Enable telescope fzf native, if installed
+      pcall(require('telescope').load_extension, 'fzf')
+   
+      local ts = require('telescope.builtin')
+   
+      local fuzzy_search = function()
+        -- You can pass additional configuration to telescope to change theme, layout, etc.
+        ts.current_buffer_fuzzy_find(require('telescope.themes').get_dropdown {
+          winblend = 10,
+          previewer = false,
+        })
+      end
+   
+      -- Shortcuts
+      vim.keymap.set('n', '<leader>?', ts.oldfiles, { desc = 'Find Recently Files' })
+      vim.keymap.set('n', '<leader>,', ts.buffers, { desc = 'Find buffers' })
+      vim.keymap.set('n', '<leader>/', fuzzy_search , { desc = 'Fuzzy Search in buffer' })
+   
+      -- Find Files
+      vim.keymap.set('n', '<leader>ff', ts.find_files, { desc = 'Find Files' })
+      vim.keymap.set('n', '<leader>fb', ts.buffers, { desc = 'Find Buffers' })
+      vim.keymap.set('n', '<leader>fr', ts.oldfiles, { desc = 'Find Recent Files' })
+      vim.keymap.set('n', '<leader>fg', ts.git_files, { desc = 'Find Git Files' })
+      vim.keymap.set('n', '<leader>fs', ts.git_status, { desc = 'Find Git Status' })
+      vim.keymap.set('n', '<leader>fS', ts.git_stash, { desc = 'Find Git Stash' })
+   
+      vim.keymap.set('n', '<leader>fd', function() ts.find_files({ cwd = '~/Documents' }) end,
+        { desc = 'Find Documents' })
+      vim.keymap.set('n', '<leader>fD', function() ts.find_files({ cwd = '~/Downloads' }) end,
+        { desc = 'Find Downloads' })
+      vim.keymap.set('n', '<leader>fp', function() ts.find_files({ cwd = '~/Projects' }) end, { desc = 'Find Projects' })
+      vim.keymap.set('n', '<leader>fc', function() ts.find_files({ cwd = vim.fn.stdpath('config') }) end,
+        { desc = 'Find Config' })
+      vim.keymap.set('n', '<leader>fB', function() ts.find_files({ cwd = '~/.local/bin' }) end,
+        { desc = 'Find Local Bin' })
+   
+      -- Search for content, help and functions
+      vim.keymap.set('n', '<leader>sc', ts.git_commits, { desc = 'Search Git Commits' })
+      vim.keymap.set('n', '<leader>st', ts.builtin, { desc = 'Search Telescope' })
+      vim.keymap.set('n', '<leader>sh', ts.help_tags, { desc = 'Search Help' })
+      vim.keymap.set('n', '<leader>sw', ts.grep_string, { desc = 'Search Current Word' })
+      vim.keymap.set('n', '<leader>sg', ts.live_grep, { desc = 'Search by Grep' })
+      vim.keymap.set('n', '<leader>sd', ts.diagnostics, { desc = 'Search Diagnostics' })
+      vim.keymap.set('n', '<leader>sk', ts.keymaps, { desc = 'Search Keymaps' })
+      vim.keymap.set('n', "<leader>s'", ts.marks, { desc = 'Search Marks' })
+      vim.keymap.set('n', '<leader>s"', ts.registers, { desc = 'Search Registers' })
+      vim.keymap.set('n', '<leader>sf', fuzzy_search , { desc = 'Fuzzy Search in buffer' })
+   
+    end,
+   })
+   @end
+
+** Telescope Sessions Picker
+   Load nvim session files from target directory.
+   ___
+   [GitHub]{https://github.com/JoseConseco/telescope_sessions_picker.nvim}
+   @code lua
+   plug({
+    "JoseConseco/telescope_sessions_picker.nvim",
+    enabled = true,
+    lazy = true,
+    config = function()
+      require('telescope').load_extension('sessions_picker')
+    end,
+    keys = {
+      { "<leader>sS",
+        function() require('telescope').extensions.sessions_picker.sessions_picker() end,
+        desc = "Search Neovim Sessions"
+      },
+    }
+   })
+   @end
+
+** Telescope Tmux
+   A Telescope.nvim extension for fuzzy-finding over tmux targets.
+   ___
+   [GitHub]{https://github.com/camgraff/telescope-tmux.nvim}
+   @code lua
+   plug({ -- https://github.com/camgraff/telescope-tmux.nvim
+    "camgraff/telescope-tmux.nvim",
+    enabled = true,
+    lazy = true,
+    config = function ()
+      require('telescope').load_extension('tmux')
+    end,
+    keys = {
+      { "<leader>ss",
+        function() require('telescope').extensions.tmux.sessions({}) end,
+        desc = "Search Tmux Sessions"
+      },
+    }
+   })
+   @end
+
+** Telescope Tabs
+   A Telescope.nvim extension for fuzzy-finding over vim tabs.
+   ___
+   [GitHub]{https://github.com/LukasPietzschmann/telescope-tabs}
+   @code lua
+   plug({
+    'LukasPietzschmann/telescope-tabs',
+    dependencies = { 'nvim-telescope/telescope.nvim' },
+    enabled = true,
+    lazy = true,
+    config = function()
+      require('telescope').load_extension 'telescope-tabs'
+      require('telescope-tabs').setup {
+        show_preview = true,
+      }
+    end,
+    keys = {
+      {"<tab>", mode = { "n" }, function() require("telescope-tabs").list_tabs() end, desc = "Open Tabs"}
+    }
+   })
+   @end
 * LAZY
   Set up the `lazy.nvim` plugin manager, use the `plugins` table to install and load plugins.
   See {** Lazy Helper Function} for the `plugin()` function.
