@@ -13,7 +13,7 @@ tangle: {
   }
 }
 created: 2024-03-06T23:01:44+0100
-updated: 2024-03-17T23:23:33+0100
+updated: 2024-03-17T23:51:53+0100
 version: 1.1.1
 @end
 
@@ -2669,3 +2669,420 @@ version: 1.1.1
       end,
     })
   @end
+* SHM
+  Here I configure some commonly used personal information.
+  ___
+  @code lua
+  local shm = {}
+  
+  shm.name = {
+    'Simon H Moore',
+    'Simon Hugh Moore',
+    'Simon Moore',
+    'SH Moore',
+  }
+  
+  shm.initials = 'SHM'
+  
+  shm.email = 'simon@simonhugh.xyz'
+  shm.workemail = 'simonm@vigoitsolutions.com'
+  
+  shm.signiture = "Simon H Moore <simon@simonhugh.xyz>"
+  shm.worksigniture = "Simon H Moore <simonm@vigoitsolutions.com>"
+  @end
+
+* UTILS
+  Here go any helper utilities and functions.
+  ___
+  @code lua
+  local util = {}
+  
+  util.number_ordinal = function(n)
+    local last_digit = n % 10
+    if last_digit == 1 and n ~= 11
+    then
+      return 'st'
+    elseif last_digit == 2 and n ~= 12
+    then
+      return 'nd'
+    elseif last_digit == 3 and n ~= 13
+    then
+      return 'rd'
+    else
+      return 'th'
+    end
+  end
+  
+  util.datef = function(datestr, date)
+    local date = date or os.date("*t", os.time())
+    local datestr = string.gsub(datestr, "%%o", M.number_ordinal(date.day))
+    return os.date(datestr, os.time(date))
+  end
+  @end
+
+* SNIPPETS
+  Here I configure my custom snippets.
+  ___
+  [Luasnip GitHub]{https://github.com/L3MON4D3/LuaSnip}
+*** Luasnip API Variables
+    These are used to create snippets.
+    ___
+    @code lua
+    local ls = require("luasnip")
+    local snippet = ls.add_snippets
+    local s = ls.snippet
+    local t = ls.text_node
+    local f = ls.function_node
+    local i = ls.insert_node
+    local c = ls.choice_node
+    local d = ls.dynamic_node
+    local sn = ls.snippet_node
+    local fmt = require("luasnip.extras.fmt").fmt
+    @end
+    ---
+** Utils
+   Here I configure snippet related utilities and functions.
+   ___
+   @code lua
+   local snip_utils = {}
+   
+   snip_utils.get_name_choice = function()
+     local nodes = {}
+     for _, name in ipairs(shm.name) do
+       table.insert(nodes, t(name))
+     end
+     return c(1, nodes)
+   end
+   
+   snip_utils.shebang = {
+     lua = "!/bin/lua",
+     sh = "!/bin/sh",
+     bash = "!/bin/bash",
+     zsh = "!/bin/zsh",
+   }
+   
+   
+   snip_utils.get_date_choice = function (arg)
+     return c(arg and arg or 1, {
+           f(function() return utils.datef("%d%o %B %Y") end),
+           f(function() return utils.datef(os.date "%d%o %b %Y") end),
+           f(function() return utils.datef(os.date "%a %d%o %b %Y") end),
+           f(function() return utils.datef(os.date "%A %d%o %b %Y") end),
+           f(function() return utils.datef(os.date "%a %d%o %B %Y") end),
+           f(function() return utils.datef(os.date "%A %d%o %B %Y") end),
+           f(function() return os.date "%d-%m-%Y" end),
+           f(function() return os.date "%d/%m/%Y" end),
+           f(function() return os.date "%d-%m-%y" end),
+           f(function() return os.date "%d/%m/%y" end),
+         })
+   end
+   
+   snip_utils.get_header = function(opts)
+     opts = opts and opts or {}
+   
+     local sntable = {
+         c = t(opts.commentstr and opts.commentstr or "# "),
+         name = c(1, {
+             f(function() return vim.fn.expand("%:t") end),
+             f(function() return vim.fn.expand("%:h:t") .. "/" .. vim.fn.expand("%:t") end),
+             f(function() return vim.fn.expand("%:t:r") end),
+           }),
+         author = c(2, {t(shm.signiture), t(shm.worksigniture)}),
+         date = M.get_date_choice(3),
+         desc = i(4, "Description"),
+     }
+   
+     local formattable = {
+         "{c}filename: {name}",
+         "{c}author: {author}",
+         "{c}date: {date}",
+         "{c}desc: {desc}",
+     }
+   
+     if opts.shebang then
+       table.insert(formattable, 1, "{c}{shebang}")
+       sntable.shebang = t(opts.shebang)
+     end
+   
+     return fmt(table.concat(formattable, "\n"), sntable, {dedent = true})
+   end
+   @end
+** Snippets
+   @code lua
+   local greeting_choice = function(arg)
+     return c(arg and arg or 1, {
+       t("Hope you are well."),
+       t("I hope you are having a nice day."),
+       t("I hope you are having a good morning."),
+       t("I hope you are having a nice end to the week."),
+       t("Nice speaking to you on the phone the other day."),
+     })
+   end
+   
+   local message_end = function(arg)
+     return c(arg and arg or 1, {
+       t("Thank you"),
+       t("Kind Regards"),
+     })
+   end
+   
+   
+   @end
+*** All
+    Common snippets for all file types.
+    ___
+    @code lua
+    snippet("all", {
+      s({
+          trig = 'name',
+          priority = 10000,
+          desc = 'My name'
+        },
+        { snip_utils.get_name_choice()
+        }),
+      s({
+          trig = 'email',
+          priority = 10000,
+          desc = 'My email'
+        },
+        {
+          c(1, {
+            t("simon@simonhugh.xyz"),
+            t("simonm@vigoitsolutions.com"),
+          }),
+        }),
+      s({
+          trig = 'workemail',
+          priority = 10000,
+          desc = 'Work Email'
+        },
+        {
+          t(shm.workemail)
+        }),
+      s({
+          trig = 'sign',
+          priority = 10000,
+          desc = 'My signiture'
+        },
+        {
+          c(1, {
+            t(shm.signiture),
+            t(shm.worksigniture),
+          }),
+        }),
+      s({
+          trig = 'worksign',
+          priority = 10000,
+          desc = 'Work Sign'
+        },
+        {
+          t("Simon H Moore <simonm@vigoitsolutions.com>")
+        }),
+      s({
+          trig = 'date',
+          priority = 10000,
+          desc = 'Current date'
+        },
+        { snip_utils.get_date_choice()
+        }),
+      s({
+          trig = 'americandate',
+          priority = 10000,
+          desc = 'Current american date, month comes first',
+        },
+        {
+          c(1, {
+            f(function() return os.date "%m/%d/%Y" end),
+            f(function() return os.date "%m-%d-%Y" end),
+            f(function() return os.date "%m/%d/%y" end),
+            f(function() return os.date "%m-%d-%y" end),
+          })
+        }),
+      s({
+          trig = 'time',
+          priority = 10000,
+          desc = 'Current time',
+        },
+        {
+          c(1, {
+            f(function() return os.date "%H:%M" end),
+            f(function() return os.date "%I:%M %p" end),
+            f(function() return os.date "%H:%M:%S" end),
+            f(function() return os.date "%I:%M:%S %p" end),
+          })
+        }),
+      s({
+        trig = 'vigogreeting',
+        desc = 'A greeting for vigo email'
+      }, fmt([[
+          Hi {name},
+    
+          {greeting}
+          ]], {
+              name = i(1, "Name"),
+              greeting = greeting_choice(2),
+            }
+        )
+      ),
+      s({
+        trig = "vigopass",
+        desc = "Complete builds message"
+      }, fmt([[
+          Hi {name},
+    
+          {greeting}
+    
+          I am currently setting up your {device} and I need your password to continue. Could you send it to me please?
+          If you feel uncomfortable sharing your password over email{passmsg}
+    
+          Could you also send me a list of apps you would like to see installed?
+    
+          {outmsg},
+          Simon
+          ]], {
+              name = i(1, "Name"),
+              --NOTE: Could separate out the greeting to be reused
+              greeting = greeting_choice(2),
+              device = c(3,{
+                t("new laptop"),
+                t("laptop"),
+                t("new desktop"),
+                t("desktop"),
+                i(1, "device"),
+              }),
+              passmsg = c(4,{
+                t(", you can call our office, or we can reset your password to a temporary one."),
+                t(" you can also call our office."),
+              }),
+              outmsg = message_end(5),
+            }
+        )
+      ),
+      s({
+        trig = "vigoPassReset",
+        desc = "Email client for password reset"
+      }, fmt([[
+          Hi {name},
+    
+          {greeting}
+    
+          I will reset your password to: {password}
+    
+          Please confirm you have read and taken note of this password by replying to this email. We will only proceed with the password reset once you have replied.
+    
+          Important: Once we reset your password, you may be signed out of all sessions you are currently logged in. You can log back in using the new password mentioned above.
+    
+          {outmsg},
+          Simon
+          ]], {
+              name = i(1, "Name"),
+              --NOTE: Could separate out the greeting to be reused
+              greeting = greeting_choice(2),
+              password = i(3, "PASSWORD"),
+              outmsg = message_end(4),
+            }
+        )
+      ),
+      s({
+        trig = "vigocomplete",
+        desc = "Complete builds message"
+      }, fmt([[
+          Hi {name},
+    
+          {greeting}
+    
+          We have completed setting up {name2} {device} and it is ready for collection, we are open Monday to Friday 9am to 5pm.
+          Alternatively, I can arrange to have one of our mobile engineers drop the laptop of for you.
+    
+          {outmsg},
+          Simon
+          ]], {
+              name = i(1, "Name"),
+              --NOTE: Could separate out the greeting to be reused
+              greeting = greeting_choice(2),
+              name2 = i(3, "Name"),
+              device = c(4, {t("laptop"), t("desktop")}),
+              outmsg = message_end(5),
+            }
+        )
+      ),
+    })
+    @end
+*** Lua 
+    Snippets only for lua file types.
+    ___
+    @code lua
+    snippet("lua", {
+      -- auto type require definition
+    s('req',
+      fmt([[local {} = require("{}")]], { f(function(import_name)
+        local parts = vim.split(import_name[1][1], ".", { plain = true })
+        return parts[#parts] or ""
+      end, { 1 }), i(1) })
+    ),
+    -- import luasnip functions
+    s({
+        trig = 'luasnip import',
+        priority = 10000,
+        desc = 'import luasnip functions',
+      },
+      {
+        d(1, function()
+          local import_table = {
+            'local ls = require("luasnip")',
+            'local s = ls.snippet',
+            'local t = ls.text_node',
+            'local i = ls.insert_node',
+            'local f = ls.function_node',
+            'local c = ls.choice_node',
+            'local fmt = require("luasnip.extras.fmt").fmt',
+            'local d = ls.dynamic_node',
+            'local sn = ls.snippet_node',
+            'local isn = ls.indent_snippet_node',
+            'local r = ls.restore_node',
+            'local events = require("luasnip.util.events")',
+            'local ai = require("luasnip.nodes.absolute_indexer")',
+            'local extras = require("luasnip.extras")',
+            'local l = extras.lambda',
+            'local rep = extras.rep',
+            'local p = extras.partial',
+            'local m = extras.match',
+            'local n = extras.nonempty',
+            'local dl = extras.dynamic_lambda',
+            'local fmta = require("luasnip.extras.fmt").fmta',
+            'local conds = require("luasnip.extras.expand_conditions")',
+            'local postfix = require("luasnip.extras.postfix").postfix',
+            'local types = require("luasnip.util.types")',
+            'local parse = require("luasnip.util.parser").parse_snippet',
+            'local ms = ls.multi_snippet',
+            'local k = require("luasnip.nodes.key_indexer").new_key',
+          }
+    
+          return sn(nil, c(1, {
+            t({ unpack(import_table, 1, 7) }),
+            t({ unpack(import_table, 1, 9) }),
+            t(import_table),
+          }))
+        end)
+        }
+      ),
+    })
+    @end
+*** GitCommit
+    Snippets for git commit file type, used for committing with {** fugitive}.
+    ___
+    @code lua
+    snippet("gitcommit", {
+      -- conventional commit snippets
+      -- see https://www.conventionalcommits.org/en/v1.0.0/#summary
+      s({trig = "^br", regTrig = true}, t("BREAKING CHANGE: ")),
+      s({trig = "^fe", regTrig = true}, fmt([[feat({}){}: {}]], { i(1, "scope"), c(3, {t(""),t("!")}), i(2, "new feature")})),
+      s({trig = "^fi", regTrig = true}, fmt([[fix({}){}: {}]], { i(1, "scope"), c(3, {t(""),t("!")}), i(2, "bug fix")})),
+      s({trig = "^do", regTrig = true}, fmt([[docs({}){}: {}]], { i(1, "scope"), c(3, {t(""),t("!")}), i(2, "documentation only change")})),
+      s({trig = "^bu", regTrig = true}, fmt([[build({}){}: {}]], { i(1, "scope"), c(3, {t(""),t("!")}), i(2, "build system or external dependency change")})),
+      s({trig = "^pe", regTrig = true}, fmt([[perf({}){}: {}]], { i(1, "scope"), c(3, {t(""),t("!")}), i(2, "performance improvement change")})),
+      s({trig = "^re", regTrig = true}, fmt([[refactor({}){}: {}]], { i(1, "scope"), c(3, {t(""),t("!")}), i(2, "code change that neither fixes a bug or adds a feature")})),
+      s({trig = "^st", regTrig = true}, fmt([[style({}){}: {}]], { i(1, "scope"), c(3, {t(""),t("!")}), i(2, "change that does not affect the meaning of the code")})),
+      s({trig = "^pe", regTrig = true}, fmt([[perf({}){}: {}]], { i(1, "scope"), c(3, {t(""),t("!")}), i(2, "adding new or correcting existing test")})),
+    },{ type = "autosnippets" })
+    @end
