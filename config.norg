@@ -1692,6 +1692,61 @@ version: 1.1.1
     end,
   })
   @end
+* MARKDOWN
+** Nvim Toc
+   Generate table of contents for markdown files.
+   ___
+   [GitHub]{https://github.com/richardbizik/nvim-toc}
+  @code lua
+  plug({
+    'richardbizik/nvim-toc',
+    ft = { 'markdown' },
+    config = function()
+      require('nvim-toc').setup({})
+    end,
+  })
+   @end
+** Glow
+   Preview markdown code directly in your neovim terminal.
+   ___
+*** Requirements
+    You must install `Glow`.
+    ---
+   [GitHub]{https://github.com/ellisonleao/glow.nvim}
+   @code lua
+   plug({
+     "ellisonleao/glow.nvim",
+     config = true,
+     cmd = "Glow",
+   })
+   @end
+** Preview
+   Preview Markdown in your modern browser with synchronised scrolling and flexible configuration.
+   ___
+   [GitHub]{https://github.com/iamcco/markdown-preview.nvim}
+   @code lua
+   plug({
+     "iamcco/markdown-preview.nvim",
+     cmd = { "MarkdownPreviewToggle", "MarkdownPreview", "MarkdownPreviewStop" },
+     ft = { "markdown" },
+     build = function() vim.fn["mkdp#util#install"]() end,
+   })
+   @end
+** Hl-MDCodeblock
+   Add treesitter highlights to markdown code blocks.
+   ___
+   [GitHub]{https://github.com/yaocccc/nvim-hl-mdcodeblock.lua}
+   @code lua
+   plug({
+     'yaocccc/nvim-hl-mdcodeblock.lua',
+     dependencies = {'nvim-treesitter/nvim-treesitter'},
+     config = function()
+       require('hl-mdcodeblock').setup({
+         -- option
+       })
+     end
+   })
+@end
 * LAZY
   Set up the `lazy.nvim` plugin manager, use the `plugins` table to install and load plugins.
   See {** Lazy Helper Function} for the `plugin()` function.
