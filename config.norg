@@ -13,6 +13,46 @@ tangle: {
   }
 }
 created: 2024-03-06T23:01:44+0100
-updated: 2024-03-17T21:41:32+0100
+updated: 2024-03-17T21:48:38+0100
 version: 1.1.1
 @end
+
+* SETUP VARIABLES AND FUNCTIONS
+** API Variables
+   Declare common API variables, will be used throughout the config.
+   ___
+   @table
+   | Variable | Value   | Descriptions           |
+   |----------+---------+------------------------|
+   | o        | vim.opt | Inbuilt vim options    |
+   | g        | vim.g   | Inbuilt global options |
+   | cmd      | vim.cmd | Run vim ex commands    |
+   @end
+
+  @code lua
+  local o = vim.opt
+  local g = vim.g
+  local cmd = vim.cmd
+  @end
+
+** Global Print Table Function
+   The `P()` function can be used globally to print a lua table for inspection.
+   ___
+  @code lua
+  P = function(v)
+    print(vim.inspect(v))
+    return v
+  end
+   @end
+
+** Lazy Helper Function
+   The `plug()` function is used to add plugins to the `plugins` table.
+   The `plugins` table will be used by lazy to install and load plugins.
+   ___
+  @code lua
+  local plugins = {}
+  
+  function plug(plugin)
+    plugins[#plugins +1] = plugin
+  end
+  @end
