@@ -1,0 +1,18 @@
+@document.meta
+title: Neovim Config
+description: My personal neovim config
+authors: Simon H Moore
+categories: [
+  config
+  neovim
+  lua
+]
+tangle: {
+  languages: {
+    lua: ./lua/config.lua
+  }
+}
+created: 2024-03-06T23:01:44+0100
+updated: 2024-03-17T21:41:32+0100
+version: 1.1.1
+@end
