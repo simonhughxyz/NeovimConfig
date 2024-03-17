@@ -821,6 +821,43 @@ version: 1.1.1
      },
    })
    @end
+* BUFFER NAVIGATION
+** Nvim Spider
+   Use the w, e, b motions like a spider. Move by subwords and skip insignificant punctuation.
+   ___
+   [GitHub]{https://github.com/chrisgrieser/nvim-spider}
+   @code lua
+   plug({
+     "chrisgrieser/nvim-spider",
+     enabled = true,
+     lazy = false,
+     config = function()
+       vim.keymap.set({ "n", "o", "x" }, "w", "<cmd>lua require('spider').motion('w')<cr>", { desc = "Spider-w" })
+       vim.keymap.set({ "n", "o", "x" }, "e", "<cmd>lua require('spider').motion('e')<cr>", { desc = "Spider-e" })
+       vim.keymap.set({ "n", "o", "x" }, "b", "<cmd>lua require('spider').motion('b')<cr>", { desc = "Spider-b" })
+       vim.keymap.set({ "n", "o", "x" }, "ge", "<cmd>lua require('spider').motion('ge')<cr>", { desc = "Spider-ge" })
+     end,
+   })
+   @end
+** Leap
+   A general-purpose motion plugin for Neovim.
+   ___
+   [GitHub]{https://github.com/ggandor/leap.nvim}
+   @code lua
+   plug({ -- https://github.com/ggandor/leap.nvim
+    "ggandor/leap.nvim",
+    enabled = true,
+    config = function ()
+      local leap = require('leap')
+      leap.create_default_mappings()
+      leap.opts = {
+        highlight_unlabeled_phase_one_targets = true,
+        safe_labels = 'jfkdls;agh',
+        labels = 'jfkdls;aghvncmir',
+      }
+    end,
+   })
+   @end
 * LAZY
   Set up the `lazy.nvim` plugin manager, use the `plugins` table to install and load plugins.
   See {** Lazy Helper Function} for the `plugin()` function.
