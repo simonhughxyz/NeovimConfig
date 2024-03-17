@@ -2055,6 +2055,33 @@ version: 1.1.1
     },
   })
   @end
+* BIGFILE
+  This plugin automatically disables certain features if the opened file is big. File size and features to disable are configurable.
+  ___
+  [GitHub]{https://github.com/LunarVim/bigfile.nvim}
+  @code lua
+  plug({ -- https://github.com/LunarVim/bigfile.nvim
+    "LunarVim/bigfile.nvim",
+    enabled = true,
+    event = { "FileReadPre", "BufReadPre", "User FileOpened" },
+    config = function ()
+      require("bigfile").setup {
+        filesize = 2, -- size of the file in MiB, the plugin round file sizes to the closest MiB
+        pattern = { "*" }, -- autocmd pattern or function see <### Overriding the detection of big files>
+        features = { -- features to disable
+          "indent_blankline",
+          "illuminate",
+          "lsp",
+          "treesitter",
+          "syntax",
+          "matchparen",
+          "vimopts",
+          "filetype",
+        },
+      }
+    end
+  })
+  @end
 * LAZY
   Set up the `lazy.nvim` plugin manager, use the `plugins` table to install and load plugins.
   See {** Lazy Helper Function} for the `plugin()` function.
