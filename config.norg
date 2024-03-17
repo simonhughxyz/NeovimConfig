@@ -1747,6 +1747,27 @@ version: 1.1.1
      end
    })
 @end
+* TROUBLE
+  A pretty list for showing diagnostics, references, telescope results, quickfix
+  and location lists to help you solve all the trouble your code is causing.
+  ___
+  [GitHub]{https://github.com/folke/trouble.nvim}
+  @code lua
+  plug({
+    "folke/trouble.nvim",
+    enabled = true,
+    lazy = true,
+    dependencies = { "nvim-tree/nvim-web-devicons" },
+    keys = {
+      { "<leader>xx", function() require("trouble").open() end, desc = "Trouble" },
+      { "<leader>xw", function() require("trouble").open("workspace_diagnostics") end, desc = "Workspace Diagnostics" },
+      { "<leader>xd", function() require("trouble").open("document_diagnostics") end, desc = "Document Diagnostics" },
+      { "<leader>xq", function() require("trouble").open("quickfix") end, desc = "Quickfix" },
+      { "<leader>xl", function() require("trouble").open("loclist") end, desc = "Local List" },
+      { "gR", function() require("trouble").open("lsp_references") end, desc = "Lsp References" },
+    },
+  })
+  @end
 * LAZY
   Set up the `lazy.nvim` plugin manager, use the `plugins` table to install and load plugins.
   See {** Lazy Helper Function} for the `plugin()` function.
