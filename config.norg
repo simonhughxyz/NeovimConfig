@@ -1801,6 +1801,18 @@ version: 1.1.1
     end,
   })
   @end
+* HLSLENS
+  Nvim-hlslens helps you better glance at matched information, seamlessly jump between matched instances.
+  When searching, search count is shown next to the cursor as virtual text.
+  ___
+  [GitHub]{https://github.com/kevinhwang91/nvim-hlslens}
+  @code lua
+  plug({
+    "kevinhwang91/nvim-hlslens",
+    enabled = true,
+    opts = {},
+  })
+  @end
 * LAZY
   Set up the `lazy.nvim` plugin manager, use the `plugins` table to install and load plugins.
   See {** Lazy Helper Function} for the `plugin()` function.
