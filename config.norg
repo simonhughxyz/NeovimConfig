@@ -276,6 +276,148 @@ version: 1.1.1
      end,
    })
    @end
+* UI
+  Here we configure the user interface for Neovim.
+  ___
+** Lualine
+   A blazing fast and easy to configure Neovim statusline written in Lua.
+   ___
+   [GitHub]{https://github.com/nvim-lualine/lualine.nvim}
+   @code lua
+   local colors = {
+    black = "#000000",
+    white = "#ffffff",
+    gray = "#444444",
+    light_gray = "#666666",
+    background = "#0c0c0c",
+    green = "#005000",
+    yellow = "#706000",
+    blue = "#004090",
+    paste = "#5518ab",
+    red = "#800000",
+   }
+   
+   local lualine_theme = {
+    normal = {
+      a = { fg = colors.white, bg = colors.green },
+      b = { fg = colors.white, bg = colors.grey },
+      c = { fg = colors.white, bg = colors.black },
+    },
+   
+    insert = { a = { fg = colors.white, bg = colors.blue } },
+    command = { a = { fg = colors.white, bg = colors.red } },
+    visual = { a = { fg = colors.white, bg = colors.yellow } },
+    replace = { a = { fg = colors.white, bg = colors.red } },
+   
+    inactive = {
+      a = { fg = colors.white, bg = colors.black },
+      b = { fg = colors.white, bg = colors.black },
+      c = { fg = colors.light_gray, bg = colors.black },
+    },
+   }
+   
+   plug({
+    {
+      "nvim-lualine/lualine.nvim",
+      event = "VeryLazy",
+      opts = function()
+        return {
+          options = {
+            theme = lualine_theme,
+            component_separators = { left = "", right = "" },
+            section_separators = { left = "|", right = "|" },
+          },
+          sections = {
+            lualine_a = { "mode" },
+            lualine_b = { "branch", "diff", "diagnostics" },
+            lualine_c = {
+              {
+                "filename",
+                path = 4
+              },
+            },
+            lualine_x = { "encoding", "fileformat", "filetype" },
+            lualine_y = { "progress" },
+            lualine_z = { "location" },
+          },
+          inactive_sections = {
+            lualine_a = {},
+            lualine_b = {},
+            lualine_c = {
+              {
+                "filename",
+                path = 4
+              },
+            },
+            lualine_x = { "location" },
+            lualine_y = {},
+            lualine_z = {},
+          },
+          tabline = {},
+          winbar = {
+            lualine_c = {
+              {
+                "filename",
+                path = 4,
+              },
+              "navic"
+            },
+          },
+          inactive_winbar = {
+            lualine_c = {
+                {
+                  "filename",
+                  path = 3
+                }
+              },
+          },
+          extensions = {},
+        }
+      end,
+    },
+   })
+   @end
+** Dressing
+   Neovim plugin to improve the default vim.ui interfaces.
+   ___
+   [GitHub]{https://github.com/stevearc/dressing.nvim}
+   @code lua
+   plug({
+     'stevearc/dressing.nvim',
+     opts = {},
+   })
+   @end
+** Notify
+   A fancy, configurable notification manager for NeoVim.
+   ___
+   [GitHub]{https://github.com/rcarriga/nvim-notify}
+   @code lua
+   plug({
+     "rcarriga/nvim-notify",
+     enabled = true,
+     lazy = false,
+     config = function ()
+       local notify = require("notify")
+       notify.setup({
+         minimum_width = 20,
+         max_width = 50,
+         max_height = 50,
+         render = "compact",
+         timeout = 1000,
+         top_down = true
+       })
+       vim.notify = notify
+       pcall(require('telescope').load_extension, "notify")
+     end,
+     keys = {
+       {
+         "<leader>;n",
+         function () require("telescope").extensions.notify.notify() end,
+         desc = "Notificiation History"
+       },
+     }
+   })
+   @end
 * LAZY
   Set up the `lazy.nvim` plugin manager, use the `plugins` table to install and load plugins.
   See {** Lazy Helper Function} for the `plugin()` function.
