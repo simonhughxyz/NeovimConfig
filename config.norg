@@ -56,3 +56,32 @@ version: 1.1.1
     plugins[#plugins +1] = plugin
   end
   @end
+
+* LAZY
+  Set up the `lazy.nvim` plugin manager, use the `plugins` table to install and load plugins.
+  See {** Lazy Helper Function} for the `plugin()` function.
+  ___
+  [GitHub]{https://github.com/folke/lazy.nvim}
+
+  @code lua
+  local lazypath = vim.fn.stdpath 'data' .. '/lazy/lazy.nvim'
+  if not vim.loop.fs_stat(lazypath) then
+    vim.fn.system {
+      'git',
+      'clone',
+      '--filter=blob:none',
+      'https://github.com/folke/lazy.nvim.git',
+      '--branch=stable', -- latest stable release
+      lazypath,
+    }
+  end
+  vim.opt.rtp:prepend(lazypath)
+  
+  -- Plugins to be installed
+  -- Help with plugin setup: https://github.com/folke/lazy.nvim#-structuring-your-plugins
+  require('lazy').setup(plugins, {})
+  
+  
+  -- open lazy menu
+  vim.keymap.set("n", "<leader>;l", "<cmd>Lazy<cr>", { desc = "Lazy Plugin Manager" })
+  @end
