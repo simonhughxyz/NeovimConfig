@@ -2082,6 +2082,30 @@ version: 1.1.1
     end
   })
   @end
+* MINI SESSIONS
+  Session management (read, write, delete)
+  ___
+  [GitHub]{https://github.com/echasnovski/mini.nvim/blob/main/readmes/mini-sessions.md}
+  @code lua
+  plug({
+    'echasnovski/mini.sessions',
+    version = false,
+    config = function()
+      require('mini.sessions').setup({
+      })
+  
+      vim.api.nvim_create_user_command(
+        'SessionWrite',
+        function(opts)
+          if (opts['args']) then
+            MiniSessions.write(opts.args)
+          end
+        end,
+        { nargs = 1 }
+      )
+    end,
+  })
+  @end
 * LAZY
   Set up the `lazy.nvim` plugin manager, use the `plugins` table to install and load plugins.
   See {** Lazy Helper Function} for the `plugin()` function.
