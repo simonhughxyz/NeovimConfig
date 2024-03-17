@@ -140,6 +140,142 @@ version: 1.1.1
   end
   @end
 
+* SYNTAX HIGHLIGHTS & COLOR
+  Here I set up the color and syntax used in Neovim buffers.
+  ___
+** Options
+  Enable true color support:
+  ___
+  @code lua
+  o.termguicolors = true
+  @end
+** Gruvebox Colorscheme
+   A port of gruvbox community theme to lua with treesitter and semantic highlights support.
+   ___
+   @code lua
+   plug({
+    "ellisonleao/gruvbox.nvim",
+    enabled = true,
+    lazy = false,
+    priority = 10000,
+    config = function()
+      require("gruvbox").setup({
+        transparent_mode = true,
+        terminal_colors = false, -- disable gruvbox in terminal
+        overrides = {
+          Folded = { bg = "#202020" },
+          -- fix markdown todo colors
+          ["@lsp.type.class.markdown"] = { fg = "#000000" },
+          ["@neorg.tags.ranged_verbatim.code_block"] = { bg = "#222222" },
+        }
+      })
+      o.background = "dark"
+      g.gruvbox_italic = true
+      g.gruvbox_bold = false
+      g.gruvbox_transparent_bg = true
+      g.gruvbox_constrast_dark = "hard"
+      g.gruvbox_improved_strings = false
+      cmd([[colorscheme gruvbox]])
+    end,
+    })
+   @end
+** Indent Blankline
+   This plugin adds indentation guides to all lines.
+   ___
+   @code lua
+   plug({
+     "lukas-reineke/indent-blankline.nvim",
+     enabled = true,
+     event = { "BufReadPost", "BufNewFile" },
+     main = "ibl",
+     opts = {
+       exclude = {
+         filetypes = {
+           "help",
+           "alpha",
+           "dashboard",
+           "fugitive",
+           "neo-tree",
+           "Trouble",
+           "lazy",
+           "mason",
+           "notify",
+           "toggleterm",
+           "lazyterm",
+           "lspinfo",
+           "packer",
+           "checkhealth",
+           "help",
+           "man",
+           "gitcommit",
+           "TelescopePrompt",
+           "TelescopeResults",
+         },
+       },
+     },
+   })
+   @end
+** Colorizer
+   Color highlighter, shows color of color codes
+   ___
+   @code lua
+   plug({
+     "norcalli/nvim-colorizer.lua",
+     enabled = true,
+     event = { "BufReadPost", "BufNewFile" },
+     opts = {
+       default_options = {
+         RGB = true,
+         RRGGBB = true,
+         names = true,
+         RRGGBBAA = true,
+         rgb_fn = true,
+         hsl_fn = true,
+         css = true,
+         css_fn = true,
+         mode = "background",
+       },
+       "*", -- highlight all files
+     },
+   })
+   @end
+** Rainbow
+   Use different colors for matching brackets.
+   ___
+   @code lua
+   plug({
+     "p00f/nvim-ts-rainbow",
+     event = { "BufReadPost", "BufNewFile" },
+     main = 'nvim-treesitter.configs',
+     opts = {
+       -- for nvim-ts-rainbow plugin
+       rainbow = {
+         enable = true,
+         extended_mode = true,   -- Also highlight non-bracket delimiters like html tags, boolean or table: lang -> boolean
+         max_file_lines = 10000, -- Do not enable for files with more than 10000 lines, int
+         -- colors = {}, -- table of hex strings
+         -- termcolors = {} -- table of colour name strings
+       },
+     }
+   })
+   @end
+** Sentiment
+   To highlight the outer pair of brackets/parenthesis.
+   ___
+   @code lua
+   plug({
+     "utilyre/sentiment.nvim",
+     version = "*",
+     event = "VeryLazy", -- keep for lazy loading
+     opts = {
+       -- config
+     },
+     init = function()
+       -- `matchparen.vim` needs to be disabled manually in case of lazy loading
+       vim.g.loaded_matchparen = 1
+     end,
+   })
+   @end
 * LAZY
   Set up the `lazy.nvim` plugin manager, use the `plugins` table to install and load plugins.
   See {** Lazy Helper Function} for the `plugin()` function.
