@@ -13,7 +13,7 @@ tangle: {
   }
 }
 created: 2024-03-06T23:01:44+0100
-updated: 2024-03-17T23:08:07+0100
+updated: 2024-03-17T23:22:46+0100
 version: 1.1.1
 @end
 
@@ -851,6 +851,30 @@ version: 1.1.1
    })
    @end
 * BUFFER NAVIGATION
+** EYELINER
+   Move faster with unique f/F indicators for each word on the line.
+   ___
+   [GitHub]{https://github.com/jinh0/eyeliner.nvim}
+   @code lua
+   plug({
+     "jinh0/eyeliner.nvim",
+     priority = 200,
+     keys = { "f", "F", "t", "T" },
+     opts = {
+       highlight_on_key = true,
+       dim = true
+     },
+     init = function()
+       vim.api.nvim_create_autocmd('ColorScheme', {
+         pattern = '*',
+         callback = function()
+           vim.api.nvim_set_hl(0, 'EyelinerPrimary', { fg = '#aa00aa', bold = true, underline = false })
+           vim.api.nvim_set_hl(0, 'EyelinerSecondary', { fg = '#a0f050', bold = true, underline = false })
+         end,
+       })
+     end,
+   })
+   @end
 ** Nvim Spider
    Use the w, e, b motions like a spider. Move by subwords and skip insignificant punctuation.
    ___
