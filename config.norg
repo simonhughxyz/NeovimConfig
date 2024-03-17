@@ -1617,6 +1617,14 @@ version: 1.1.1
       end,
    })
    @end
+* VIM TABLE MODE
+  Table creator & formatter allowing one to create neat tables as you type
+  ___
+  [GitHub]{https://github.com/dhruvasagar/vim-table-mode}
+  @code lua
+  plug({ "https://github.com/dhruvasagar/vim-table-mode" })
+   
+  @end
 * LAZY
   Set up the `lazy.nvim` plugin manager, use the `plugins` table to install and load plugins.
   See {** Lazy Helper Function} for the `plugin()` function.
