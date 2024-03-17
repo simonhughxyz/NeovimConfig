@@ -1768,6 +1768,39 @@ version: 1.1.1
     },
   })
   @end
+* WHICH KEY
+  A lua plugin that displays a popup with possible key bindings of the command you started typing.
+  ___
+  [GitHub]{https://github.com/folke/which-key.nvim}
+  @code lua
+  plug({
+    'folke/which-key.nvim',
+    enabled = true,
+    config = function()
+      local wk = require('which-key')
+  
+      wk.register({
+        ['<leader>'] = {
+          ["<Tab>"] = { name = '+Tab' },
+          [";"] = { name = '+Command' },
+          b = { name = '+Buffer' },
+          c = { name = '+Case' },
+          C = { name = '+Case' },
+          d = { name = '+Debug' },
+          f = { name = '+Find' },
+          g = { name = '+Git' },
+          h = { name = '+Hunk' },
+          l = { name = '+Lsp' },
+          s = { name = '+Search' },
+          t = { name = '+Table' },
+          T = { name = '+Text' },
+          w = { name = '+Window' },
+          x = { name = '+Diagnostics' },
+        },
+      })
+    end,
+  })
+  @end
 * LAZY
   Set up the `lazy.nvim` plugin manager, use the `plugins` table to install and load plugins.
   See {** Lazy Helper Function} for the `plugin()` function.
