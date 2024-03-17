@@ -858,6 +858,98 @@ version: 1.1.1
     end,
    })
    @end
+* GIT
+** Fugitive
+   A git wrapper plugin.
+   ___
+   [GitHub]{https://github.com/tpope/vim-fugitive}
+  @code lua
+  plug({
+    'tpope/vim-fugitive',
+    enabled = true,
+    lazy = true,
+    keys = {
+      { "<leader>gg",
+        "<cmd>Git<cr>",
+        desc = "Git"
+      },
+      { "<leader>gp",
+        "<cmd>Git push<cr>",
+        desc = "Git Push"
+      },
+      { "<leader>gP",
+        "<cmd>Git pull<cr>",
+        desc = "Git Pull"
+      },
+      { "<leader>gl",
+        "<cmd>Git log<cr>",
+        desc = "Git Log"
+      },
+      { "<leader>gd",
+        "<cmd>Git diff<cr>",
+        desc = "Git Diff"
+      },
+    }
+  })
+  @end
+** Gitsigns
+   Adds git related signs to the gutter, as well as utilities for managing changes
+   ___
+   [GitHub]{https://github.com/lewis6991/gitsigns.nvim}
+  @code lua
+  plug({
+    'lewis6991/gitsigns.nvim',
+    enabled = true,
+    opts = {
+      -- See `:help gitsigns.txt`
+      on_attach = function(bufnr)
+        local gs = package.loaded.gitsigns
+        vim.keymap.set('n', '[h', gs.prev_hunk, { buffer = bufnr, desc = 'Go to Previous Hunk' })
+        vim.keymap.set('n', ']h', gs.next_hunk, { buffer = bufnr, desc = 'Go to Next Hunk' })
+        vim.keymap.set('n', '<leader>hs', gs.stage_hunk, { buffer = bufnr, desc = 'Git Stage Hunk' })
+        vim.keymap.set('n', '<leader>hS', gs.stage_buffer, { buffer = bufnr, desc = 'Git Stage Entire Buffer' })
+        vim.keymap.set('n', '<leader>hr', gs.reset_hunk, { buffer = bufnr, desc = 'Git Reset Hunk' })
+        vim.keymap.set('n', '<leader>hR', gs.reset_buffer, { buffer = bufnr, desc = 'Git Reset Entire Buffer' })
+        vim.keymap.set('v', '<leader>hs', function() gs.stage_hunk { vim.fn.line('.'), vim.fn.line('v') } end,
+          { buffer = bufnr, desc = 'Git Stage Selected Hunk' })
+  
+        vim.keymap.set('v', '<leader>gr', function() gs.reset_hunk { vim.fn.line('.'), vim.fn.line('v') } end,
+          { buffer = bufnr, desc = 'Git Reset Selected Hunk' })
+  
+        vim.keymap.set('n', '<leader>hu', gs.undo_stage_hunk, { buffer = bufnr, desc = 'Git Undo Stage Hunk' })
+        vim.keymap.set('n', '<leader>ht', gs.toggle_deleted, { buffer = bufnr, desc = 'Git Toggle Deleted' })
+        vim.keymap.set('n', '<leader>hd', gs.diffthis, { buffer = bufnr, desc = 'Git Diff Hunk' })
+        vim.keymap.set('n', '<leader>hD', function() gs.diffthis('~') end, { buffer = bufnr, desc = 'Git Diff Hunk' })
+        vim.keymap.set('n', '<leader>hp', gs.preview_hunk, { buffer = bufnr, desc = 'Git Preview Hunk' })
+        vim.keymap.set('n', '<leader>hb', gs.blame_line, { buffer = bufnr, desc = 'Git Blame Line' })
+        vim.keymap.set('n', '<leader>hB', gs.toggle_current_line_blame,
+          { buffer = bufnr, desc = 'Git Blame Line Toggle' })
+  
+        -- Text object
+        vim.keymap.set({ 'o', 'x' }, 'ih', ':<C-U>Gitsigns select_hunk<CR>', { desc = 'Hunk' })
+        vim.keymap.set({ 'o', 'x' }, 'ah', ':<C-U>Gitsigns select_hunk<CR>', { desc = 'Hunk' })
+      end,
+    },
+  })
+   @end
+** Diffview
+   Single tabpage interface for easily cycling through diffs for all modified files for any git rev.
+   ___
+   [GitHub]{https://github.com/sindrets/diffview.nvim}
+   @code lua
+   plug({
+     "sindrets/diffview.nvim",
+     enabled = true,
+     lazy = true,
+     keys = {
+       {
+         "<leader>dd",
+         "<cmd>DiffviewOpen<cr>",
+         desc = "Open Diff View",
+       }
+     },
+   })
+  @end
 * LAZY
   Set up the `lazy.nvim` plugin manager, use the `plugins` table to install and load plugins.
   See {** Lazy Helper Function} for the `plugin()` function.
