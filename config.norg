@@ -13,7 +13,7 @@ tangle: {
   }
 }
 created: 2024-03-06T23:01:44+0100
-updated: 2024-03-17T22:45:07+0100
+updated: 2024-03-17T23:08:07+0100
 version: 1.1.1
 @end
 
@@ -682,6 +682,35 @@ version: 1.1.1
     keys = {
       {"<tab>", mode = { "n" }, function() require("telescope-tabs").list_tabs() end, desc = "Open Tabs"}
     }
+   })
+   @end
+** URL VIEW
+   Extracts URL's from buffer for search in telescope
+   ___
+   [GitHub]{https://github.com/axieax/urlview.nvim}
+   @code lua
+   plug({
+     "axieax/urlview.nvim",
+     enabled = true,
+     lazy = true,
+     config = function()
+       require("urlview").setup({
+         default_picker = "telescope",
+         log_level_min = 4,
+       })
+     end,
+     keys = {
+       {
+         "<leader>su",
+         "<Cmd>UrlView<CR>",
+         desc = "View buffer URLs",
+       },
+       {
+         "<leader>sU",
+         "<Cmd>UrlView lazy<CR>",
+         desc = "View lazy plugin URLs",
+       },
+     },
    })
    @end
 * FILE NAVIGATION
