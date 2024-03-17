@@ -2504,3 +2504,16 @@ version: 1.1.1
   map("i", "<C-f>P", '<C-R>=expand("%:h")<cr>', { desc = "Insert relative path of current directory" })
   map("i", "<C-f>d", '<C-R>=expand("%:p:h:t")<cr>', { desc = "Insert parent directory of current file" })
   @end
+* HIGHLIGHTS
+  Here I configure any highlights.
+  ___
+  @code lua
+  local highlight_group = vim.api.nvim_create_augroup('YankHighlight', { clear = true })
+  vim.api.nvim_create_autocmd('TextYankPost', {
+    callback = function()
+      vim.highlight.on_yank()
+    end,
+    group = highlight_group,
+    pattern = '*',
+  })
+  @end
