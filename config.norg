@@ -2641,3 +2641,31 @@ version: 1.1.1
     end,
   })
   @end
+* EXCOMMANDS
+  Here I configure any custom commands.
+  ___
+  @code lua
+  local command = vim.api.nvim_create_user_command
+  
+  command("Shell", function (args)
+    local shell = args.args
+  
+    if (shell == "powershell") then
+      shell = "powershell.exe"
+    elseif (shell == "cmd") then
+      shell = "cmd.exe"
+    end
+    vim.cmd("terminal " .. shell)
+  end, {
+      nargs = 1,
+      complete = function ()
+        return {
+          "powershell",
+          "cmd",
+          "zsh",
+          "bash",
+          "dash",
+        }
+      end,
+    })
+  @end
