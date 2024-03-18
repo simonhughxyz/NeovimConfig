@@ -488,10 +488,6 @@ plug({
                 width = "content",
                 min_width = 85,
                 conceal = true,
-                padding = {
-                  left = 1,
-                  right = 1,
-                }
               },
             },
           },
