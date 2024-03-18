@@ -67,6 +67,7 @@ version: 1.1.1
   o.conceallevel = 3           -- Hide * markup for bold and italic
   o.confirm = true             -- Confirm to save changes before exiting modified buffer
   o.cursorline = true          -- Enable highlighting of the current line
+  o.breakindent = true         -- Every like wrapped will honor indent
   o.expandtab = true           -- Use spaces instead of tabs
   o.formatoptions = "jcroqlnt" -- tcqj
   o.grepformat = "%f:%l:%c:%m"
