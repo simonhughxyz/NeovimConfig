@@ -13,7 +13,7 @@ tangle: {
   }
 }
 created: 2024-03-06T23:01:44+0100
-updated: 2024-03-18T00:12:59+0100
+updated: 2024-03-18T06:21:13+0100
 version: 1.1.1
 @end
 
@@ -445,74 +445,73 @@ version: 1.1.1
       "nvim-treesitter/nvim-treesitter-textobjects",
       "hrsh7th/nvim-cmp",
     },
-    opts = {
-      load = {
-        ["core.defaults"] = {}, -- Loads default behaviour
-        ["core.concealer"] = {  -- Adds pretty icons to your documents
-          config = {
-            foldlevelstart = "0",
-            icon_preset = "diamond",
-            icons = {
-              code_block = {
-                width = "content",
-                min_width = 85,
-                conceal = true,
-                padding = {
-                  left = 1,
-                  right = 1,
-                }
+    config = function()
+      require("neorg").setup({
+        load = {
+          ["core.defaults"] = {}, -- Loads default behaviour
+          ["core.concealer"] = {  -- Adds pretty icons to your documents
+            config = {
+              foldlevelstart = "0",
+              icon_preset = "diamond",
+              icons = {
+                code_block = {
+                  width = "content",
+                  min_width = 85,
+                  conceal = true,
+                  padding = {
+                    left = 1,
+                    right = 1,
+                  }
+                },
               },
             },
           },
-        },
-        ["core.dirman"] = { -- Manages Neorg workspaces
-          config = {
-            workspaces = {
-              documents = "~/Documents",
-              notes = "~/Documents/Notes",
-              career = "~/Documents/Career",
-              profiles = "~/Documents/Profiles",
+          ["core.dirman"] = { -- Manages Neorg workspaces
+            config = {
+              workspaces = {
+                documents = "~/Documents",
+                notes = "~/Documents/Notes",
+                career = "~/Documents/Career",
+                profiles = "~/Documents/Profiles",
+              },
+              default_workspace = "documents",
             },
-            default_workspace = "documents",
           },
-        },
-        ["core.completion"] = {
-          config = {
-            engine = 'nvim-cmp',
-            name = "[Norg]",
-          }
-        },
-        ["core.integrations.nvim-cmp"] = {},
-        ["core.qol.toc"] = {
-          config = {
-            close_split_on_jump = true,
-            toc_split_placement = "right",
-          }
-        },
-        ["core.export"] = {},
-        ["core.export.markdown"] = {
-          config = {
-            extensions = "all",
-          }
-        },
-        ["core.integrations.telescope"] = {},
-        ["core.presenter"] = {
-          config = {
-            zen_mode = "truezen",
-          }
-        },
-        ["core.journal"] = {
-          config = {
-            workspace = "journal",
-            strategy = "flat",
-          }
-        },
-        ["core.summary"] = {},
-        ["core.esupports.metagen"] = { config = { type = "auto", update_date = true } },
-      }
-    },
-    config = function()
-      -- require("neorg").setup(neorg_opts)
+          ["core.completion"] = {
+            config = {
+              engine = 'nvim-cmp',
+              name = "[Norg]",
+            }
+          },
+          ["core.integrations.nvim-cmp"] = {},
+          ["core.qol.toc"] = {
+            config = {
+              close_split_on_jump = true,
+              toc_split_placement = "right",
+            }
+          },
+          ["core.export"] = {},
+          ["core.export.markdown"] = {
+            config = {
+              extensions = "all",
+            }
+          },
+          ["core.integrations.telescope"] = {},
+          ["core.presenter"] = {
+            config = {
+              zen_mode = "truezen",
+            }
+          },
+          ["core.journal"] = {
+            config = {
+              workspace = "journal",
+              strategy = "flat",
+            }
+          },
+          ["core.summary"] = {},
+          ["core.esupports.metagen"] = { config = { type = "auto", update_date = true } },
+        }
+      })
 
       local neorg_callbacks = require("neorg.core.callbacks")
 
