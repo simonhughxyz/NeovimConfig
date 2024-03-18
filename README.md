@@ -10,12 +10,50 @@ tangle:
   languages: 
     lua: ./lua/config.lua
 created: 2024-03-06T23:01:44+0100
-updated: 2024-03-18T06:27:39+0100
+updated: 2024-03-18T08:31:19+0100
 version: 1.1.1
 ---
 
  
 
+
+
+# INSTALL INSTRUCTIONS
+
+All of my main config is contained in this file `config.norg`, to be able to use this config you have to first `tangle` the file to generate the `config.lua` file.
+___
+1. Create `lua` directory.
+A `lua` directory is needed so that the `config.lua` file can be crated inside of it.
+Run the below command inside of your shell at the root of this config:
+```sh
+mkdir lua
+```
+2. Open Neovim to bootstrap the config.
+A. Because the Lazy.nvim package manager and Neorg plugin is required to `tangle` the config, you have to bootstrap the config for the first time.
+Don't worry this happens automatically, you just have to open Neovim by running:
+```sh
+nvim
+```
+You will see some errors pop up, don't worry about them this just happens because Neovim expects there to be a config which is not there yet.
+
+B. After this is done, close Neovim again by running the below command:
+```vim
+:qa
+```
+4. Tangle the `config.norg` file.
+A. Last, we need to `tangle` the config.norg file, to do so open the file with Neovim by running the following command:
+```sh
+nvim config.norg
+```
+B. After the `config.norg` file is opened in Neovim, run the following command inside Neovim:
+```vim
+:Neorg tangle
+```
+Neovim will ask you which file to tangle, select `config.norg`
+
+5. Reopen Neovim and enjoy
+Close and reopen Neovim and the `Lazy` plugin manager will install everything needed.
+You might have to reopen Neovim a few times to make sure everything is installed.
 
 
 # SETUP VARIABLES AND FUNCTIONS
