@@ -103,6 +103,8 @@ version: 1.1.1
   o.wildmode = "longest:full,full" -- Command-line completion mode
   o.winminwidth = 5                -- Minimum window width
   o.wrap = false                   -- Disable line wrap
+  o.foldlevelstart = 0             -- Enable foldlevel when opening file
+  o.foldnestmax = 2                -- Set max nested foldlevel
 
   if vim.fn.has("nvim-0.9.0") == 1 then
     o.splitkeep = "screen"
