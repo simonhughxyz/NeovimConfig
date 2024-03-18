@@ -2641,6 +2641,16 @@ version: 1.1.1
       vim.cmd("startinsert")
     end,
   })
+
+  -- reload folds for treesitter bug
+  -- see https://github.com/nvim-treesitter/nvim-treesitter/issues/1337
+  vim.api.nvim_create_autocmd({ "BufReadPost" }, {
+      group = augroup("folds"),
+      callback = function()
+          vim.cmd([[ norm zx
+          norm zM ]])
+      end
+  })
   @end
 * EXCOMMANDS
   Here I configure any custom commands.
