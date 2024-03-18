@@ -13,11 +13,18 @@ tangle: {
   }
 }
 created: 2024-03-06T23:01:44+0100
-updated: 2024-03-17T23:51:53+0100
+updated: 2024-03-18T00:12:59+0100
 version: 1.1.1
 @end
 
 * SETUP VARIABLES AND FUNCTIONS
+** Leader keys
+   Used by many plugins for keybindings, need to be set early as plugins can be dependant on it.
+   ___
+   @code lua
+   vim.g.mapleader = ' '
+   vim.g.maplocalleader = '  '
+   @end
 ** API Variables
    Declare common API variables, will be used throughout the config.
    ___
@@ -3099,3 +3106,4 @@ version: 1.1.1
       s({trig = "^pe", regTrig = true}, fmt([[perf({}){}: {}]], { i(1, "scope"), c(3, {t(""),t("!")}), i(2, "adding new or correcting existing test")})),
     },{ type = "autosnippets" })
     @end
+
