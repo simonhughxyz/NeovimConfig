@@ -10,7 +10,7 @@ tangle:
   languages: 
     lua: ./lua/config.lua
 created: 2024-03-06T23:01:44+0100
-updated: 2024-03-18T08:31:19+0100
+updated: 2024-03-19T06:50:27+0100
 version: 1.1.1
 ---
 
@@ -156,6 +156,11 @@ o.winminwidth = 5                -- Minimum window width
 o.wrap = false                   -- Disable line wrap
 o.foldlevelstart = 0             -- Enable foldlevel when opening file
 o.foldnestmax = 2                -- Set max nested foldlevel
+vim.opt.foldenable = true
+vim.opt.foldmethod = "expr"
+vim.opt.foldexpr = "v:lua.vim.treesitter.foldexpr()"
+vim.o.foldtext = ''
+vim.o.fillchars = 'fold: '
 
 if vim.fn.has("nvim-0.9.0") == 1 then
   o.splitkeep = "screen"
@@ -341,6 +346,77 @@ plug({
   init = function()
     -- `matchparen.vim` needs to be disabled manually in case of lazy loading
     vim.g.loaded_matchparen = 1
+  end,
+})
+```
+
+## Headlines
+
+This plugin adds highlights for text filetypes, like markdown, orgmode, and neorg.
+___
+[GitHub](https://github.com/lukas-reineke/headlines.nvim)
+```lua
+plug({
+  "lukas-reineke/headlines.nvim",
+  dependencies = "nvim-treesitter/nvim-treesitter",
+  config = function()
+
+    vim.cmd [[highlight Headline1 guibg=#1e2718]]
+    vim.cmd [[highlight Headline2 guibg=#21262d]]
+    vim.cmd [[highlight CodeBlock guibg=#1c1c1c]]
+    vim.cmd [[highlight Dash guibg=#D19A66 gui=bold]]
+    require("headlines").setup {
+      norg = {
+        query = vim.treesitter.query.parse(
+                "norg",
+                [[
+                    [
+                        (heading1_prefix)
+                        (heading2_prefix)
+                        (heading3_prefix)
+                        (heading4_prefix)
+                        (heading5_prefix)
+                        (heading6_prefix)
+                    ] @headline
+
+                    (weak_paragraph_delimiter) @dash
+                    (strong_paragraph_delimiter) @doubledash
+
+                    ([(ranged_tag
+                        name: (tag_name) @_name
+                        (#eq? @_name "code")
+                    )
+                    (ranged_verbatim_tag
+                        name: (tag_name) @_name
+                        (#eq? @_name "code")
+                    )] @codeblock (#offset! @codeblock 0 0 1 0))
+
+                    (quote1_prefix) @quote
+                ]]
+            ),
+        headline_highlights = { "Headline1", "Headline2" },
+            bullet_highlights = {
+                "@neorg.headings.1.prefix",
+                "@neorg.headings.2.prefix",
+                "@neorg.headings.3.prefix",
+                "@neorg.headings.4.prefix",
+                "@neorg.headings.5.prefix",
+                "@neorg.headings.6.prefix",
+            },
+            bullets = { "◉", "○", "✸", "✿" },
+            codeblock_highlight = false,
+            dash_highlight = "Dash",
+            dash_string = "-",
+            doubledash_highlight = "DoubleDash",
+            doubledash_string = "=",
+            quote_highlight = "Quote",
+            quote_string = "┃",
+            fat_headlines = true,
+            fat_headline_upper_string = "▃",
+            fat_headline_lower_string = "🬂",
+        },
+    }
+
   end,
 })
 ```
