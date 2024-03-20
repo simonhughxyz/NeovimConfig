@@ -10,7 +10,7 @@ tangle:
   languages: 
     lua: ./lua/config.lua
 created: 2024-03-06T23:01:44+0100
-updated: 2024-03-20T08:49:21+0100
+updated: 2024-03-20T19:15:50+0100
 version: 1.1.1
 ---
 
@@ -412,8 +412,8 @@ plug({
             quote_highlight = "Quote",
             quote_string = "┃",
             fat_headlines = true,
-            fat_headline_upper_string = "▃",
-            fat_headline_lower_string = "🬂",
+            fat_headline_upper_string = "▄",
+            fat_headline_lower_string = "▀",
         },
     }
 
@@ -589,6 +589,8 @@ plug({
     "nvim-treesitter/nvim-treesitter-textobjects",
     "hrsh7th/nvim-cmp",
   },
+  ft = "norg",
+  cmd = "Neorg",
   config = function()
     require("neorg").setup({
       load = {
