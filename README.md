@@ -10,7 +10,7 @@ tangle:
   languages: 
     lua: ./lua/config.lua
 created: 2024-03-06T23:01:44+0100
-updated: 2024-03-19T06:50:27+0100
+updated: 2024-03-20T08:49:21+0100
 version: 1.1.1
 ---
 
@@ -1006,7 +1006,11 @@ plug({
   enabled = true,
   lazy = false,
   config = function()
-    require("project_nvim").setup {}
+    require("project_nvim").setup({
+      detection_methods = { "lsp", "pattern" },
+      patterns = { ".project", ".git", "_darcs", ".hg", ".bzr", ".svn", "Makefile", "package.json" },
+      silent_chdir = false,
+    })
 
     pcall(require('telescope').load_extension('projects'))
   end,
