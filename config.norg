@@ -13,7 +13,7 @@ tangle: {
   }
 }
 created: 2024-03-06T23:01:44+0100
-updated: 2024-03-20T19:15:50+0100
+updated: 2024-03-20T22:36:41+0100
 version: 1.1.1
 @end
 
@@ -620,6 +620,7 @@ version: 1.1.1
           },
           ["core.summary"] = {},
           ["core.esupports.metagen"] = { config = { type = "auto", update_date = true } },
+          ["core.ui.calendar"] = {},
         }
       })
 
