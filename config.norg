@@ -232,42 +232,6 @@ version: 1.1.1
     end,
     })
    @end
-** Indent Blankline
-   This plugin adds indentation guides to all lines.
-   ___
-   @code lua
-   plug({
-     "lukas-reineke/indent-blankline.nvim",
-     enabled = true,
-     event = { "BufReadPost", "BufNewFile" },
-     main = "ibl",
-     opts = {
-       exclude = {
-         filetypes = {
-           "help",
-           "alpha",
-           "dashboard",
-           "fugitive",
-           "neo-tree",
-           "Trouble",
-           "lazy",
-           "mason",
-           "notify",
-           "toggleterm",
-           "lazyterm",
-           "lspinfo",
-           "packer",
-           "checkhealth",
-           "help",
-           "man",
-           "gitcommit",
-           "TelescopePrompt",
-           "TelescopeResults",
-         },
-       },
-     },
-   })
-   @end
 ** Colorizer
    Color highlighter, shows color of color codes
    ___
@@ -851,7 +815,19 @@ A collection of small QoL plugins for Neovim.
       dashboard = { enabled = false },
       explorer = { enabled = false },
       indent = { enabled = false },
-      input = { enabled = false },
+      indent = {
+        indent = {
+          enabled = true,
+          priority = 1,
+          char = "▎",
+        },
+        animate = { enabled = false },
+        scope = {
+          enabled = true, -- enable highlighting the current scope
+          priority = 200,
+          char = "▎",
+        },
+      },
       picker = { enabled = false },
       notifier = { enabled = false },
       quickfile = { enabled = false },
