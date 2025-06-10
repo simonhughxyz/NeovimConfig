@@ -13,7 +13,7 @@ tangle: {
   }
 }
 created: 2024-03-06T23:01:44+0100
-updated: 2025-06-10T21:37:51+0100
+updated: 2025-06-10T21:44:12+0100
 version: 1.1.1
 @end
 
@@ -814,7 +814,6 @@ A collection of small QoL plugins for Neovim.
       bigfile = { enabled = true },
       dashboard = { enabled = false },
       explorer = { enabled = false },
-      indent = { enabled = false },
       indent = {
         indent = {
           enabled = true,
@@ -828,6 +827,7 @@ A collection of small QoL plugins for Neovim.
           char = "▎",
         },
       },
+      input = { enabled = false },
       picker = { enabled = false },
       notifier = { enabled = false },
       quickfile = { enabled = false },
