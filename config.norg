@@ -13,7 +13,7 @@ tangle: {
   }
 }
 created: 2024-03-06T23:01:44+0100
-updated: 2025-06-10T21:05:18+0100
+updated: 2025-06-10T21:37:51+0100
 version: 1.1.1
 @end
 
@@ -3201,3 +3201,19 @@ A collection of small QoL plugins for Neovim.
     },{ type = "autosnippets" })
     @end
 
+* FILETYPE OPTIONS
+
+
+** Norg
+  @code lua
+    vim.api.nvim_create_autocmd("BufEnter", {
+    group = augroup("ftplugin"),
+    pattern = "norg",
+    callback = function()
+        o.wrap = true
+        o.foldlevelstart = 0             -- Enable foldlevel when opening file
+        o.foldnestmax = 6                -- Set max nested foldlevel
+        o.foldenable = true
+    end,
+    })
+   @end
