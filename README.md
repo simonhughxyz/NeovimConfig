@@ -1,7 +1,7 @@
 ---
 title: Neovim Config
 description: My personal neovim config
-authors: Simon H Moore
+author: Simon H Moore
 categories: 
   - config
   - neovim
@@ -10,7 +10,7 @@ tangle:
   languages: 
     lua: ./lua/config.lua
 created: 2024-03-06T23:01:44+0100
-updated: 2024-03-20T19:15:50+0100
+updated: 2025-06-10T21:44:12+0100
 version: 1.1.1
 ---
 
@@ -243,44 +243,6 @@ plug({
    cmd([[colorscheme gruvbox]])
  end,
  })
-```
-
-## Indent Blankline
-
-This plugin adds indentation guides to all lines.
-___
-```lua
-plug({
-  "lukas-reineke/indent-blankline.nvim",
-  enabled = true,
-  event = { "BufReadPost", "BufNewFile" },
-  main = "ibl",
-  opts = {
-    exclude = {
-      filetypes = {
-        "help",
-        "alpha",
-        "dashboard",
-        "fugitive",
-        "neo-tree",
-        "Trouble",
-        "lazy",
-        "mason",
-        "notify",
-        "toggleterm",
-        "lazyterm",
-        "lspinfo",
-        "packer",
-        "checkhealth",
-        "help",
-        "man",
-        "gitcommit",
-        "TelescopePrompt",
-        "TelescopeResults",
-      },
-    },
-  },
-})
 ```
 
 ## Colorizer
@@ -652,6 +614,7 @@ plug({
         },
         ["core.summary"] = {},
         ["core.esupports.metagen"] = { config = { type = "auto", update_date = true } },
+        ["core.ui.calendar"] = {},
       }
     })
 
@@ -875,6 +838,50 @@ plug({
   },
 })
 ```
+
+# SNACKS
+
+A collection of small QoL plugins for Neovim.
+___
+
+```lua
+plug({
+  "folke/snacks.nvim",
+  priority = 1000,
+  lazy = false,
+  ---@type snacks.Config
+  opts = {
+    -- your configuration comes here
+    -- or leave it empty to use the default settings
+    -- refer to the configuration section below
+    bigfile = { enabled = true },
+    dashboard = { enabled = false },
+    explorer = { enabled = false },
+    indent = {
+      indent = {
+        enabled = true,
+        priority = 1,
+        char = "▎",
+      },
+      animate = { enabled = false },
+      scope = {
+        enabled = true, -- enable highlighting the current scope
+        priority = 200,
+        char = "▎",
+      },
+    },
+    input = { enabled = false },
+    picker = { enabled = false },
+    notifier = { enabled = false },
+    quickfile = { enabled = false },
+    scope = { enabled = false },
+    scroll = { enabled = false },
+    statuscolumn = { enabled = false },
+    words = { enabled = false },
+  }
+})
+```
+
 
 # FILE NAVIGATION
 
@@ -2294,35 +2301,7 @@ plug({
   },
 })
 ```
-
-# BIGFILE
-
-This plugin automatically disables certain features if the opened file is big. File size and features to disable are configurable.
-___
-[GitHub](https://github.com/LunarVim/bigfile.nvim)
-```lua
-plug({ -- https://github.com/LunarVim/bigfile.nvim
-  "LunarVim/bigfile.nvim",
-  enabled = true,
-  event = { "FileReadPre", "BufReadPre", "User FileOpened" },
-  config = function ()
-    require("bigfile").setup {
-      filesize = 2, -- size of the file in MiB, the plugin round file sizes to the closest MiB
-      pattern = { "*" }, -- autocmd pattern or function see <### Overriding the detection of big files>
-      features = { -- features to disable
-        "indent_blankline",
-        "illuminate",
-        "lsp",
-        "treesitter",
-        "syntax",
-        "matchparen",
-        "vimopts",
-        "filetype",
-      },
-    }
-  end
-})
-```
+@end
 
 # MINI SESSIONS
 
@@ -3376,3 +3355,23 @@ snippet("gitcommit", {
 },{ type = "autosnippets" })
 ```
 
+
+# FILETYPE OPTIONS
+
+
+
+
+## Norg
+
+```lua
+  vim.api.nvim_create_autocmd("BufEnter", {
+  group = augroup("ftplugin"),
+  pattern = "norg",
+  callback = function()
+      o.wrap = true
+      o.foldlevelstart = 0             -- Enable foldlevel when opening file
+      o.foldnestmax = 6                -- Set max nested foldlevel
+      o.foldenable = true
+  end,
+  })
+```
