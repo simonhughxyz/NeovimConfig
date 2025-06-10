@@ -13,7 +13,7 @@ tangle: {
   }
 }
 created: 2024-03-06T23:01:44+0100
-updated: 2024-03-20T22:36:41+0100
+updated: 2025-06-10T21:05:18+0100
 version: 1.1.1
 @end
 
@@ -833,6 +833,36 @@ version: 1.1.1
      },
    })
    @end
+* SNACKS
+A collection of small QoL plugins for Neovim.
+  ___
+
+  @code lua
+  plug({
+    "folke/snacks.nvim",
+    priority = 1000,
+    lazy = false,
+    ---@type snacks.Config
+    opts = {
+      -- your configuration comes here
+      -- or leave it empty to use the default settings
+      -- refer to the configuration section below
+      bigfile = { enabled = true },
+      dashboard = { enabled = false },
+      explorer = { enabled = false },
+      indent = { enabled = false },
+      input = { enabled = false },
+      picker = { enabled = false },
+      notifier = { enabled = false },
+      quickfile = { enabled = false },
+      scope = { enabled = false },
+      scroll = { enabled = false },
+      statuscolumn = { enabled = false },
+      words = { enabled = false },
+    }
+  })
+  @end
+
 * FILE NAVIGATION
 ** Oil
    A file explorer that lets you edit your filesystem like a normal Neovim buffer.
@@ -2179,32 +2209,6 @@ version: 1.1.1
     },
   })
   @end
-* BIGFILE
-  This plugin automatically disables certain features if the opened file is big. File size and features to disable are configurable.
-  ___
-  [GitHub]{https://github.com/LunarVim/bigfile.nvim}
-  @code lua
-  plug({ -- https://github.com/LunarVim/bigfile.nvim
-    "LunarVim/bigfile.nvim",
-    enabled = true,
-    event = { "FileReadPre", "BufReadPre", "User FileOpened" },
-    config = function ()
-      require("bigfile").setup {
-        filesize = 2, -- size of the file in MiB, the plugin round file sizes to the closest MiB
-        pattern = { "*" }, -- autocmd pattern or function see <### Overriding the detection of big files>
-        features = { -- features to disable
-          "indent_blankline",
-          "illuminate",
-          "lsp",
-          "treesitter",
-          "syntax",
-          "matchparen",
-          "vimopts",
-          "filetype",
-        },
-      }
-    end
-  })
   @end
 * MINI SESSIONS
   Session management (read, write, delete)
