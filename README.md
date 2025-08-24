@@ -10,7 +10,7 @@ tangle:
   languages: 
     lua: ./lua/config.lua
 created: 2024-03-06T23:01:44+0100
-updated: 2025-06-10T21:44:12+0100
+updated: 2025-08-23T13:47:38+0100
 version: 1.1.1
 ---
 
@@ -72,9 +72,14 @@ vim.g.maplocalleader = '  '
 Declare common API variables, will be used throughout the config.
 ___
 
+| Variable | Value   | Descriptions           |
+|----------+---------+------------------------|
+| o        | vim.opt | Inbuilt vim options    |
+| g        | vim.g   | Inbuilt global options |
+| cmd      | vim.cmd | Run vim ex commands    |
 
 
-```
+```lua
 local o = vim.opt
 local g = vim.g
 local cmd = vim.cmd
@@ -114,53 +119,53 @@ ___
 ```lua
 o.autowrite = true           -- Enable auto write
 o.clipboard = "unnamedplus"  -- Sync with system clipboard
-o.completeopt = "menu,menuone,noselect"
+o.completeopt = "menu,menuone,noselect" -- Completion options for better experience
 o.conceallevel = 3           -- Hide * markup for bold and italic
 o.confirm = true             -- Confirm to save changes before exiting modified buffer
 o.cursorline = true          -- Enable highlighting of the current line
-o.breakindent = true         -- Every like wrapped will honor indent
+o.breakindent = true         -- Every wrapped line will honor indent
 o.expandtab = true           -- Use spaces instead of tabs
-o.formatoptions = "jcroqlnt" -- tcqj
-o.grepformat = "%f:%l:%c:%m"
-o.grepprg = "rg --vimgrep"
-o.ignorecase = true      -- Ignore case
-o.inccommand = "nosplit" -- preview incremental substitute
-o.laststatus = 0
-o.list = true            -- Show some invisible characters (tabs...
-o.mouse = "a"            -- Enable mouse mode
-o.number = true          -- Print line number
-o.pumblend = 10          -- Popup blend
-o.pumheight = 10         -- Maximum number of entries in a popup
-o.relativenumber = true  -- Relative line numbers
-o.scrolloff = 4          -- Lines of context
-o.sessionoptions = { "buffers", "curdir", "tabpages", "winsize" }
-o.shiftround = true      -- Round indent
-o.shiftwidth = 2         -- Size of an indent
-o.shortmess:append({ W = true, I = true, c = true })
-o.showmode = false       -- Dont show mode since we have a statusline
-o.sidescrolloff = 8      -- Columns of context
-o.signcolumn = "yes"     -- Always show the signcolumn, otherwise it would shift the text each time
-o.smartcase = true       -- Don't ignore case with capitals
-o.smartindent = true     -- Insert indents automatically
-o.spelllang = { "en" }
-o.splitbelow = true      -- Put new windows below current
-o.splitright = true      -- Put new windows right of current
-o.tabstop = 2            -- Number of spaces tabs count for
-o.termguicolors = true   -- True color support
-o.timeoutlen = 300
-o.undofile = true
-o.undolevels = 10000
-o.updatetime = 200               -- Save swap file and trigger CursorHold
+o.formatoptions = "jcroqlnt" -- Format options for automatic formatting
+o.grepformat = "%f:%l:%c:%m" -- Format for grep output
+o.grepprg = "rg --vimgrep"   -- Use ripgrep for grep command
+o.ignorecase = true          -- Ignore case in search patterns
+o.inccommand = "nosplit"     -- Preview incremental substitute
+o.laststatus = 0             -- Never show status line
+o.list = true                -- Show some invisible characters (tabs, trailing spaces)
+o.mouse = "a"                -- Enable mouse mode
+o.number = true              -- Print line number
+o.pumblend = 10              -- Popup blend transparency
+o.pumheight = 10             -- Maximum number of entries in a popup
+o.relativenumber = true      -- Relative line numbers
+o.scrolloff = 4              -- Lines of context around cursor
+o.sessionoptions = { "buffers", "curdir", "tabpages", "winsize" } -- Session save options
+o.shiftround = true          -- Round indent to multiple of shiftwidth
+o.shiftwidth = 2             -- Size of an indent
+o.shortmess:append({ W = true, I = true, c = true }) -- Reduce message verbosity
+o.showmode = false           -- Don't show mode since we have a statusline
+o.sidescrolloff = 8          -- Columns of context around cursor
+o.signcolumn = "yes"         -- Always show the signcolumn, otherwise it would shift the text each time
+o.smartcase = true           -- Don't ignore case with capitals
+o.smartindent = true         -- Insert indents automatically
+o.spelllang = { "en" }       -- Spell checking language
+o.splitbelow = true          -- Put new windows below current
+o.splitright = true          -- Put new windows right of current
+o.tabstop = 2                -- Number of spaces tabs count for
+o.termguicolors = true       -- True color support
+o.timeoutlen = 300           -- Time to wait for a mapped sequence to complete
+o.undofile = true            -- Save undo history to file
+o.undolevels = 10000         -- Maximum number of changes that can be undone
+o.updatetime = 200           -- Save swap file and trigger CursorHold
 o.wildmode = "longest:full,full" -- Command-line completion mode
-o.winminwidth = 5                -- Minimum window width
-o.wrap = false                   -- Disable line wrap
-o.foldlevelstart = 0             -- Enable foldlevel when opening file
-o.foldnestmax = 2                -- Set max nested foldlevel
-vim.opt.foldenable = true
-vim.opt.foldmethod = "expr"
-vim.opt.foldexpr = "v:lua.vim.treesitter.foldexpr()"
-vim.o.foldtext = ''
-vim.o.fillchars = 'fold: '
+o.winminwidth = 5            -- Minimum window width
+o.wrap = false               -- Disable line wrap
+o.foldlevelstart = 0         -- Enable foldlevel when opening file
+o.foldnestmax = 2            -- Set max nested foldlevel
+vim.opt.foldenable = true    -- Enable folding
+vim.opt.foldmethod = "expr"  -- Use expression for folding
+vim.opt.foldexpr = "v:lua.vim.treesitter.foldexpr()" -- Use treesitter for fold expression
+vim.o.foldtext = ''          -- Use default fold text
+vim.o.fillchars = 'fold: '   -- Characters to fill folds
 
 if vim.fn.has("nvim-0.9.0") == 1 then
   o.splitkeep = "screen"
@@ -215,8 +220,24 @@ o.termguicolors = true
 
 ## Gruvebox Colorscheme
 
-A port of gruvbox community theme to lua with treesitter and semantic highlights support.
+A retro groove color scheme with warm, earthy tones designed for comfortable long coding sessions. Gruvbox provides excellent contrast and readability while being easy on the eyes.
+
+This colorscheme implementation offers:
+- **Warm color palette**: Carefully selected browns, oranges, and muted colors that reduce eye strain
+- **Treesitter integration**: Full support for modern syntax highlighting with semantic tokens
+- **Transparency support**: Optional transparent background for terminal integration
+- **Comprehensive language support**: Optimized colors for all major programming languages
+- **Dark and light variants**: Multiple contrast levels to suit different lighting conditions
+- **Accessibility focused**: High contrast ratios and colorblind-friendly palette choices
+  
+  **Usage**: The colorscheme is automatically applied on startup. The configuration includes transparency mode and custom overrides for better markdown and code block visibility.
+  
+  **Help**: The theme provides consistent highlighting across all file types while maintaining the distinctive Gruvbox aesthetic that has made it popular among developers worldwide.
+  
+  For example, comments appear in a muted gray-brown, strings in warm green, and keywords in bright orange, creating a cohesive and pleasant coding environment.
 ___
+  [GitHub](https://github.com/ellisonleao/gruvbox.nvim)
+
 ```lua
 plug({
  "ellisonleao/gruvbox.nvim",
@@ -247,8 +268,24 @@ plug({
 
 ## Colorizer
 
-Color highlighter, shows color of color codes
+A high-performance color highlighter that displays colors directly in your code for better visual feedback. Colorizer automatically detects and highlights color codes, making it easier to work with CSS, web development, and any files containing color values.
+
+This plugin provides:
+- **Real-time color preview**: See actual colors rendered inline for hex codes, RGB values, and named colors
+- **Multiple format support**: Handles #RGB, #RRGGBB, #RRGGBBAA, rgb(), hsl(), and CSS color names
+- **Performance optimized**: Fast highlighting that doesn't slow down your editor
+- **Customizable display**: Choose between background highlighting, foreground text, or virtual text display
+- **Wide language support**: Works with CSS, HTML, JavaScript, Lua, and many other file types
+- **Non-intrusive**: Only highlights valid color codes without interfering with syntax highlighting
+  
+  **Usage**: Colors are automatically highlighted when you open supported files. The plugin runs in the background and updates highlights as you type.
+  
+  **Help**: The colorizer makes it instantly clear what colors your code represents, eliminating guesswork when working with color values in web development, theming, or configuration files.
+  
+  For example, `#ff0000` will show with a red background, `rgb(0, 255, 0)` with green, and `blue` with the corresponding blue color.
 ___
+  [GitHub](https://github.com/norcalli/nvim-colorizer.lua)
+
 ```lua
 plug({
   "norcalli/nvim-colorizer.lua",
@@ -273,8 +310,24 @@ plug({
 
 ## Rainbow
 
-Use different colors for matching brackets.
+A Neovim plugin that provides rainbow parentheses highlighting using Tree-sitter for enhanced code readability. Rainbow colorizes matching brackets, parentheses, and delimiters with different colors to make nested code structures easier to navigate and understand.
+
+This plugin offers:
+- **Tree-sitter integration**: Uses modern Tree-sitter parsing for accurate bracket detection and highlighting
+- **Multiple delimiter support**: Highlights parentheses, brackets, braces, and other delimiters with distinct colors
+- **Extended mode**: Optional highlighting of non-bracket delimiters like HTML tags and language-specific constructs
+- **Performance optimized**: Efficient highlighting that works smoothly even with large files
+- **Customizable colors**: Configure your own color schemes or use the default rainbow palette
+- **Language awareness**: Intelligent highlighting that respects language syntax and context
+  
+  **Usage**: Rainbow highlighting is automatically applied when you open supported files. The plugin cycles through colors for each nesting level, making it easy to match opening and closing delimiters.
+  
+  **Help**: The rainbow colors help reduce visual confusion when working with deeply nested code structures, making it easier to spot mismatched brackets and understand code hierarchy at a glance.
+  
+  For example, in nested function calls like `func(array[index(key)])`, each level of brackets will appear in a different color, making the structure immediately clear.
 ___
+  [GitHub](https://github.com/p00f/nvim-ts-rainbow)
+
 ```lua
 plug({
   "p00f/nvim-ts-rainbow",
@@ -295,8 +348,23 @@ plug({
 
 ## Sentiment
 
-To highlight the outer pair of brackets/parenthesis.
+A modern and enhanced replacement for Neovim's built-in matchparen functionality that provides intelligent bracket and delimiter highlighting. Sentiment offers superior performance and visual feedback for matching pairs in your code.
+
+This plugin enhances code navigation by:
+- **Smart pair detection**: Accurately highlights matching brackets, parentheses, braces, and other delimiters
+- **Performance optimized**: Faster and more efficient than the default matchparen plugin
+- **Visual clarity**: Clear highlighting that makes it easy to identify matching pairs at a glance
+- **Customizable appearance**: Configure colors and styles to match your preferred theme
+- **Language awareness**: Intelligent handling of different programming language syntaxes
+- **Non-intrusive design**: Subtle highlighting that doesn't interfere with your workflow
+  
+  **Usage**: Matching pairs are automatically highlighted when your cursor is positioned on or near brackets, parentheses, or other delimiters. The plugin works seamlessly in the background.
+  
+  **Help**: The highlighting helps you quickly identify the scope of code blocks, function calls, and nested structures, reducing errors and improving code comprehension.
+  
+  For example, when your cursor is on an opening `[`, the corresponding closing `](`, the corresponding closing `)` will be highlighted, making it easy to see the extent of code blocks and nested structures.
 ___
+  [GitHub](https://github.com/utilyre/sentiment.nvim)
 ```lua
 plug({
   "utilyre/sentiment.nvim",
@@ -316,7 +384,7 @@ plug({
 
 This plugin adds highlights for text filetypes, like markdown, orgmode, and neorg.
 ___
-[GitHub](https://github.com/lukas-reineke/headlines.nvim)
+  [GitHub](https://github.com/lukas-reineke/headlines.nvim)
 ```lua
 plug({
   "lukas-reineke/headlines.nvim",
@@ -392,7 +460,7 @@ ___
 
 A blazing fast and easy to configure Neovim statusline written in Lua.
 ___
-[GitHub](https://github.com/nvim-lualine/lualine.nvim)
+  [GitHub](https://github.com/nvim-lualine/lualine.nvim)
 ```lua
 local colors = {
  black = "#000000",
@@ -487,58 +555,14 @@ plug({
   },
 })
 ```
-
-## Dressing
-
-Neovim plugin to improve the default vim.ui interfaces.
-___
-[GitHub](https://github.com/stevearc/dressing.nvim)
-```lua
-plug({
-  'stevearc/dressing.nvim',
-  opts = {},
-})
-```
-
-## Notify
-
-A fancy, configurable notification manager for NeoVim.
-___
-[GitHub](https://github.com/rcarriga/nvim-notify)
-```lua
-plug({
-  "rcarriga/nvim-notify",
-  enabled = true,
-  lazy = false,
-  config = function ()
-    local notify = require("notify")
-    notify.setup({
-      minimum_width = 20,
-      max_width = 50,
-      max_height = 50,
-      render = "compact",
-      timeout = 1000,
-      top_down = true
-    })
-    vim.notify = notify
-    pcall(require('telescope').load_extension, "notify")
-  end,
-  keys = {
-    {
-      "<leader>;n",
-      function () require("telescope").extensions.notify.notify() end,
-      desc = "Notificiation History"
-    },
-  }
-})
-```
+  @end
 
 # NEORG
 
 An all-encompassing tool based around structured note taking, project and task management, time tracking, slideshows, writing typeset documents and much more.
 ___
-[GitHub](https://github.com/nvim-neorg/neorg)
-[Spec](https://github.com/nvim-neorg/norg-specs/blob/main/1.0-specification.norg)
+  [GitHub](https://github.com/nvim-neorg/neorg)
+  [Spec](https://github.com/nvim-neorg/norg-specs/blob/main/1.0-specification.norg)
 ```lua
 plug({
   "nvim-neorg/neorg",
@@ -546,7 +570,6 @@ plug({
   dependencies = {
     "nvim-lua/plenary.nvim",
     "Pocco81/true-zen.nvim",
-    "nvim-neorg/neorg-telescope",
     "nvim-treesitter/nvim-treesitter",
     "nvim-treesitter/nvim-treesitter-textobjects",
     "hrsh7th/nvim-cmp",
@@ -600,7 +623,6 @@ plug({
             extensions = "all",
           }
         },
-        ["core.integrations.telescope"] = {},
         ["core.presenter"] = {
           config = {
             zen_mode = "truezen",
@@ -624,16 +646,14 @@ plug({
       -- Map all the below keybinds only when the "norg" mode is active
       keybinds.map_event_to_mode("norg", {
         n = { -- Bind keys in normal mode
-          { "<localleader>ff", "core.integrations.telescope.find_norg_files",  opts = { desc = 'Find Norg Files' } },
-          { "<localleader>fl", "core.integrations.telescope.find_linkable",    opts = { desc = 'Find Linkable' } },
-          { "<localleader>sh", "core.integrations.telescope.search_headings",  opts = { desc = 'Search Headings' } },
-          { "<localleader>sw", "core.integrations.telescope.switch_workspace", opts = { desc = 'Switch Workspace' } },
+          { "<localleader>ff", function() Snacks.picker.files({ cwd = vim.fn.getcwd() }) end, opts = { desc = 'Find Norg Files' } },
+          { "<localleader>sh", function() Snacks.picker.grep({ cwd = vim.fn.getcwd() }) end, opts = { desc = 'Search Headings' } },
           { "<localleader>cg", "core.looking-glass.magnify-code-block", opts = { desc = 'Looking Glass' } },
         },
 
         i = { -- Bind in insert mode
-          { "<C-l>",  "core.integrations.telescope.insert_link",      opts = { desc = 'Insert Link' } },
-          { "<C-L>", "core.integrations.telescope.insert_file_link", opts = { desc = 'Insert Neorg File Link' } },
+          { "<C-l>", function() print("Link insertion not available with snacks") end, opts = { desc = 'Insert Link (unavailable)' } },
+          { "<C-L>", function() print("File link insertion not available with snacks") end, opts = { desc = 'Insert File Link (unavailable)' } },
         },
       }, {
         silent = true,
@@ -641,201 +661,6 @@ plug({
       })
     end)
   end,
-})
-```
-
-# TELESCOPE
-
-## Telescope
-
-A highly extendable fuzzy finder over lists, files, buffers, git status and more.
-___
-[GitHub](https://github.com/nvim-telescope/telescope.nvim)
-```lua
-plug({
- "nvim-telescope/telescope.nvim",
- enabled = true,
- lazy = false,
- dependencies = {
-   'nvim-lua/plenary.nvim',
-   -- Fuzzy Finder Algorithm which requires local dependencies to be built.
-   -- Only load if `make` is available. Make sure you have the system
-   -- requirements installed.
-   {
-     'nvim-telescope/telescope-fzf-native.nvim',
-     -- NOTE: If you are having trouble with this installation,
-     --       refer to the README for telescope-fzf-native for more instructions.
-     build = 'make',
-     cond = function()
-       return vim.fn.executable 'make' == 1
-     end,
-   },
- },
- config = function()
-   require('telescope').setup{
-     defaults = {
-       mappings = {
-         n = {
-           ['<c-d>'] = require('telescope.actions').delete_buffer
-         }, -- n
-         i = {
-           ["<C-h>"] = "which_key",
-           ['<c-d>'] = require('telescope.actions').delete_buffer
-         } -- i
-       } -- mappings
-     }, -- defaults
-   }
-
-   -- Enable telescope fzf native, if installed
-   pcall(require('telescope').load_extension, 'fzf')
-
-   local ts = require('telescope.builtin')
-
-   local fuzzy_search = function()
-     -- You can pass additional configuration to telescope to change theme, layout, etc.
-     ts.current_buffer_fuzzy_find(require('telescope.themes').get_dropdown {
-       winblend = 10,
-       previewer = false,
-     })
-   end
-
-   -- Shortcuts
-   vim.keymap.set('n', '<leader>?', ts.oldfiles, { desc = 'Find Recently Files' })
-   vim.keymap.set('n', '<leader>,', ts.buffers, { desc = 'Find buffers' })
-   vim.keymap.set('n', '<leader>/', fuzzy_search , { desc = 'Fuzzy Search in buffer' })
-
-   -- Find Files
-   vim.keymap.set('n', '<leader>ff', ts.find_files, { desc = 'Find Files' })
-   vim.keymap.set('n', '<leader>fb', ts.buffers, { desc = 'Find Buffers' })
-   vim.keymap.set('n', '<leader>fr', ts.oldfiles, { desc = 'Find Recent Files' })
-   vim.keymap.set('n', '<leader>fg', ts.git_files, { desc = 'Find Git Files' })
-   vim.keymap.set('n', '<leader>fs', ts.git_status, { desc = 'Find Git Status' })
-   vim.keymap.set('n', '<leader>fS', ts.git_stash, { desc = 'Find Git Stash' })
-
-   vim.keymap.set('n', '<leader>fd', function() ts.find_files({ cwd = '~/Documents' }) end,
-     { desc = 'Find Documents' })
-   vim.keymap.set('n', '<leader>fD', function() ts.find_files({ cwd = '~/Downloads' }) end,
-     { desc = 'Find Downloads' })
-   vim.keymap.set('n', '<leader>fp', function() ts.find_files({ cwd = '~/Projects' }) end, { desc = 'Find Projects' })
-   vim.keymap.set('n', '<leader>fc', function() ts.find_files({ cwd = vim.fn.stdpath('config') }) end,
-     { desc = 'Find Config' })
-   vim.keymap.set('n', '<leader>fB', function() ts.find_files({ cwd = '~/.local/bin' }) end,
-     { desc = 'Find Local Bin' })
-
-   -- Search for content, help and functions
-   vim.keymap.set('n', '<leader>sc', ts.git_commits, { desc = 'Search Git Commits' })
-   vim.keymap.set('n', '<leader>st', ts.builtin, { desc = 'Search Telescope' })
-   vim.keymap.set('n', '<leader>sh', ts.help_tags, { desc = 'Search Help' })
-   vim.keymap.set('n', '<leader>sw', ts.grep_string, { desc = 'Search Current Word' })
-   vim.keymap.set('n', '<leader>sg', ts.live_grep, { desc = 'Search by Grep' })
-   vim.keymap.set('n', '<leader>sd', ts.diagnostics, { desc = 'Search Diagnostics' })
-   vim.keymap.set('n', '<leader>sk', ts.keymaps, { desc = 'Search Keymaps' })
-   vim.keymap.set('n', "<leader>s'", ts.marks, { desc = 'Search Marks' })
-   vim.keymap.set('n', '<leader>s"', ts.registers, { desc = 'Search Registers' })
-   vim.keymap.set('n', '<leader>sf', fuzzy_search , { desc = 'Fuzzy Search in buffer' })
-
- end,
-})
-```
-
-
-## Telescope Sessions Picker
-
-Load nvim session files from target directory.
-___
-[GitHub](https://github.com/JoseConseco/telescope_sessions_picker.nvim)
-```lua
-plug({
- "JoseConseco/telescope_sessions_picker.nvim",
- enabled = true,
- lazy = true,
- config = function()
-   require('telescope').load_extension('sessions_picker')
- end,
- keys = {
-   { "<leader>sS",
-     function() require('telescope').extensions.sessions_picker.sessions_picker() end,
-     desc = "Search Neovim Sessions"
-   },
- }
-})
-```
-
-
-## Telescope Tmux
-
-A Telescope.nvim extension for fuzzy-finding over tmux targets.
-___
-[GitHub](https://github.com/camgraff/telescope-tmux.nvim)
-```lua
-plug({ -- https://github.com/camgraff/telescope-tmux.nvim
- "camgraff/telescope-tmux.nvim",
- enabled = true,
- lazy = true,
- config = function ()
-   require('telescope').load_extension('tmux')
- end,
- keys = {
-   { "<leader>ss",
-     function() require('telescope').extensions.tmux.sessions({}) end,
-     desc = "Search Tmux Sessions"
-   },
- }
-})
-```
-
-
-## Telescope Tabs
-
-A Telescope.nvim extension for fuzzy-finding over vim tabs.
-___
-[GitHub](https://github.com/LukasPietzschmann/telescope-tabs)
-```lua
-plug({
- 'LukasPietzschmann/telescope-tabs',
- dependencies = { 'nvim-telescope/telescope.nvim' },
- enabled = true,
- lazy = true,
- config = function()
-   require('telescope').load_extension 'telescope-tabs'
-   require('telescope-tabs').setup {
-     show_preview = true,
-   }
- end,
- keys = {
-   {"<tab>", mode = { "n" }, function() require("telescope-tabs").list_tabs() end, desc = "Open Tabs"}
- }
-})
-```
-
-## URL VIEW
-
-Extracts URL's from buffer for search in telescope
-___
-[GitHub](https://github.com/axieax/urlview.nvim)
-```lua
-plug({
-  "axieax/urlview.nvim",
-  enabled = true,
-  lazy = true,
-  config = function()
-    require("urlview").setup({
-      default_picker = "telescope",
-      log_level_min = 4,
-    })
-  end,
-  keys = {
-    {
-      "<leader>su",
-      "<Cmd>UrlView<CR>",
-      desc = "View buffer URLs",
-    },
-    {
-      "<leader>sU",
-      "<Cmd>UrlView lazy<CR>",
-      desc = "View lazy plugin URLs",
-    },
-  },
 })
 ```
 
@@ -851,12 +676,8 @@ plug({
   lazy = false,
   ---@type snacks.Config
   opts = {
-    -- your configuration comes here
-    -- or leave it empty to use the default settings
-    -- refer to the configuration section below
+    -- Keep only the useful non-picker modules
     bigfile = { enabled = true },
-    dashboard = { enabled = false },
-    explorer = { enabled = false },
     indent = {
       indent = {
         enabled = true,
@@ -870,15 +691,132 @@ plug({
         char = "▎",
       },
     },
-    input = { enabled = false },
-    picker = { enabled = false },
-    notifier = { enabled = false },
-    quickfile = { enabled = false },
+    -- Enable snacks notify
+    notifier = { 
+      enabled = true,
+      timeout = 1000,
+      width = { min = 20, max = 50 },
+      height = { max = 50 },
+      style = "compact",
+      top_down = true,
+    },
+    -- Enable snacks input to replace dressing.nvim
+    input = { enabled = true },
+    -- Enable snacks words for navigation (]]  [[)
+    words = { 
+      enabled = true,
+      debounce = 200,
+    },
+    -- Enable quickfile for better performance
+    quickfile = { enabled = true },
+    -- Enable picker instead of telescope
+    picker = { enabled = true },
+    -- Keep disabled
+    dashboard = { enabled = false },
+    explorer = { enabled = false },
     scope = { enabled = false },
     scroll = { enabled = false },
     statuscolumn = { enabled = false },
-    words = { enabled = false },
+  },
+  config = function(_, opts)
+    require("snacks").setup(opts)
+    vim.notify = Snacks.notifier.notify
+  
+    -- Add snacks picker keymaps
+    local pick = Snacks.picker
+  
+    -- Shortcuts
+    vim.keymap.set('n', '<leader>?', pick.recent, { desc = 'Find Recently Files' })
+    vim.keymap.set('n', '<leader>,', pick.buffers, { desc = 'Find buffers' })
+    vim.keymap.set('n', '<leader>/', pick.grep_word, { desc = 'Search current word' })
+
+    -- Find Files
+    vim.keymap.set('n', '<leader>ff', pick.files, { desc = 'Find Files' })
+    vim.keymap.set('n', '<leader>fb', pick.buffers, { desc = 'Find Buffers' })
+    vim.keymap.set('n', '<leader>fr', pick.recent, { desc = 'Find Recent Files' })
+    vim.keymap.set('n', '<leader>fg', pick.git_files, { desc = 'Find Git Files' })
+    vim.keymap.set('n', '<leader>fs', pick.git_status, { desc = 'Find Git Status' })
+
+    vim.keymap.set('n', '<leader>fd', function() pick.files({ cwd = '~/Documents' }) end, { desc = 'Find Documents' })
+    vim.keymap.set('n', '<leader>fD', function() pick.files({ cwd = '~/Downloads' }) end, { desc = 'Find Downloads' })
+    vim.keymap.set('n', '<leader>fp', function() pick.files({ cwd = '~/Projects' }) end, { desc = 'Find Projects' })
+    vim.keymap.set('n', '<leader>fc', function() pick.files({ cwd = vim.fn.stdpath('config') }) end, { desc = 'Find Config' })
+    vim.keymap.set('n', '<leader>fB', function() pick.files({ cwd = '~/.local/bin' }) end, { desc = 'Find Local Bin' })
+
+    -- Search for content, help and functions
+    vim.keymap.set('n', '<leader>sc', pick.git_log, { desc = 'Search Git Commits' })
+    vim.keymap.set('n', '<leader>st', function() pick.commands() end, { desc = 'Search Commands' })
+    vim.keymap.set('n', '<leader>sh', pick.help, { desc = 'Search Help' })
+    vim.keymap.set('n', '<leader>sw', pick.grep_word, { desc = 'Search Current Word' })
+    vim.keymap.set('n', '<leader>sg', pick.grep, { desc = 'Search by Grep' })
+    vim.keymap.set('n', '<leader>sd', pick.diagnostics, { desc = 'Search Diagnostics' })
+    vim.keymap.set('n', '<leader>sk', pick.keymaps, { desc = 'Search Keymaps' })
+    vim.keymap.set('n', "<leader>s'", pick.marks, { desc = 'Search Marks' })
+    vim.keymap.set('n', '<leader>s"', pick.registers, { desc = 'Search Registers' })
+    vim.keymap.set('n', '<leader>sf', pick.grep_word, { desc = 'Search word under cursor' })
+  end,
+  keys = {
+    {
+      "<leader>;n",
+      function() Snacks.notifier.show_history() end,
+      desc = "Notification History"
+    },
+    {
+      "]]",
+      function() Snacks.words.jump(vim.v.count1) end,
+      desc = "Next Reference"
+    },
+    {
+      "[[", 
+      function() Snacks.words.jump(-vim.v.count1) end,
+      desc = "Prev Reference"
+    },
   }
+})
+```
+
+
+# VIM-ILLUMINATE
+
+Automatically highlighting other uses of the word under the cursor using either LSP, Tree-sitter, or regex matching.
+___
+[GitHub](https://github.com/RRethy/vim-illuminate)
+```lua
+plug({
+  "RRethy/vim-illuminate",
+  event = { "BufReadPost", "BufNewFile" },
+  opts = {
+    delay = 200,
+    large_file_cutoff = 2000,
+    large_file_overrides = {
+      providers = { "lsp" },
+    },
+  },
+  config = function(_, opts)
+    require("illuminate").configure(opts)
+
+    local function map(key, dir, buffer)
+      vim.keymap.set("n", key, function()
+        require("illuminate")["goto_" .. dir .. "_reference"](false)
+      end, { desc = dir:sub(1, 1):upper() .. dir:sub(2) .. " Reference", buffer = buffer })
+    end
+
+    map("]]", "next")
+    map("[[", "prev")
+
+    -- also set it after loading ftplugins, since a lot overwrite [[ and ]]
+    vim.api.nvim_create_autocmd("FileType", {
+      callback = function()
+        local buffer = vim.api.nvim_get_current_buf()
+        map("]]", "next", buffer)
+        map("[[", "prev", buffer)
+      end,
+    })
+  end,
+  keys = {
+    { "]]", desc = "Next Reference" },
+    { "[[", desc = "Prev Reference" },
+  },
 })
 ```
 
@@ -969,41 +907,6 @@ plug({
 })
 ```
 
-## Harpoon
-
-A per project file bookmark plugin
-___
-[GitHub](https://github.com/ThePrimeagen/harpoon)
-```lua
-plug({
-  'ThePrimeagen/harpoon',
-  enabled = true,
-  dependencies = { 'nvim-lua/plenary.nvim' },
-  opts = {},
-  config = function()
-    -- enable telescope extension
-    local tsh = require("telescope").load_extension('harpoon')
-
-    -- set keymaps
-    vim.keymap.set('n', "<leader>'a", require('harpoon.mark').add_file, { desc = 'Harpoon Add File' })
-    vim.keymap.set('n', "<leader>']", require('harpoon.ui').nav_next, { desc = 'Harpoon Next' })
-    vim.keymap.set('n', "<leader>'[", require('harpoon.ui').nav_prev, { desc = 'Harpoon Previous' })
-    vim.keymap.set("n", "<leader>fh", tsh.marks, { desc = "Find Harpoon" })
-
-    for i = 1, 9 do
-      vim.keymap.set('n', "<leader>'" .. i, function() require('harpoon.ui').nav_file(i) end,
-        { desc = 'Harpoon Nav File' })
-    end
-
-    require('which-key').register({
-      ['<leader>'] = {
-        ["'"] = { name = "+Harpoon" },
-      },
-    })
-  end,
-})
-```
-
 ## Project.nvim
 
 An all in one neovim plugin written in lua that provides superior project management.
@@ -1020,13 +923,20 @@ plug({
       patterns = { ".project", ".git", "_darcs", ".hg", ".bzr", ".svn", "Makefile", "package.json" },
       silent_chdir = false,
     })
-
-    pcall(require('telescope').load_extension('projects'))
   end,
   keys = {
     {
       "<leader>sp",
-      function() require('telescope').load_extension('projects').projects() end,
+      function() 
+        local projects = require("project_nvim").get_recent_projects()
+        Snacks.picker.pick({
+          items = projects,
+          format = function(item) return vim.fn.fnamemodify(item, ":t") .. " (" .. item .. ")" end,
+          preview = false,
+        }, function(item)
+          vim.cmd("cd " .. item)
+        end)
+      end,
       desc = 'Search for Project',
     },
   },
@@ -1061,55 +971,23 @@ plug({
 })
 ```
 
-## ILLUMINATE
-
-Neovim plugin for automatically highlighting other uses of the word under the cursor using either LSP, Tree-sitter, or regex matching.
-___
-[GitHub](https://github.com/RRethy/vim-illuminate)
-```lua
-plug({
-  "RRethy/vim-illuminate",
-  event = { "BufReadPost", "BufNewFile" },
-  opts = {
-    delay = 200,
-    large_file_cutoff = 2000,
-    large_file_overrides = {
-      providers = { "lsp" },
-    },
-  },
-  config = function(_, opts)
-    require("illuminate").configure(opts)
-
-    local function map(key, dir, buffer)
-      vim.keymap.set("n", key, function()
-        require("illuminate")["goto_" .. dir .. "_reference"](false)
-      end, { desc = dir:sub(1, 1):upper() .. dir:sub(2) .. " Reference", buffer = buffer })
-    end
-
-    map("]]", "next")
-    map("[[", "prev")
-
-    -- also set it after loading ftplugins, since a lot overwrite [[ and ]]
-    vim.api.nvim_create_autocmd("FileType", {
-      callback = function()
-        local buffer = vim.api.nvim_get_current_buf()
-        map("]]", "next", buffer)
-        map("[[", "prev", buffer)
-      end,
-    })
-  end,
-  keys = {
-    { "]]", desc = "Next Reference" },
-    { "[[", desc = "Prev Reference" },
-  },
-})
-```
-
 ## Nvim Spider
 
-Use the w, e, b motions like a spider. Move by subwords and skip insignificant punctuation.
+Enhanced word motions that move by subwords and skip insignificant punctuation, making navigation through code more precise and efficient.
+
+This plugin improves Vim's standard `w`, `e`, `b`, and `ge` motions by:
+- **Subword navigation**: Stops at each meaningful part of camelCase, PascalCase, snake_case, and kebab-case identifiers
+- **Smart punctuation handling**: Skips over insignificant punctuation marks that don't add semantic meaning
+- **Programming-optimized**: Perfect for navigating through variable names, function names, and code identifiers
+- **Customizable patterns**: Allows configuration of what constitutes word boundaries
+  
+  **Usage**: The plugin automatically replaces the default `w`, `e`, `b`, and `ge` motions. Use them as normal - they will now be smarter about stopping at meaningful word boundaries.
+  
+  **Help**: Run `:help spider` in Neovim for detailed documentation and configuration options.
+  
+  For example, with `myVariableName.someMethod()`, the `w` motion will stop at each meaningful part: `my`, `Variable`, `Name`, `some`, `Method` rather than jumping over entire compound words.
 ___
-[GitHub](https://github.com/chrisgrieser/nvim-spider)
+  [GitHub](https://github.com/chrisgrieser/nvim-spider)
 ```lua
 plug({
   "chrisgrieser/nvim-spider",
@@ -1124,34 +1002,27 @@ plug({
 })
 ```
 
-## Leap
-
-A general-purpose motion plugin for Neovim.
-___
-[GitHub](https://github.com/ggandor/leap.nvim)
-```lua
-plug({ -- https://github.com/ggandor/leap.nvim
-  "ggandor/leap.nvim",
-  enabled = true,
-  config = function ()
-    local leap = require('leap')
-    leap.create_default_mappings()
-    leap.opts = {
-      highlight_unlabeled_phase_one_targets = true,
-      safe_labels = 'jfkdls;agh',
-      labels = 'jfkdls;aghvncmir',
-    }
-  end,
-})
-```
-
 # GIT
 
 ## Fugitive
 
-A git wrapper plugin.
+A Git wrapper so awesome, it should be illegal. Fugitive is the premier Vim plugin for Git, providing a comprehensive interface for Git operations directly within Neovim.
+  
+  This plugin transforms Neovim into a powerful Git client by:
+- **Complete Git workflow integration**: Stage, commit, push, pull, and merge without leaving your editor
+- **Interactive Git status**: Browse and manipulate your repository state with intuitive commands
+- **Advanced diff viewing**: Compare branches, commits, and working directory changes with sophisticated diff tools
+- **Blame integration**: See line-by-line authorship and commit history inline with your code
+- **Branch management**: Create, switch, and merge branches seamlessly
+- **Conflict resolution**: Resolve merge conflicts with visual three-way diffs
+  
+  **Usage**: Access Git operations through `:Git` commands or use the configured keybindings. The plugin provides both command-line Git access and specialized buffers for interactive Git operations.
+  
+  **Help**: Run `:help fugitive` in Neovim for comprehensive documentation and command reference.
+  
+  For example, `:Git` opens an interactive status window where you can stage files with `s`, unstage with `u`, and commit with `cc`, all while seeing a live diff of your changes.
 ___
-[GitHub](https://github.com/tpope/vim-fugitive)
+  [GitHub](https://github.com/tpope/vim-fugitive)
 ```lua
 plug({
   'tpope/vim-fugitive',
@@ -1184,9 +1055,24 @@ plug({
 
 ## Gitsigns
 
-Adds git related signs to the gutter, as well as utilities for managing changes
+Super fast git decorations implemented purely in Lua. Gitsigns provides comprehensive Git integration for Neovim buffers, displaying visual indicators and enabling seamless Git workflow management.
+  
+  This plugin enhances your Git workflow by:
+- **Visual Git indicators**: Display added, modified, and deleted lines with customizable signs in the gutter
+- **Hunk navigation**: Jump between Git hunks with intuitive keybindings for efficient code review
+- **Interactive staging**: Stage and unstage individual hunks or entire buffers without leaving your editor
+- **Inline blame information**: View Git blame data directly in your buffer to understand code history
+- **Real-time diff preview**: Preview changes with floating windows before committing
+- **Branch and status integration**: See current branch and repository status at a glance
+- **Conflict resolution support**: Visual aids for resolving merge conflicts
+  
+  **Usage**: Git signs appear automatically in the gutter when editing tracked files. Use the configured keybindings to navigate hunks (`]h`/`[h`), stage changes (`<leader>hs`), and preview modifications (`<leader>hp`).
+  
+  **Help**: Run `:help gitsigns` in Neovim for comprehensive documentation and configuration options.
+  
+  For example, when you modify a tracked file, you'll see `~` signs for changed lines, `+` for additions, and `-` for deletions, allowing you to quickly identify and manage your changes.
 ___
-[GitHub](https://github.com/lewis6991/gitsigns.nvim)
+  [GitHub](https://github.com/lewis6991/gitsigns.nvim)
 ```lua
 plug({
   'lewis6991/gitsigns.nvim',
@@ -1228,7 +1114,7 @@ plug({
 
 Single tabpage interface for easily cycling through diffs for all modified files for any git rev.
 ___
-[GitHub](https://github.com/sindrets/diffview.nvim)
+  [GitHub](https://github.com/sindrets/diffview.nvim)
 ```lua
 plug({
   "sindrets/diffview.nvim",
@@ -1248,9 +1134,9 @@ plug({
 
 Language Server Protocol
 ___
-The Language Server Protocol (LSP) defines the protocol used between an editor or IDE and a language server that provides language features like auto complete, go to definition, find all references etc. The goal of the Language Server Index Format (LSIF, pronounced like "else if") is to support rich code navigation in development tools or a Web UI without needing a local copy of the source code.
+  The Language Server Protocol (LSP) defines the protocol used between an editor or IDE and a language server that provides language features like auto complete, go to definition, find all references etc. The goal of the Language Server Index Format (LSIF, pronounced like "else if") is to support rich code navigation in development tools or a Web UI without needing a local copy of the source code.
 ___
-[Official LSP Home](https://microsoft.github.io/language-server-protocol/)
+  [Official LSP Home](https://microsoft.github.io/language-server-protocol/)
 ```lua
 plug({
 -- Collection of functions that will help you setup Neovim's LSP client
@@ -1300,24 +1186,18 @@ config = function()
       return { buffer = bufnr, remap = false, desc = desc }
     end
 
-    local ts = require('telescope.builtin')
-
     vim.keymap.set({ 'n', 'x' }, '<leader>lf', function()
       vim.lsp.buf.format({ async = false, timeout_ms = 10000 })
     end, opts('Lsp format buffer'))
 
     vim.keymap.set("n", "[d", function() vim.diagnostic.goto_next() end, opts("Go To Next Diagnostic"))
     vim.keymap.set("n", "]d", function() vim.diagnostic.goto_prev() end, opts("Go To Previous Diagnostic"))
-    -- vim.keymap.set("n", "gd", function() vim.lsp.buf.definition() end, opts("Go To Definition"))
-    vim.keymap.set("n", "gd", ts.lsp_definitions, opts("Go To Definition"))
+    vim.keymap.set("n", "gd", function() Snacks.picker.lsp_definitions() end, opts("Go To Definition"))
     vim.keymap.set("n", "<leader>la", function() vim.lsp.buf.code_action() end, opts("Code Action"))
     vim.keymap.set("n", "<leader>lh", function() vim.lsp.buf.hover() end, opts("Hover"))
     vim.keymap.set("n", "<leader>lH", function() vim.lsp.buf.signature_help() end, opts("Signiture Help"))
-    -- vim.keymap.set("n", "<leader>ls", function() vim.lsp.buf.workspace_symbol() end, opts("Workspace Symbol"))
-    vim.keymap.set("n", "<leader>ls", ts.lsp_workspace_symbols, opts("Workspace Symbol"))
-    -- vim.keymap.set("n", "<leader>vd", function() vim.diagnostic.open_float() end, opts("Open Float"))
-    -- vim.keymap.set("n", "<leader>lr", function() vim.lsp.buf.references() end, opts("References"))
-    vim.keymap.set("n", "<leader>lr", ts.lsp_references, opts("References"))
+    vim.keymap.set("n", "<leader>ls", function() Snacks.picker.lsp_workspace_symbols() end, opts("Workspace Symbol"))
+    vim.keymap.set("n", "<leader>lr", function() Snacks.picker.lsp_references() end, opts("References"))
     vim.keymap.set("n", "<leader>li", function() vim.lsp.buf.implementation() end, opts("Implementation"))
     vim.keymap.set("n", "<leader>lR", function() vim.lsp.buf.rename() end, opts("Rename"))
     vim.keymap.set("n", "<leader>lI", '<cmd>LspInfo<CR>', opts("LspInfo"))
@@ -1489,7 +1369,7 @@ end,
 
 A Debug Adapter Protocol client implementation for Neovim
 ___
-[GitHub](https://github.com/mfussenegger/nvim-dap)
+  [GitHub](https://github.com/mfussenegger/nvim-dap)
 ```lua
 plug({
 'mfussenegger/nvim-dap',
@@ -1595,7 +1475,7 @@ end,
 
 Smart and Powerful commenting plugin for neovim
 ___
-[GitHub](https://github.com/numToStr/Comment.nvim)
+  [GitHub](https://github.com/numToStr/Comment.nvim)
 ```lua
 plug({ 'numToStr/Comment.nvim', opts = {} })
 ```
@@ -1604,7 +1484,7 @@ plug({ 'numToStr/Comment.nvim', opts = {} })
 
 Extended increment/decrement plugin
 ___
-[GitHub](https://github.com/monaqa/dial.nvim)
+  [GitHub](https://github.com/monaqa/dial.nvim)
 ```lua
 plug({
  'monaqa/dial.nvim',
@@ -1656,7 +1536,7 @@ plug({
 
 Add, delete, change and select surrounding pairs
 ___
-[GitHub](https://github.com/kylechui/nvim-surround)
+  [GitHub](https://github.com/kylechui/nvim-surround)
 ```lua
 plug({
  "kylechui/nvim-surround",
@@ -1674,14 +1554,16 @@ plug({
 
 Bundle of more than two dozen new textobjects for Neovim.
 ___
-[GitHub](https://github.com/chrisgrieser/nvim-various-textobjs)
+  [GitHub](https://github.com/chrisgrieser/nvim-various-textobjs)
 ```lua
 plug({
   "chrisgrieser/nvim-various-textobjs",
   lazy = false,
   opts = {
-    useDefaultKeymaps = true,
-    disabledKeymaps = { "gc" },
+    keymaps = {
+      useDefault = true,
+      disable = { "gc" },
+    }
   },
 })
 ```
@@ -1690,7 +1572,7 @@ plug({
 
 A plugin for splitting/joining blocks of code like arrays, hashes, statements, objects, dictionaries and more.
 ___
-[GitHub](https://github.com/Wansmer/treesj)
+  [GitHub](https://github.com/Wansmer/treesj)
 ```lua
 plug({
   "Wansmer/treesj",
@@ -1705,7 +1587,7 @@ plug({
 
 Case conversion, upper to lower to camel to snake and more.
 ___
-[GitHub](https://github.com/johmsalas/text-case.nvim)
+  [GitHub](https://github.com/johmsalas/text-case.nvim)
 ```lua
 plug({
   "johmsalas/text-case.nvim",
@@ -1755,7 +1637,7 @@ plug({
 
 Automatic list continuation and formatting.
 ___
-[GitHub](https://github.com/gaoDean/autolist.nvim)
+  [GitHub](https://github.com/gaoDean/autolist.nvim)
 ```lua
 plug({
   "gaoDean/autolist.nvim",
@@ -1801,7 +1683,7 @@ plug({
 
 Persist and toggle multiple terminals during an editing session.
 ___
-[GitHub](https://github.com/akinsho/toggleterm.nvim)
+  [GitHub](https://github.com/akinsho/toggleterm.nvim)
 ```lua
 plug({
   'akinsho/toggleterm.nvim',
@@ -1867,7 +1749,7 @@ plug({
 
 Open files from terminal buffers without creating a nested session.
 ___
-[GitHub](https://github.com/willothy/flatten.nvim)
+  [GitHub](https://github.com/willothy/flatten.nvim)
 ```lua
 plug({
    "willothy/flatten.nvim",
@@ -1939,7 +1821,7 @@ plug({
 
 Table creator & formatter allowing one to create neat tables as you type.
 ___
-[GitHub](https://github.com/dhruvasagar/vim-table-mode)
+  [GitHub](https://github.com/dhruvasagar/vim-table-mode)
 ```lua
 plug({ "https://github.com/dhruvasagar/vim-table-mode" })
 ```
@@ -1948,7 +1830,7 @@ plug({ "https://github.com/dhruvasagar/vim-table-mode" })
 
 To highlight and search for todo comments like TODO, HACK, BUG in your code base.
 ___
-[GitHub](https://github.com/folke/todo-comments.nvim)
+  [GitHub](https://github.com/folke/todo-comments.nvim)
 ```lua
 plug({
   "folke/todo-comments.nvim",
@@ -1972,7 +1854,7 @@ plug({
 
 A better user experience for interacting with and manipulating Vim marks.
 ___
-[GitHub](https://github.com/chentoast/marks.nvim)
+  [GitHub](https://github.com/chentoast/marks.nvim)
 ```lua
 plug({
   'chentoast/marks.nvim',
@@ -1993,7 +1875,7 @@ plug({
 
 Generate table of contents for markdown files.
 ___
-[GitHub](https://github.com/richardbizik/nvim-toc)
+  [GitHub](https://github.com/richardbizik/nvim-toc)
 ```lua
 plug({
   'richardbizik/nvim-toc',
@@ -2025,7 +1907,7 @@ plug({
 
 Preview Markdown in your modern browser with synchronised scrolling and flexible configuration.
 ___
-[GitHub](https://github.com/iamcco/markdown-preview.nvim)
+  [GitHub](https://github.com/iamcco/markdown-preview.nvim)
 ```lua
 plug({
   "iamcco/markdown-preview.nvim",
@@ -2039,10 +1921,11 @@ plug({
 
 Add treesitter highlights to markdown code blocks.
 ___
-[GitHub](https://github.com/yaocccc/nvim-hl-mdcodeblock.lua)
+  [GitHub](https://github.com/yaocccc/nvim-hl-mdcodeblock.lua)
 ```lua
 plug({
   'yaocccc/nvim-hl-mdcodeblock.lua',
+  enabled = false,
   dependencies = {'nvim-treesitter/nvim-treesitter'},
   config = function()
     require('hl-mdcodeblock').setup({
@@ -2055,9 +1938,9 @@ plug({
 # TROUBLE
 
 A pretty list for showing diagnostics, references, telescope results, quickfix
-and location lists to help you solve all the trouble your code is causing.
+  and location lists to help you solve all the trouble your code is causing.
 ___
-[GitHub](https://github.com/folke/trouble.nvim)
+  [GitHub](https://github.com/folke/trouble.nvim)
 ```lua
 plug({
   "folke/trouble.nvim",
@@ -2079,7 +1962,7 @@ plug({
 
 A lua plugin that displays a popup with possible key bindings of the command you started typing.
 ___
-[GitHub](https://github.com/folke/which-key.nvim)
+  [GitHub](https://github.com/folke/which-key.nvim)
 ```lua
 plug({
   'folke/which-key.nvim',
@@ -2113,9 +1996,9 @@ plug({
 # HLSLENS
 
 Nvim-hlslens helps you better glance at matched information, seamlessly jump between matched instances.
-When searching, search count is shown next to the cursor as virtual text.
+  When searching, search count is shown next to the cursor as virtual text.
 ___
-[GitHub](https://github.com/kevinhwang91/nvim-hlslens)
+  [GitHub](https://github.com/kevinhwang91/nvim-hlslens)
 ```lua
 plug({
   "kevinhwang91/nvim-hlslens",
@@ -2128,7 +2011,7 @@ plug({
 
 Improve yank and put functionalities for Neovim.
 ___
-[GitHub](https://github.com/gbprod/yanky.nvim)
+  [GitHub](https://github.com/gbprod/yanky.nvim)
 ```lua
 plug({
   "gbprod/yanky.nvim",
@@ -2142,18 +2025,8 @@ plug({
     require("yanky").setup({
       ring = {
         history_length = 100,
-        -- storage = "shada",
         sync_with_numbered_registers = true,
         cancel_event = "update",
-      },
-      picker = {
-        select = {
-          action = nil, -- nil to use default put action
-        },
-        -- telescope = {
-        --   use_default_mappings = true, -- if default mappings should be used
-        --   mappings = nil, -- nil to use default mappings or no mappings (see `use_default_mappings`)
-        -- },
       },
       system_clipboard = {
         sync_with_ring = true,
@@ -2168,28 +2041,21 @@ plug({
       },
     })
   end,
-  opts = function()
-    local mapping = require("yanky.telescope.mapping")
-    local mappings = mapping.get_defaults()
-    mappings.i["<c-p>"] = nil
-    return {
-      highlight = { timer = 200 },
-      ring = { storage = jit.os:find("Windows") and "shada" or "sqlite" },
-      picker = {
-        telescope = {
-          use_default_mappings = false,
-          mappings = mappings,
-        },
-      },
-    }
-  end,
   keys = {
-    -- stylua: ignore
     {
       "<leader>p",
-      function() require("telescope").extensions.yank_history.yank_history({}) end,
-      desc =
-        "Open Yank History"
+      function() 
+        local yanky = require("yanky")
+        local history = yanky.history()
+        Snacks.picker.pick({
+          items = history,
+          format = function(item) return item.regcontents end,
+          preview = false,
+        }, function(item)
+          yanky.put(item)
+        end)
+      end,
+      desc = "Open Yank History"
     },
     {
       "y",
@@ -2301,13 +2167,13 @@ plug({
   },
 })
 ```
-@end
+  @end
 
 # MINI SESSIONS
 
 Session management (read, write, delete)
 ___
-[GitHub](https://github.com/echasnovski/mini.nvim/blob/main/readmes/mini-sessions.md)
+  [GitHub](https://github.com/echasnovski/mini.nvim/blob/main/readmes/mini-sessions.md)
 ```lua
 plug({
   'echasnovski/mini.sessions',
@@ -2335,7 +2201,7 @@ plug({
 
 The goal of nvim-treesitter is both to provide a simple and easy way to use the interface for tree-sitter in Neovim and to provide some basic functionality such as highlighting based on it.
 ___
-[GitHub](https://github.com/nvim-treesitter/nvim-treesitter)
+  [GitHub](https://github.com/nvim-treesitter/nvim-treesitter)
 ```lua
 plug({
   -- Highlight, edit, and navigate code
@@ -2449,7 +2315,7 @@ plug({
 
 Wisely add "end" in Ruby, Lua, Vimscript, etc.
 ___
-[GitHub](https://github.com/RRethy/nvim-treesitter-endwise)
+  [GitHub](https://github.com/RRethy/nvim-treesitter-endwise)
 ```lua
 plug({ -- basically autopair, but for keywords
   "RRethy/nvim-treesitter-endwise",
@@ -2462,7 +2328,7 @@ plug({ -- basically autopair, but for keywords
 
 Shows virtual text of the current context after functions, methods, statements, etc.
 ___
-[GitHub](https://github.com/andersevenrud/nvim_context_vt)
+  [GitHub](https://github.com/andersevenrud/nvim_context_vt)
 ```lua
 plug({ -- virtual text context at the end of a scope
   "haringsrob/nvim_context_vt",
@@ -2500,7 +2366,7 @@ plug({ -- virtual text context at the end of a scope
 
 Extend and create a/i textobjects.
 ___
-[GitHub](https://github.com/echasnovski/mini.ai)
+  [GitHub](https://github.com/echasnovski/mini.ai)
 ```lua
 plug({ -- extend and create a/i textobjects
   "echasnovski/mini.ai",
@@ -2569,9 +2435,9 @@ plug({ -- extend and create a/i textobjects
 # LAZY
 
 Set up the `lazy.nvim` plugin manager, use the `plugins` table to install and load plugins.
-See [Lazy Helper Function](#lazy-helper-function) for the `plugin()` function.
+  See [Lazy Helper Function](#lazy-helper-function) for the `plugin()` function.
 ___
-[GitHub](https://github.com/folke/lazy.nvim)
+  [GitHub](https://github.com/folke/lazy.nvim)
 
 ```lua
 local lazypath = vim.fn.stdpath 'data' .. '/lazy/lazy.nvim'
@@ -2702,6 +2568,7 @@ end
 
 -- Terminal Mappings
 map("t", "<esc><esc>", "<c-\\><c-n>", { desc = "Enter Normal Mode" })
+map("t", "<c-[><c-[>", "<c-\\><c-n>", { desc = "Enter Normal Mode" })
 map("t", "<C-h>", "<cmd>wincmd h<cr>", { desc = "Go to left window" })
 map("t", "<C-j>", "<cmd>wincmd j<cr>", { desc = "Go to lower window" })
 map("t", "<C-k>", "<cmd>wincmd k<cr>", { desc = "Go to upper window" })
