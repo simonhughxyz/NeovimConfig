@@ -1248,20 +1248,19 @@ A collection of small QoL plugins for Neovim.
     vim.keymap.set("n", "<leader>;m", "<cmd>Mason<cr>", { desc = "Mason Plugin Manager" })
   
     local null_ls = require("null-ls")
-  
+
     local o = vim.o
     null_ls.setup({
       sources = {
         null_ls.builtins.formatting.stylua.with({ extra_args = { '--indent_type=spaces', '--indent_width=' .. o.tabstop } }),
-        null_ls.builtins.diagnostics.eslint,
         null_ls.builtins.diagnostics.trail_space,
-  
+
         null_ls.builtins.formatting.black, -- python formatting
-  
+
         null_ls.builtins.completion.spell,
         null_ls.builtins.diagnostics.codespell,
         null_ls.builtins.diagnostics.write_good,
-  
+
         null_ls.builtins.formatting.prettierd,
         null_ls.builtins.diagnostics.markdownlint, -- markdown
       },
@@ -1273,7 +1272,6 @@ A collection of small QoL plugins for Neovim.
         "ruff",  -- python linter
         "mypy",  -- python type checker
         "black", -- python formatter
-        "eslint",
         "trail_space",
         "spell",
         "codespell",
@@ -1480,8 +1478,11 @@ A collection of small QoL plugins for Neovim.
     require('dap-go').setup()
   
     -- Setup python dap
-    local debug_py_path = mason_registry.get_package("debugpy"):get_install_path() .. "/venv/bin/python"
-    require('dap-python').setup(debug_py_path)
+    if mason_registry.is_installed("debugpy") then
+      local debugpy_package = mason_registry.get_package("debugpy")
+      local debug_py_path = debugpy_package:get_install_path() .. "/venv/bin/python"
+      require('dap-python').setup(debug_py_path)
+    end
   end,
   })
   @end
@@ -1944,29 +1945,25 @@ A collection of small QoL plugins for Neovim.
   plug({
     'folke/which-key.nvim',
     enabled = true,
-    config = function()
-      local wk = require('which-key')
-  
-      wk.register({
-        ['<leader>'] = {
-          ["<Tab>"] = { name = '+Tab' },
-          [";"] = { name = '+Command' },
-          b = { name = '+Buffer' },
-          c = { name = '+Case' },
-          C = { name = '+Case' },
-          d = { name = '+Debug' },
-          f = { name = '+Find' },
-          g = { name = '+Git' },
-          h = { name = '+Hunk' },
-          l = { name = '+Lsp' },
-          s = { name = '+Search' },
-          t = { name = '+Table' },
-          T = { name = '+Text' },
-          w = { name = '+Window' },
-          x = { name = '+Diagnostics' },
-        },
-      })
-    end,
+    opts = {
+      spec = {
+        { "<leader>;", group = "Command" },
+        { "<leader><Tab>", group = "Tab" },
+        { "<leader>C", group = "Case" },
+        { "<leader>T", group = "Text" },
+        { "<leader>b", group = "Buffer" },
+        { "<leader>c", group = "Case" },
+        { "<leader>d", group = "Debug" },
+        { "<leader>f", group = "Find" },
+        { "<leader>g", group = "Git" },
+        { "<leader>h", group = "Hunk" },
+        { "<leader>l", group = "Lsp" },
+        { "<leader>s", group = "Search" },
+        { "<leader>t", group = "Table" },
+        { "<leader>w", group = "Window" },
+        { "<leader>x", group = "Diagnostics" },
+      },
+    },
   })
   @end
 * HLSLENS
@@ -2350,45 +2347,56 @@ A collection of small QoL plugins for Neovim.
     end,
     config = function(_, opts)
       require("mini.ai").setup(opts)
-      -- register all text objects with which-key
-      local i = {
-        [" "] = "Whitespace",
-        ['"'] = 'Balanced "',
-        ["'"] = "Balanced '",
-        ["`"] = "Balanced `",
-        ["("] = "Balanced (",
-        [")"] = "Balanced ) including white-space",
-        [">"] = "Balanced > including white-space",
-        ["<lt>"] = "Balanced <",
-        ["]"] = "Balanced ] including white-space",
-        ["["] = "Balanced [",
-        ["}"] = "Balanced } including white-space",
-        ["{"] = "Balanced {",
-        ["?"] = "User Prompt",
-        _ = "Underscore",
-        a = "Argument",
-        b = "Balanced ), ], }",
-        c = "Class",
-        f = "Function",
-        o = "Block, conditional, loop",
-        q = "Quote `, \", '",
-        t = "Tag",
-      }
-      local a = vim.deepcopy(i)
-      for k, v in pairs(a) do
-        a[k] = v:gsub(" including.*", "")
-      end
-  
-      local ic = vim.deepcopy(i)
-      local ac = vim.deepcopy(a)
-      for key, name in pairs({ n = "Next", l = "Last" }) do
-        i[key] = vim.tbl_extend("force", { name = "Inside " .. name .. " textobject" }, ic)
-        a[key] = vim.tbl_extend("force", { name = "Around " .. name .. " textobject" }, ac)
-      end
-      require("which-key").register({
+      -- register all text objects with which-key using new spec format
+      local wk = require("which-key")
+      wk.add({
         mode = { "o", "x" },
-        i = i,
-        a = a,
+        { "i ", desc = "Whitespace" },
+        { 'i"', desc = 'Balanced "' },
+        { "i'", desc = "Balanced '" },
+        { "i`", desc = "Balanced `" },
+        { "i(", desc = "Balanced (" },
+        { "i)", desc = "Balanced ) including white-space" },
+        { "i>", desc = "Balanced > including white-space" },
+        { "i<", desc = "Balanced <" },
+        { "i]", desc = "Balanced ] including white-space" },
+        { "i[", desc = "Balanced [" },
+        { "i}", desc = "Balanced } including white-space" },
+        { "i{", desc = "Balanced {" },
+        { "i?", desc = "User Prompt" },
+        { "i_", desc = "Underscore" },
+        { "ia", desc = "Argument" },
+        { "ib", desc = "Balanced ), ], }" },
+        { "ic", desc = "Class" },
+        { "if", desc = "Function" },
+        { "io", desc = "Block, conditional, loop" },
+        { "iq", desc = "Quote `, \", '" },
+        { "it", desc = "Tag" },
+        { "in", group = "Inside Next textobject" },
+        { "il", group = "Inside Last textobject" },
+        { "a ", desc = "Whitespace" },
+        { 'a"', desc = 'Balanced "' },
+        { "a'", desc = "Balanced '" },
+        { "a`", desc = "Balanced `" },
+        { "a(", desc = "Balanced (" },
+        { "a)", desc = "Balanced )" },
+        { "a>", desc = "Balanced >" },
+        { "a<", desc = "Balanced <" },
+        { "a]", desc = "Balanced ]" },
+        { "a[", desc = "Balanced [" },
+        { "a}", desc = "Balanced }" },
+        { "a{", desc = "Balanced {" },
+        { "a?", desc = "User Prompt" },
+        { "a_", desc = "Underscore" },
+        { "aa", desc = "Argument" },
+        { "ab", desc = "Balanced ), ], }" },
+        { "ac", desc = "Class" },
+        { "af", desc = "Function" },
+        { "ao", desc = "Block, conditional, loop" },
+        { "aq", desc = "Quote `, \", '" },
+        { "at", desc = "Tag" },
+        { "an", group = "Around Next textobject" },
+        { "al", group = "Around Last textobject" },
       })
     end,
   })
