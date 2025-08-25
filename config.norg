@@ -305,7 +305,7 @@ version: 1.1.1
    
    For example, in nested function calls like `func(array[index(key)])`, each level of brackets will appear in a different color, making the structure immediately clear.
    ___
-   [GitHub]{https://github.com/p00f/nvim-ts-rainbow}
+   [GitHub]{https://github.com/HiPhish/rainbow-delimiters.nvim}
 
    @code lua
    plug({
