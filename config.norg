@@ -13,7 +13,7 @@ tangle: {
   }
 }
 created: 2024-03-06T23:01:44+0100
-updated: 2025-08-24T20:52:20+0100
+updated: 2025-08-26T06:48:37+0100
 version: 1.1.1
 @end
 
@@ -97,7 +97,38 @@ version: 1.1.1
   @code lua
   local plugins = {}
   
+  local function wrap_config(plugin)
+    local user_config = plugin.config
+  
+    -- handle `true` or `{}` (empty table)
+    if user_config == true or (type(user_config) == "table" and vim.tbl_isempty(user_config)) then
+      -- Lazy automatically does `require(MAIN).setup(opts)`
+      -- so we build that manually here
+      -- strip the .nvim if it exists also to try and guess the name
+      local main = plugin.main or plugin.name or (plugin[1] and plugin[1]:match(".*/(.*)"))
+      if main then
+        main = main:gsub("%.nvim$", "") -- strip .nvim suffix
+      end
+      user_config = function(_, opts)
+        require(main).setup(opts)
+      end
+    end
+  
+    -- wrap function (if it’s a function now)
+    if type(user_config) == "function" then
+      plugin.config = function(...)
+        local ok, err = pcall(user_config, ...)
+        if not ok then
+          vim.notify(("Plugin '%s' setup failed:\n%s"):format(plugin.name or plugin[1], err), vim.log.levels.ERROR)
+        end
+      end
+    end
+  end
+  
   function plug(plugin)
+    if plugin.config ~= nil then
+      wrap_config(plugin)
+    end
     plugins[#plugins +1] = plugin
   end
   @end
