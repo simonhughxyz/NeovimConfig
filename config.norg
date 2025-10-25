@@ -1551,7 +1551,22 @@ A collection of small QoL plugins for Neovim.
    plug({ 'numToStr/Comment.nvim', opts = {} })
    @end
 ** Dial.nvim
-   Extended increment/decrement plugin
+   A powerful and extensible increment/decrement plugin that goes far beyond Vim's built-in `<C-a>` and `<C-x>` functionality. Dial.nvim provides intelligent manipulation of numbers, dates, boolean values, and custom patterns with context-aware behavior.
+
+   This enhancement plugin offers:
+   - *Smart number handling*: Increment/decrement decimal, hexadecimal, binary, and octal numbers with proper formatting preservation
+   - *Date and time manipulation*: Intelligent handling of various date formats, times, and calendar operations
+   - *Boolean and keyword cycling*: Toggle between true/false, yes/no, on/off, and custom word pairs
+   - *Custom augend support*: Define your own increment/decrement patterns for domain-specific workflows
+   - *Visual mode operations*: Apply increment/decrement operations across multiple lines and selections
+   - *Sequence generation*: Create numbered sequences and patterns with `g<C-a>` and `g<C-x>`
+   - *Context awareness*: Different behaviors based on file type and cursor position
+
+   **Usage**: Use `<C-a>` and `<C-x>` for basic increment/decrement, `g<C-a>` and `g<C-x>` for sequence operations. The plugin automatically detects the type of value under the cursor and applies appropriate transformations.
+
+   **Help**: Run `:help dial` for comprehensive documentation. The plugin supports extensive customization for adding new increment/decrement patterns.
+
+   For example, with the cursor on "Monday", pressing `<C-a>` changes it to "Tuesday", on "true" it becomes "false", and on dates like "2024-01-15" it increments to "2024-01-16".
    ___
    [GitHub]{https://github.com/monaqa/dial.nvim}
    @code lua
@@ -1570,6 +1585,12 @@ A collection of small QoL plugins for Neovim.
           augend.date.alias["%m/%d"],
           augend.date.alias["%H:%M"],
           augend.constant.new {
+            elements = { "True", "False" },
+            word = true,   -- if false, "sand" is incremented into "sor", "doctor" into "doctand", etc.
+            cyclic = true, -- "or" is incremented into "and".
+            preserve_case = true,
+          },
+          augend.constant.new {
             elements = { "and", "or" },
             word = true,   -- if false, "sand" is incremented into "sor", "doctor" into "doctand", etc.
             cyclic = true, -- "or" is incremented into "and".
@@ -1585,6 +1606,72 @@ A collection of small QoL plugins for Neovim.
             elements = { "&&", "||" },
             word = false,
             cyclic = true,
+          },
+          augend.constant.new {
+            elements = { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" },
+            word = true,
+            cyclic = true,
+            preserve_case = true,
+          },
+          augend.constant.new {
+            elements = { "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" },
+            word = true,
+            cyclic = true,
+            preserve_case = true,
+          },
+          augend.constant.new {
+            elements = { "first", "second", "third", "fourth", "fifth", "sixth", "seventh", "eighth", "ninth", "tenth" },
+            word = true,
+            cyclic = true,
+            preserve_case = true,
+          },
+          augend.constant.new {
+            elements = { "left", "right" },
+            word = true,
+            cyclic = true,
+            preserve_case = true,
+          },
+          augend.constant.new {
+            elements = { "up", "down" },
+            word = true,
+            cyclic = true,
+            preserve_case = true,
+          },
+          augend.constant.new {
+            elements = { "top", "bottom" },
+            word = true,
+            cyclic = true,
+            preserve_case = true,
+          },
+          augend.constant.new {
+            elements = { "start", "end" },
+            word = true,
+            cyclic = true,
+            preserve_case = true,
+          },
+          augend.constant.new {
+            elements = { "enable", "disable" },
+            word = true,
+            cyclic = true,
+            preserve_case = true,
+          },
+          augend.constant.new {
+            elements = { "on", "off" },
+            word = true,
+            cyclic = true,
+            preserve_case = true,
+          },
+          augend.constant.new {
+            elements = { "width", "height" },
+            word = true,
+            cyclic = true,
+            preserve_case = true,
+          },
+          augend.constant.new {
+            elements = { "horizontal", "vertical" },
+            word = true,
+            cyclic = true,
+            preserve_case = true,
           },
         },
       }
