@@ -1894,7 +1894,6 @@ A collection of small QoL plugins for Neovim.
    @code lua
    plug({
       "willothy/flatten.nvim",
-      branch = "1.0-dev",
       opts = function()
         ---@type Terminal?
         local saved_terminal
