@@ -597,6 +597,7 @@ version: 1.1.1
   @code lua
   plug({
     "nvim-neorg/neorg",
+    lazy = false, -- Neorg does not like lazy loading
     build = ":Neorg sync-parsers",
     dependencies = {
       "nvim-lua/plenary.nvim",
@@ -605,8 +606,8 @@ version: 1.1.1
       "nvim-treesitter/nvim-treesitter-textobjects",
       "hrsh7th/nvim-cmp",
     },
-    ft = "norg",
-    cmd = "Neorg",
+     -- ft = "norg",
+     -- cmd = "Neorg",
     config = function()
       require("neorg").setup({
         load = {
