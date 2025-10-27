@@ -1207,6 +1207,45 @@ A collection of small QoL plugins for Neovim.
      },
    })
   @end
+
+** Octo
+   A comprehensive GitHub integration plugin that brings the full power of GitHub directly into your Neovim workflow. Octo transforms your editor into a complete GitHub client, enabling seamless issue management, pull request reviews, and repository interactions without leaving your development environment.
+
+   This GitHub integration provides:
+   - *Issue management*: Create, edit, comment on, and close GitHub issues with full markdown support
+   - *Pull request workflow*: Review PRs, add comments, approve changes, and manage the entire review process
+   - *Repository browsing*: Navigate repositories, view file histories, and explore codebases directly from Neovim
+   - *Collaborative features*: Real-time collaboration with team members through comments and discussions
+   - *Search capabilities*: Find issues, PRs, and code across repositories with powerful search functionality
+   - *Notification handling*: Stay updated with GitHub notifications and activity feeds
+   - *Multi-repository support*: Work with multiple repositories and organizations seamlessly
+
+   *Usage*: Access GitHub features through Octo commands like `:Octo issue list`, `:Octo pr checkout`, and `:Octo review start`. The plugin integrates with your picker (Snacks) for enhanced navigation and selection.
+
+   *Help*: Run `:help octo` for comprehensive documentation. The plugin requires GitHub CLI authentication and provides extensive customization options for workflows.
+
+   For example, use `:Octo pr list` to browse pull requests, `:Octo issue create` to file new issues, and `:Octo review start` to begin code reviews, all with full syntax highlighting and markdown support.
+   ___
+   [GitHub]{https://github.com/pwntester/octo.nvim}
+   @code lua
+   plug({
+     'pwntester/octo.nvim',
+     cmd = "Octo",
+     requires = {
+       'nvim-lua/plenary.nvim',
+       -- 'nvim-telescope/telescope.nvim',
+       -- OR 'ibhagwan/fzf-lua',
+       'folke/snacks.nvim',
+       'nvim-tree/nvim-web-devicons',
+     },
+     config = function ()
+       require"octo".setup({
+         picker = "snacks"
+       })
+     end
+   })
+   @end
+
 * LSP
   Language Server Protocol
   ___
