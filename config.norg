@@ -1288,6 +1288,8 @@ A collection of small QoL plugins for Neovim.
     { 'hrsh7th/cmp-path' },
     { 'hrsh7th/cmp-emoji' },
     { 'hrsh7th/cmp-calc' },
+  
+      { "SmiteshP/nvim-navic" }, -- show code context
   },
   config = function()
     local lsp_zero = require('lsp-zero')
@@ -1316,6 +1318,11 @@ A collection of small QoL plugins for Neovim.
       vim.keymap.set("n", "<leader>li", function() vim.lsp.buf.implementation() end, opts("Implementation"))
       vim.keymap.set("n", "<leader>lR", function() vim.lsp.buf.rename() end, opts("Rename"))
       vim.keymap.set("n", "<leader>lI", '<cmd>LspInfo<CR>', opts("LspInfo"))
+  
+      -- navic
+      if client.server_capabilities.documentSymbolProvider then
+          navic.attach(client, bufnr)
+      end
     end)
   
     require('mason').setup({})
