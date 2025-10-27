@@ -1889,7 +1889,22 @@ A collection of small QoL plugins for Neovim.
    })
 @end
 ** Flatten
-   Open files from terminal buffers without creating a nested session.
+   A smart session management plugin that prevents nested Neovim instances when opening files from terminal buffers, providing seamless file editing without disrupting your workflow. Flatten automatically detects when you're trying to open files from within a terminal and handles them intelligently.
+
+   This session manager provides:
+   - *Nested session prevention*: Automatically opens files in the existing Neovim instance instead of creating nested sessions
+   - *Terminal integration*: Seamlessly works with terminal buffers and external commands that invoke Neovim
+   - *Git workflow optimization*: Perfect for Git operations like commits, rebases, and interactive staging that spawn editors
+   - *Blocking mode support*: Handles blocking operations where the terminal waits for the editor to close
+   - *Toggleterm integration*: Smart integration with toggleterm plugin for enhanced terminal workflow
+   - *Automatic cleanup*: Intelligently manages buffer lifecycle for temporary files like Git commits
+   - *Window management*: Flexible options for how and where opened files appear in your workspace
+
+   *Usage*: The plugin works automatically in the background. When you run commands like `git commit` or `nvim file.txt` from a terminal buffer, files open in your existing session instead of creating nested instances.
+
+   *Help*: Run `:help flatten` for configuration options. The plugin is particularly useful for Git workflows and any terminal-based operations that need to open files for editing.
+
+   For example, when you run `git commit` from a terminal buffer, the commit message file opens in your current Neovim session, and the terminal waits until you save and close the file before continuing.
    ___
    [GitHub]{https://github.com/willothy/flatten.nvim}
    @code lua
