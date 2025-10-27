@@ -10,7 +10,7 @@ tangle:
   languages: 
     lua: ./lua/config.lua
 created: 2024-03-06T23:01:44+0100
-updated: 2025-08-23T13:47:38+0100
+updated: 2025-10-27T22:44:12+0100
 version: 1.1.1
 ---
 
@@ -106,7 +106,38 @@ ___
 ```lua
 local plugins = {}
 
+local function wrap_config(plugin)
+  local user_config = plugin.config
+
+  -- handle `true` or `{}` (empty table)
+  if user_config == true or (type(user_config) == "table" and vim.tbl_isempty(user_config)) then
+    -- Lazy automatically does `require(MAIN).setup(opts)`
+    -- so we build that manually here
+    -- strip the .nvim if it exists also to try and guess the name
+    local main = plugin.main or plugin.name or (plugin[1] and plugin[1]:match(".*/(.*)"))
+    if main then
+      main = main:gsub("%.nvim$", "") -- strip .nvim suffix
+    end
+    user_config = function(_, opts)
+      require(main).setup(opts)
+    end
+  end
+
+  -- wrap function (if it’s a function now)
+  if type(user_config) == "function" then
+    plugin.config = function(...)
+      local ok, err = pcall(user_config, ...)
+      if not ok then
+        vim.notify(("Plugin '%s' setup failed:\n%s"):format(plugin.name or plugin[1], err), vim.log.levels.ERROR)
+      end
+    end
+  end
+end
+
 function plug(plugin)
+  if plugin.config ~= nil then
+    wrap_config(plugin)
+  end
   plugins[#plugins +1] = plugin
 end
 ```
@@ -326,23 +357,39 @@ This plugin offers:
   
   For example, in nested function calls like `func(array[index(key)])`, each level of brackets will appear in a different color, making the structure immediately clear.
 ___
-  [GitHub](https://github.com/p00f/nvim-ts-rainbow)
+  [GitHub](https://github.com/HiPhish/rainbow-delimiters.nvim)
 
 ```lua
 plug({
-  "p00f/nvim-ts-rainbow",
+  "HiPhish/rainbow-delimiters.nvim",
   event = { "BufReadPost", "BufNewFile" },
-  main = 'nvim-treesitter.configs',
-  opts = {
-    -- for nvim-ts-rainbow plugin
-    rainbow = {
-      enable = true,
-      extended_mode = true,   -- Also highlight non-bracket delimiters like html tags, boolean or table: lang -> boolean
-      max_file_lines = 10000, -- Do not enable for files with more than 10000 lines, int
-      -- colors = {}, -- table of hex strings
-      -- termcolors = {} -- table of colour name strings
-    },
-  }
+  config = function()
+    local rainbow_delimiters = require('rainbow-delimiters')
+    
+    vim.g.rainbow_delimiters = {
+      strategy = {
+        [''] = rainbow_delimiters.strategy['global'],
+        vim = rainbow_delimiters.strategy['local'],
+      },
+      query = {
+        [''] = 'rainbow-delimiters',
+        lua = 'rainbow-delimiters',
+      },
+      priority = {
+        [''] = 110,
+        lua = 210,
+      },
+      highlight = {
+        'RainbowDelimiterRed',
+        'RainbowDelimiterYellow',
+        'RainbowDelimiterBlue',
+        'RainbowDelimiterOrange',
+        'RainbowDelimiterGreen',
+        'RainbowDelimiterViolet',
+        'RainbowDelimiterCyan',
+      },
+    }
+  end,
 })
 ```
 
@@ -518,7 +565,7 @@ plug({
         options = {
           theme = lualine_theme,
           component_separators = { left = "", right = "" },
-          section_separators = { left = "|", right = "|" },
+          section_separators = { left = "", right = "" },
         },
         sections = {
           lualine_a = { "mode" },
@@ -581,6 +628,7 @@ ___
 ```lua
 plug({
   "nvim-neorg/neorg",
+  lazy = false, -- Neorg does not like lazy loading
   build = ":Neorg sync-parsers",
   dependencies = {
     "nvim-lua/plenary.nvim",
@@ -589,8 +637,8 @@ plug({
     "nvim-treesitter/nvim-treesitter-textobjects",
     "hrsh7th/nvim-cmp",
   },
-  ft = "norg",
-  cmd = "Neorg",
+   -- ft = "norg",
+   -- cmd = "Neorg",
   config = function()
     require("neorg").setup({
       load = {
@@ -1195,6 +1243,15 @@ plug({
   "sindrets/diffview.nvim",
   enabled = true,
   lazy = true,
+  cmd = {
+     "DiffviewOpen",
+     "DiffviewClose",
+     "DiffviewLog",
+     "DiffviewRefresh",
+     "DiffviewFocusFiles",
+     "DiffviewFileHistory",
+     "DiffviewToggleFiles",
+    },
   keys = {
     {
       "<leader>dd",
@@ -1205,13 +1262,54 @@ plug({
 })
 ```
 
+
+## Octo
+
+A comprehensive GitHub integration plugin that brings the full power of GitHub directly into your Neovim workflow. Octo transforms your editor into a complete GitHub client, enabling seamless issue management, pull request reviews, and repository interactions without leaving your development environment.
+
+This GitHub integration provides:
+- **Issue management**: Create, edit, comment on, and close GitHub issues with full markdown support
+- **Pull request workflow**: Review PRs, add comments, approve changes, and manage the entire review process
+- **Repository browsing**: Navigate repositories, view file histories, and explore codebases directly from Neovim
+- **Collaborative features**: Real-time collaboration with team members through comments and discussions
+- **Search capabilities**: Find issues, PRs, and code across repositories with powerful search functionality
+- **Notification handling**: Stay updated with GitHub notifications and activity feeds
+- **Multi-repository support**: Work with multiple repositories and organizations seamlessly
+
+**Usage**: Access GitHub features through Octo commands like `:Octo issue list`, `:Octo pr checkout`, and `:Octo review start`. The plugin integrates with your picker (Snacks) for enhanced navigation and selection.
+
+**Help**: Run `:help octo` for comprehensive documentation. The plugin requires GitHub CLI authentication and provides extensive customization options for workflows.
+
+For example, use `:Octo pr list` to browse pull requests, `:Octo issue create` to file new issues, and `:Octo review start` to begin code reviews, all with full syntax highlighting and markdown support.
+___
+[GitHub](https://github.com/pwntester/octo.nvim)
+```lua
+plug({
+  'pwntester/octo.nvim',
+  cmd = "Octo",
+  requires = {
+    'nvim-lua/plenary.nvim',
+    -- 'nvim-telescope/telescope.nvim',
+    -- OR 'ibhagwan/fzf-lua',
+    'folke/snacks.nvim',
+    'nvim-tree/nvim-web-devicons',
+  },
+  config = function ()
+    require"octo".setup({
+      picker = "snacks"
+    })
+  end
+})
+```
+
+
 # LSP
 
 Language Server Protocol
 ___
-  The Language Server Protocol (LSP) defines the protocol used between an editor or IDE and a language server that provides language features like auto complete, go to definition, find all references etc. The goal of the Language Server Index Format (LSIF, pronounced like "else if") is to support rich code navigation in development tools or a Web UI without needing a local copy of the source code.
+The Language Server Protocol (LSP) defines the protocol used between an editor or IDE and a language server that provides language features like auto complete, go to definition, find all references etc. The goal of the Language Server Index Format (LSIF, pronounced like "else if") is to support rich code navigation in development tools or a Web UI without needing a local copy of the source code.
 ___
-  [Official LSP Home](https://microsoft.github.io/language-server-protocol/)
+[Official LSP Home](https://microsoft.github.io/language-server-protocol/)
 ```lua
 plug({
 -- Collection of functions that will help you setup Neovim's LSP client
@@ -1309,7 +1407,6 @@ config = function()
   null_ls.setup({
     sources = {
       null_ls.builtins.formatting.stylua.with({ extra_args = { '--indent_type=spaces', '--indent_width=' .. o.tabstop } }),
-      null_ls.builtins.diagnostics.eslint,
       null_ls.builtins.diagnostics.trail_space,
 
       null_ls.builtins.formatting.black, -- python formatting
@@ -1329,7 +1426,6 @@ config = function()
       "ruff",  -- python linter
       "mypy",  -- python type checker
       "black", -- python formatter
-      "eslint",
       "trail_space",
       "spell",
       "codespell",
@@ -1444,7 +1540,7 @@ end,
 
 A Debug Adapter Protocol client implementation for Neovim
 ___
-  [GitHub](https://github.com/mfussenegger/nvim-dap)
+[GitHub](https://github.com/mfussenegger/nvim-dap)
 ```lua
 plug({
 'mfussenegger/nvim-dap',
@@ -1538,8 +1634,11 @@ config = function()
   require('dap-go').setup()
 
   -- Setup python dap
-  local debug_py_path = mason_registry.get_package("debugpy"):get_install_path() .. "/venv/bin/python"
-  require('dap-python').setup(debug_py_path)
+  if mason_registry.is_installed("debugpy") then
+    local debugpy_package = mason_registry.get_package("debugpy")
+    local debug_py_path = debugpy_package:get_install_path() .. "/venv/bin/python"
+    require('dap-python').setup(debug_py_path)
+  end
 end,
 })
 ```
@@ -1550,16 +1649,31 @@ end,
 
 Smart and Powerful commenting plugin for neovim
 ___
-  [GitHub](https://github.com/numToStr/Comment.nvim)
+[GitHub](https://github.com/numToStr/Comment.nvim)
 ```lua
 plug({ 'numToStr/Comment.nvim', opts = {} })
 ```
 
 ## Dial.nvim
 
-Extended increment/decrement plugin
+A powerful and extensible increment/decrement plugin that goes far beyond Vim's built-in `<C-a>` and `<C-x>` functionality. Dial.nvim provides intelligent manipulation of numbers, dates, boolean values, and custom patterns with context-aware behavior.
+
+This enhancement plugin offers:
+- **Smart number handling**: Increment/decrement decimal, hexadecimal, binary, and octal numbers with proper formatting preservation
+- **Date and time manipulation**: Intelligent handling of various date formats, times, and calendar operations
+- **Boolean and keyword cycling**: Toggle between true/false, yes/no, on/off, and custom word pairs
+- **Custom augend support**: Define your own increment/decrement patterns for domain-specific workflows
+- **Visual mode operations**: Apply increment/decrement operations across multiple lines and selections
+- **Sequence generation**: Create numbered sequences and patterns with `g<C-a>` and `g<C-x>`
+- **Context awareness**: Different behaviors based on file type and cursor position
+
+**Usage**: Use `<C-a>` and `<C-x>` for basic increment/decrement, `g<C-a>` and `g<C-x>` for sequence operations. The plugin automatically detects the type of value under the cursor and applies appropriate transformations.
+
+**Help**: Run `:help dial` for comprehensive documentation. The plugin supports extensive customization for adding new increment/decrement patterns.
+
+For example, with the cursor on "Monday", pressing `<C-a>` changes it to "Tuesday", on "true" it becomes "false", and on dates like "2024-01-15" it increments to "2024-01-16".
 ___
-  [GitHub](https://github.com/monaqa/dial.nvim)
+[GitHub](https://github.com/monaqa/dial.nvim)
 ```lua
 plug({
  'monaqa/dial.nvim',
@@ -1576,6 +1690,12 @@ plug({
        augend.date.alias["%m/%d"],
        augend.date.alias["%H:%M"],
        augend.constant.new {
+         elements = { "True", "False" },
+         word = true,   -- if false, "sand" is incremented into "sor", "doctor" into "doctand", etc.
+         cyclic = true, -- "or" is incremented into "and".
+         preserve_case = true,
+       },
+       augend.constant.new {
          elements = { "and", "or" },
          word = true,   -- if false, "sand" is incremented into "sor", "doctor" into "doctand", etc.
          cyclic = true, -- "or" is incremented into "and".
@@ -1591,6 +1711,72 @@ plug({
          elements = { "&&", "||" },
          word = false,
          cyclic = true,
+       },
+       augend.constant.new {
+         elements = { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" },
+         word = true,
+         cyclic = true,
+         preserve_case = true,
+       },
+       augend.constant.new {
+         elements = { "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" },
+         word = true,
+         cyclic = true,
+         preserve_case = true,
+       },
+       augend.constant.new {
+         elements = { "first", "second", "third", "fourth", "fifth", "sixth", "seventh", "eighth", "ninth", "tenth" },
+         word = true,
+         cyclic = true,
+         preserve_case = true,
+       },
+       augend.constant.new {
+         elements = { "left", "right" },
+         word = true,
+         cyclic = true,
+         preserve_case = true,
+       },
+       augend.constant.new {
+         elements = { "up", "down" },
+         word = true,
+         cyclic = true,
+         preserve_case = true,
+       },
+       augend.constant.new {
+         elements = { "top", "bottom" },
+         word = true,
+         cyclic = true,
+         preserve_case = true,
+       },
+       augend.constant.new {
+         elements = { "start", "end" },
+         word = true,
+         cyclic = true,
+         preserve_case = true,
+       },
+       augend.constant.new {
+         elements = { "enable", "disable" },
+         word = true,
+         cyclic = true,
+         preserve_case = true,
+       },
+       augend.constant.new {
+         elements = { "on", "off" },
+         word = true,
+         cyclic = true,
+         preserve_case = true,
+       },
+       augend.constant.new {
+         elements = { "width", "height" },
+         word = true,
+         cyclic = true,
+         preserve_case = true,
+       },
+       augend.constant.new {
+         elements = { "horizontal", "vertical" },
+         word = true,
+         cyclic = true,
+         preserve_case = true,
        },
      },
    }
@@ -1611,7 +1797,7 @@ plug({
 
 Add, delete, change and select surrounding pairs
 ___
-  [GitHub](https://github.com/kylechui/nvim-surround)
+[GitHub](https://github.com/kylechui/nvim-surround)
 ```lua
 plug({
  "kylechui/nvim-surround",
@@ -1629,7 +1815,7 @@ plug({
 
 Bundle of more than two dozen new textobjects for Neovim.
 ___
-  [GitHub](https://github.com/chrisgrieser/nvim-various-textobjs)
+[GitHub](https://github.com/chrisgrieser/nvim-various-textobjs)
 ```lua
 plug({
   "chrisgrieser/nvim-various-textobjs",
@@ -1647,7 +1833,7 @@ plug({
 
 A plugin for splitting/joining blocks of code like arrays, hashes, statements, objects, dictionaries and more.
 ___
-  [GitHub](https://github.com/Wansmer/treesj)
+[GitHub](https://github.com/Wansmer/treesj)
 ```lua
 plug({
   "Wansmer/treesj",
@@ -1662,7 +1848,7 @@ plug({
 
 Case conversion, upper to lower to camel to snake and more.
 ___
-  [GitHub](https://github.com/johmsalas/text-case.nvim)
+[GitHub](https://github.com/johmsalas/text-case.nvim)
 ```lua
 plug({
   "johmsalas/text-case.nvim",
@@ -1712,7 +1898,7 @@ plug({
 
 Automatic list continuation and formatting.
 ___
-  [GitHub](https://github.com/gaoDean/autolist.nvim)
+[GitHub](https://github.com/gaoDean/autolist.nvim)
 ```lua
 plug({
   "gaoDean/autolist.nvim",
@@ -1758,7 +1944,7 @@ plug({
 
 Persist and toggle multiple terminals during an editing session.
 ___
-  [GitHub](https://github.com/akinsho/toggleterm.nvim)
+[GitHub](https://github.com/akinsho/toggleterm.nvim)
 ```lua
 plug({
   'akinsho/toggleterm.nvim',
@@ -1822,73 +2008,94 @@ plug({
 
 ## Flatten
 
-Open files from terminal buffers without creating a nested session.
+A smart session management plugin that prevents nested Neovim instances when opening files from terminal buffers, providing seamless file editing without disrupting your workflow. Flatten automatically detects when you're trying to open files from within a terminal and handles them intelligently.
+
+This session manager provides:
+- **Nested session prevention**: Automatically opens files in the existing Neovim instance instead of creating nested sessions
+- **Terminal integration**: Seamlessly works with terminal buffers and external commands that invoke Neovim
+- **Git workflow optimization**: Perfect for Git operations like commits, rebases, and interactive staging that spawn editors
+- **Blocking mode support**: Handles blocking operations where the terminal waits for the editor to close
+- **Toggleterm integration**: Smart integration with toggleterm plugin for enhanced terminal workflow
+- **Automatic cleanup**: Intelligently manages buffer lifecycle for temporary files like Git commits
+- **Window management**: Flexible options for how and where opened files appear in your workspace
+
+**Usage**: The plugin works automatically in the background. When you run commands like `git commit` or `nvim file.txt` from a terminal buffer, files open in your existing session instead of creating nested instances.
+
+**Help**: Run `:help flatten` for configuration options. The plugin is particularly useful for Git workflows and any terminal-based operations that need to open files for editing.
+
+For example, when you run `git commit` from a terminal buffer, the commit message file opens in your current Neovim session, and the terminal waits until you save and close the file before continuing.
 ___
-  [GitHub](https://github.com/willothy/flatten.nvim)
+[GitHub](https://github.com/willothy/flatten.nvim)
 ```lua
 plug({
-   "willothy/flatten.nvim",
-   branch = "1.0-dev",
-   opts = function()
-     ---@type Terminal?
-     local saved_terminal
+  "willothy/flatten.nvim",
+  opts = function()
+    ---@type Terminal?
+    local saved_terminal
 
-     return {
-       window = {
-         open = "alternate",
-       },
-       callbacks = {
-         should_block = function(argv)
-           -- Note that argv contains all the parts of the CLI command, including
-           -- Neovim's path, commands, options and files.
-           -- See: :help v:argv
+    return {
+      window = {
+        open = "alternate",
+      },
+      hooks = {
+        should_block = function(argv)
+          -- Note that argv contains all the parts of the CLI command, including
+          -- Neovim's path, commands, options and files.
+          -- See: :help v:argv
 
-           -- In this case, we would block if we find the `-b` flag
-           -- This allows you to use `nvim -b file1` instead of
-           -- `nvim --cmd 'let g:flatten_wait=1' file1`
-           return vim.tbl_contains(argv, "-b")
+          -- In this case, we would block if we find the `-b` flag
+          -- This allows you to use `nvim -b file1` instead of
+          -- `nvim --cmd 'let g:flatten_wait=1' file1`
+          return vim.tbl_contains(argv, "-b")
 
-           -- Alternatively, we can block if we find the diff-mode option
-           -- return vim.tbl_contains(argv, "-d")
-         end,
-         pre_open = function()
-           local term = require("toggleterm.terminal")
-           local termid = term.get_focused_id()
-           saved_terminal = term.get(termid)
-         end,
-         post_open = function(bufnr, winnr, ft, is_blocking)
-           if is_blocking and saved_terminal then
-             -- Hide the terminal while it's blocking
-             saved_terminal:close()
-           else
-             -- If it's a normal file, just switch to its window
-             vim.api.nvim_set_current_win(winnr)
-           end
+          -- Alternatively, we can block if we find the diff-mode option
+          -- return vim.tbl_contains(argv, "-d")
+        end,
+        pre_open = function()
+          local term = require("toggleterm.terminal")
+          local termid = term.get_focused_id()
+          saved_terminal = term.get(termid)
+        end,
+        post_open = function(bufnr, winnr, ft, is_blocking)
+          if is_blocking and saved_terminal then
+            -- Hide the terminal while it's blocking
+            saved_terminal:close()
+          else
+            if winnr and vim.api.nvim_win_is_valid(winnr) then
+              vim.api.nvim_set_current_win(winnr)
+            end
 
-           -- If the file is a git commit, create one-shot autocmd to delete its buffer on write
-           -- If you just want the toggleable terminal integration, ignore this bit
-           if ft == "gitcommit" or ft == "gitrebase" then
-             vim.api.nvim_create_autocmd("BufWritePost", {
-               buffer = bufnr,
-               once = true,
-               callback = vim.schedule_wrap(function()
-                 vim.api.nvim_buf_delete(bufnr, {})
-               end),
-             })
-           end
-         end,
-         block_end = function()
-           -- After blocking ends (for a git commit, etc), reopen the terminal
-           vim.schedule(function()
-             if saved_terminal then
-               saved_terminal:open()
-               saved_terminal = nil
-             end
-           end)
-         end,
-       },
-     }
-   end,
+            -- If we're in a different wezterm pane/tab, switch to the current one
+            -- Requires willothy/wezterm.nvim
+            -- require("wezterm").switch_pane.id(
+            --   tonumber(os.getenv("WEZTERM_PANE"))
+            -- )
+          end
+
+          -- If the file is a git commit, create one-shot autocmd to delete its buffer on write
+          -- If you just want the toggleable terminal integration, ignore this bit
+          if ft == "gitcommit" or ft == "gitrebase" then
+            vim.api.nvim_create_autocmd("BufWritePost", {
+              buffer = bufnr,
+              once = true,
+              callback = vim.schedule_wrap(function()
+                vim.api.nvim_buf_delete(bufnr, {})
+              end),
+            })
+          end
+        end,
+        block_end = function()
+          -- After blocking ends (for a git commit, etc), reopen the terminal
+          vim.schedule(function()
+            if saved_terminal then
+              saved_terminal:open()
+              saved_terminal = nil
+            end
+          end)
+        end,
+      },
+    }
+  end,
 })
 ```
 
@@ -1896,16 +2103,22 @@ plug({
 
 Table creator & formatter allowing one to create neat tables as you type.
 ___
-  [GitHub](https://github.com/dhruvasagar/vim-table-mode)
+[GitHub](https://github.com/dhruvasagar/vim-table-mode)
 ```lua
-plug({ "https://github.com/dhruvasagar/vim-table-mode" })
+plug({ 'yochem/jq-playground.nvim' })
 ```
+
+
+# JQ
+
+ 
+
 
 # TODO COMMENTS
 
 To highlight and search for todo comments like TODO, HACK, BUG in your code base.
 ___
-  [GitHub](https://github.com/folke/todo-comments.nvim)
+[GitHub](https://github.com/folke/todo-comments.nvim)
 ```lua
 plug({
   "folke/todo-comments.nvim",
@@ -1929,7 +2142,7 @@ plug({
 
 A better user experience for interacting with and manipulating Vim marks.
 ___
-  [GitHub](https://github.com/chentoast/marks.nvim)
+[GitHub](https://github.com/chentoast/marks.nvim)
 ```lua
 plug({
   'chentoast/marks.nvim',
@@ -1950,7 +2163,7 @@ plug({
 
 Generate table of contents for markdown files.
 ___
-  [GitHub](https://github.com/richardbizik/nvim-toc)
+[GitHub](https://github.com/richardbizik/nvim-toc)
 ```lua
 plug({
   'richardbizik/nvim-toc',
@@ -1982,7 +2195,7 @@ plug({
 
 Preview Markdown in your modern browser with synchronised scrolling and flexible configuration.
 ___
-  [GitHub](https://github.com/iamcco/markdown-preview.nvim)
+[GitHub](https://github.com/iamcco/markdown-preview.nvim)
 ```lua
 plug({
   "iamcco/markdown-preview.nvim",
@@ -1996,7 +2209,7 @@ plug({
 
 Add treesitter highlights to markdown code blocks.
 ___
-  [GitHub](https://github.com/yaocccc/nvim-hl-mdcodeblock.lua)
+[GitHub](https://github.com/yaocccc/nvim-hl-mdcodeblock.lua)
 ```lua
 plug({
   'yaocccc/nvim-hl-mdcodeblock.lua',
@@ -2013,9 +2226,9 @@ plug({
 # TROUBLE
 
 A pretty list for showing diagnostics, references, telescope results, quickfix
-  and location lists to help you solve all the trouble your code is causing.
+and location lists to help you solve all the trouble your code is causing.
 ___
-  [GitHub](https://github.com/folke/trouble.nvim)
+[GitHub](https://github.com/folke/trouble.nvim)
 ```lua
 plug({
   "folke/trouble.nvim",
@@ -2037,43 +2250,40 @@ plug({
 
 A lua plugin that displays a popup with possible key bindings of the command you started typing.
 ___
-  [GitHub](https://github.com/folke/which-key.nvim)
+[GitHub](https://github.com/folke/which-key.nvim)
 ```lua
 plug({
   'folke/which-key.nvim',
   enabled = true,
-  config = function()
-    local wk = require('which-key')
-
-    wk.register({
-      ['<leader>'] = {
-        ["<Tab>"] = { name = '+Tab' },
-        [";"] = { name = '+Command' },
-        b = { name = '+Buffer' },
-        c = { name = '+Case' },
-        C = { name = '+Case' },
-        d = { name = '+Debug' },
-        f = { name = '+Find' },
-        g = { name = '+Git' },
-        h = { name = '+Hunk' },
-        l = { name = '+Lsp' },
-        s = { name = '+Search' },
-        t = { name = '+Table' },
-        T = { name = '+Text' },
-        w = { name = '+Window' },
-        x = { name = '+Diagnostics' },
-      },
-    })
-  end,
+  opts = {
+    spec = {
+      { "<leader>;", group = "Command" },
+      { "<leader><Tab>", group = "Tab" },
+      { "<leader>C", group = "Case" },
+      { "<leader>T", group = "Text" },
+      { "<leader>a", group = "Aider" },
+      { "<leader>b", group = "Buffer" },
+      { "<leader>c", group = "Case" },
+      { "<leader>d", group = "Debug" },
+      { "<leader>f", group = "Find" },
+      { "<leader>g", group = "Git" },
+      { "<leader>h", group = "Hunk" },
+      { "<leader>l", group = "Lsp" },
+      { "<leader>s", group = "Search" },
+      { "<leader>t", group = "Table" },
+      { "<leader>w", group = "Window" },
+      { "<leader>x", group = "Diagnostics" },
+    },
+  },
 })
 ```
 
 # HLSLENS
 
 Nvim-hlslens helps you better glance at matched information, seamlessly jump between matched instances.
-  When searching, search count is shown next to the cursor as virtual text.
+When searching, search count is shown next to the cursor as virtual text.
 ___
-  [GitHub](https://github.com/kevinhwang91/nvim-hlslens)
+[GitHub](https://github.com/kevinhwang91/nvim-hlslens)
 ```lua
 plug({
   "kevinhwang91/nvim-hlslens",
@@ -2086,7 +2296,7 @@ plug({
 
 Improve yank and put functionalities for Neovim.
 ___
-  [GitHub](https://github.com/gbprod/yanky.nvim)
+[GitHub](https://github.com/gbprod/yanky.nvim)
 ```lua
 plug({
   "gbprod/yanky.nvim",
@@ -2242,13 +2452,13 @@ plug({
   },
 })
 ```
-  @end
+@end
 
 # MINI SESSIONS
 
 Session management (read, write, delete)
 ___
-  [GitHub](https://github.com/echasnovski/mini.nvim/blob/main/readmes/mini-sessions.md)
+[GitHub](https://github.com/echasnovski/mini.nvim/blob/main/readmes/mini-sessions.md)
 ```lua
 plug({
   'echasnovski/mini.sessions',
@@ -2270,13 +2480,132 @@ plug({
 })
 ```
 
+# EMAIL
+
+## NOTMUCH
+
+```lua
+plug({
+  dir="~/Projects/nvim/notmuch.nvim",
+  opts = {
+        notmuch_db_path = "/home/simon/.mail/.notmuch",
+        maildir_sync_cmd = "mail-sync",
+        keymaps = {
+            sendmail = "<C-g><C-g>",
+        },
+    },
+})
+```
+
+# AI
+
+## Aider
+
+AI-powered coding assistant that helps you edit code in your terminal. Aider can make coordinated edits across multiple files, understand your codebase, and work with you to implement features, fix bugs, and refactor code using various AI models.
+
+This plugin provides:
+- **AI-powered code editing**: Get intelligent suggestions and automated code changes
+- **Multi-file coordination**: Make changes across multiple files in a single session
+- **Git integration**: Automatically commits changes with descriptive commit messages
+- **Multiple AI models**: Support for GPT-4, Claude, and other leading AI models
+- **Context awareness**: Understands your entire codebase for better suggestions
+- **Interactive sessions**: Chat with AI about your code and get real-time assistance
+
+**Usage**: Use the configured keybindings to toggle Aider, send code selections, add/drop files, and manage your AI coding sessions. The plugin integrates seamlessly with your existing workflow.
+
+**Help**: Aider works best when you provide clear, specific instructions about what you want to accomplish. It can help with everything from small bug fixes to large feature implementations.
+
+For example, you can ask Aider to "refactor this function to use async/await" or "add error handling to this API call" and it will make the appropriate changes across your codebase.
+___
+[GitHub](https://github.com/GeorgesAlkhouri/nvim-aider)
+```lua
+plug({
+    "GeorgesAlkhouri/nvim-aider",
+    cmd = "Aider",
+    -- Example key mappings for common actions:
+    keys = {
+      { "<leader>a/", "<cmd>Aider toggle<cr>", desc = "Toggle Aider" },
+      { "<leader>as", "<cmd>Aider send<cr>", desc = "Send to Aider", mode = { "n", "v" } },
+      { "<leader>ac", "<cmd>Aider command<cr>", desc = "Aider Commands" },
+      { "<leader>ab", "<cmd>Aider buffer<cr>", desc = "Send Buffer" },
+      { "<leader>a+", "<cmd>Aider add<cr>", desc = "Add File" },
+      { "<leader>a-", "<cmd>Aider drop<cr>", desc = "Drop File" },
+      { "<leader>ar", "<cmd>Aider add readonly<cr>", desc = "Add Read-Only" },
+      { "<leader>aR", "<cmd>Aider reset<cr>", desc = "Reset Session" },
+      -- Example nvim-tree.lua integration if needed
+      { "<leader>a+", "<cmd>AiderTreeAddFile<cr>", desc = "Add File from Tree to Aider", ft = "NvimTree" },
+      { "<leader>a-", "<cmd>AiderTreeDropFile<cr>", desc = "Drop File from Tree from Aider", ft = "NvimTree" },
+    },
+    dependencies = {
+      "folke/snacks.nvim",
+      --- The below dependencies are optional
+      "catppuccin/nvim",
+      "nvim-tree/nvim-tree.lua",
+      --- Neo-tree integration
+      {
+        "nvim-neo-tree/neo-tree.nvim",
+        opts = function(_, opts)
+          -- Example mapping configuration (already set by default)
+          -- opts.window = {
+          --   mappings = {
+          --     ["+"] = { "nvim_aider_add", desc = "add to aider" },
+          --     ["-"] = { "nvim_aider_drop", desc = "drop from aider" }
+          --     ["="] = { "nvim_aider_add_read_only", desc = "add read-only to aider" }
+          --   }
+          -- }
+          require("nvim_aider.neo_tree").setup(opts)
+        end,
+      },
+    },
+    config = true,
+    opts = {
+      auto_reload = true,
+    },
+})
+```
+
+## OpenCode
+
+
+```lua
+plug({
+  "NickvanDyke/opencode.nvim",
+    dependencies = {
+      -- Recommended for `ask()` and `select()`.
+      -- Required for `toggle()`.
+      { "folke/snacks.nvim", opts = { input = {}, picker = {} } },
+    },
+    config = function()
+      vim.g.opencode_opts = {
+        -- Your configuration, if any — see `lua/opencode/config.lua`, or "goto definition" on `opencode_opts`.
+      }
+
+      -- Required for `vim.g.opencode_opts.auto_reload`.
+      vim.o.autoread = true
+
+      -- Recommended/example keymaps.
+      vim.keymap.set({ "n", "x" }, "<leader>oa", function() require("opencode").ask("@this: ", { submit = true }) end, { desc = "Ask about this" })
+      vim.keymap.set({ "n", "x" }, "<leader>os", function() require("opencode").select() end, { desc = "Select prompt" })
+      vim.keymap.set({ "n", "x" }, "<leader>o+", function() require("opencode").prompt("@this") end, { desc = "Add this" })
+      vim.keymap.set("n", "<leader>ot", function() require("opencode").toggle() end, { desc = "Toggle embedded" })
+      vim.keymap.set("n", "<leader>oc", function() require("opencode").command() end, { desc = "Select command" })
+      vim.keymap.set("n", "<leader>on", function() require("opencode").command("session_new") end, { desc = "New session" })
+      vim.keymap.set("n", "<leader>oi", function() require("opencode").command("session_interrupt") end, { desc = "Interrupt session" })
+      vim.keymap.set("n", "<leader>oA", function() require("opencode").command("agent_cycle") end, { desc = "Cycle selected agent" })
+      vim.keymap.set("n", "<S-C-u>",    function() require("opencode").command("messages_half_page_up") end, { desc = "Messages half page up" })
+      vim.keymap.set("n", "<S-C-d>",    function() require("opencode").command("messages_half_page_down") end, { desc = "Messages half page down" })
+    end,
+})
+```
+
+
 # TREESITTER
 
 ## Treesitter
 
 The goal of nvim-treesitter is both to provide a simple and easy way to use the interface for tree-sitter in Neovim and to provide some basic functionality such as highlighting based on it.
 ___
-  [GitHub](https://github.com/nvim-treesitter/nvim-treesitter)
+[GitHub](https://github.com/nvim-treesitter/nvim-treesitter)
 ```lua
 plug({
   -- Highlight, edit, and navigate code
@@ -2390,7 +2719,7 @@ plug({
 
 Wisely add "end" in Ruby, Lua, Vimscript, etc.
 ___
-  [GitHub](https://github.com/RRethy/nvim-treesitter-endwise)
+[GitHub](https://github.com/RRethy/nvim-treesitter-endwise)
 ```lua
 plug({ -- basically autopair, but for keywords
   "RRethy/nvim-treesitter-endwise",
@@ -2403,7 +2732,7 @@ plug({ -- basically autopair, but for keywords
 
 Shows virtual text of the current context after functions, methods, statements, etc.
 ___
-  [GitHub](https://github.com/andersevenrud/nvim_context_vt)
+[GitHub](https://github.com/andersevenrud/nvim_context_vt)
 ```lua
 plug({ -- virtual text context at the end of a scope
   "haringsrob/nvim_context_vt",
@@ -2441,7 +2770,7 @@ plug({ -- virtual text context at the end of a scope
 
 Extend and create a/i textobjects.
 ___
-  [GitHub](https://github.com/echasnovski/mini.ai)
+[GitHub](https://github.com/echasnovski/mini.ai)
 ```lua
 plug({ -- extend and create a/i textobjects
   "echasnovski/mini.ai",
@@ -2463,45 +2792,56 @@ plug({ -- extend and create a/i textobjects
   end,
   config = function(_, opts)
     require("mini.ai").setup(opts)
-    -- register all text objects with which-key
-    local i = {
-      [" "] = "Whitespace",
-      ['"'] = 'Balanced "',
-      ["'"] = "Balanced '",
-      ["`"] = "Balanced `",
-      ["("] = "Balanced (",
-      [")"] = "Balanced ) including white-space",
-      [">"] = "Balanced > including white-space",
-      ["<lt>"] = "Balanced <",
-      ["]"] = "Balanced ] including white-space",
-      ["["] = "Balanced [",
-      ["}"] = "Balanced } including white-space",
-      ["{"] = "Balanced {",
-      ["?"] = "User Prompt",
-      _ = "Underscore",
-      a = "Argument",
-      b = "Balanced ), ], }",
-      c = "Class",
-      f = "Function",
-      o = "Block, conditional, loop",
-      q = "Quote `, \", '",
-      t = "Tag",
-    }
-    local a = vim.deepcopy(i)
-    for k, v in pairs(a) do
-      a[k] = v:gsub(" including.*", "")
-    end
-
-    local ic = vim.deepcopy(i)
-    local ac = vim.deepcopy(a)
-    for key, name in pairs({ n = "Next", l = "Last" }) do
-      i[key] = vim.tbl_extend("force", { name = "Inside " .. name .. " textobject" }, ic)
-      a[key] = vim.tbl_extend("force", { name = "Around " .. name .. " textobject" }, ac)
-    end
-    require("which-key").register({
+    -- register all text objects with which-key using new spec format
+    local wk = require("which-key")
+    wk.add({
       mode = { "o", "x" },
-      i = i,
-      a = a,
+      { "i ", desc = "Whitespace" },
+      { 'i"', desc = 'Balanced "' },
+      { "i'", desc = "Balanced '" },
+      { "i`", desc = "Balanced `" },
+      { "i(", desc = "Balanced (" },
+      { "i)", desc = "Balanced ) including white-space" },
+      { "i>", desc = "Balanced > including white-space" },
+      { "i<", desc = "Balanced <" },
+      { "i]", desc = "Balanced ] including white-space" },
+      { "i[", desc = "Balanced [" },
+      { "i}", desc = "Balanced } including white-space" },
+      { "i{", desc = "Balanced {" },
+      { "i?", desc = "User Prompt" },
+      { "i_", desc = "Underscore" },
+      { "ia", desc = "Argument" },
+      { "ib", desc = "Balanced ), ], }" },
+      { "ic", desc = "Class" },
+      { "if", desc = "Function" },
+      { "io", desc = "Block, conditional, loop" },
+      { "iq", desc = "Quote `, \", '" },
+      { "it", desc = "Tag" },
+      { "in", group = "Inside Next textobject" },
+      { "il", group = "Inside Last textobject" },
+      { "a ", desc = "Whitespace" },
+      { 'a"', desc = 'Balanced "' },
+      { "a'", desc = "Balanced '" },
+      { "a`", desc = "Balanced `" },
+      { "a(", desc = "Balanced (" },
+      { "a)", desc = "Balanced )" },
+      { "a>", desc = "Balanced >" },
+      { "a<", desc = "Balanced <" },
+      { "a]", desc = "Balanced ]" },
+      { "a[", desc = "Balanced [" },
+      { "a}", desc = "Balanced }" },
+      { "a{", desc = "Balanced {" },
+      { "a?", desc = "User Prompt" },
+      { "a_", desc = "Underscore" },
+      { "aa", desc = "Argument" },
+      { "ab", desc = "Balanced ), ], }" },
+      { "ac", desc = "Class" },
+      { "af", desc = "Function" },
+      { "ao", desc = "Block, conditional, loop" },
+      { "aq", desc = "Quote `, \", '" },
+      { "at", desc = "Tag" },
+      { "an", group = "Around Next textobject" },
+      { "al", group = "Around Last textobject" },
     })
   end,
 })
@@ -2510,9 +2850,9 @@ plug({ -- extend and create a/i textobjects
 # LAZY
 
 Set up the `lazy.nvim` plugin manager, use the `plugins` table to install and load plugins.
-  See [Lazy Helper Function](#lazy-helper-function) for the `plugin()` function.
+See [Lazy Helper Function](#lazy-helper-function) for the `plugin()` function.
 ___
-  [GitHub](https://github.com/folke/lazy.nvim)
+[GitHub](https://github.com/folke/lazy.nvim)
 
 ```lua
 local lazypath = vim.fn.stdpath 'data' .. '/lazy/lazy.nvim'
@@ -2690,7 +3030,7 @@ ___
 local highlight_group = vim.api.nvim_create_augroup('YankHighlight', { clear = true })
 vim.api.nvim_create_autocmd('TextYankPost', {
   callback = function()
-    vim.highlight.on_yank()
+    vim.hl.on_yank()
   end,
   group = highlight_group,
   pattern = '*',
@@ -3008,6 +3348,7 @@ snip_utils.get_header = function(opts)
 
   return fmt(table.concat(formattable, "\n"), sntable, {dedent = true})
 end
+
 ```
 
 ## Snippets
@@ -3054,7 +3395,7 @@ snippet("all", {
     {
       c(1, {
         t("simon@simonhugh.xyz"),
-        t("simonm@vigoitsolutions.com"),
+        t("simon.moore@audiebant.co.uk"),
       }),
     }),
   s({
@@ -3082,7 +3423,7 @@ snippet("all", {
       desc = 'Work Sign'
     },
     {
-      t("Simon H Moore <simonm@vigoitsolutions.com>")
+      t("Simon H Moore <simon.moore@audiebant.co.uk>")
     }),
   s({
       trig = 'date',
@@ -3117,101 +3458,6 @@ snippet("all", {
         f(function() return os.date "%I:%M:%S %p" end),
       })
     }),
-  s({
-    trig = 'vigogreeting',
-    desc = 'A greeting for vigo email'
-  }, fmt([[
-      Hi {name},
-
-      {greeting}
-      ]], {
-          name = i(1, "Name"),
-          greeting = greeting_choice(2),
-        }
-    )
-  ),
-  s({
-    trig = "vigopass",
-    desc = "Complete builds message"
-  }, fmt([[
-      Hi {name},
-
-      {greeting}
-
-      I am currently setting up your {device} and I need your password to continue. Could you send it to me please?
-      If you feel uncomfortable sharing your password over email{passmsg}
-
-      Could you also send me a list of apps you would like to see installed?
-
-      {outmsg},
-      Simon
-      ]], {
-          name = i(1, "Name"),
-          --NOTE: Could separate out the greeting to be reused
-          greeting = greeting_choice(2),
-          device = c(3,{
-            t("new laptop"),
-            t("laptop"),
-            t("new desktop"),
-            t("desktop"),
-            i(1, "device"),
-          }),
-          passmsg = c(4,{
-            t(", you can call our office, or we can reset your password to a temporary one."),
-            t(" you can also call our office."),
-          }),
-          outmsg = message_end(5),
-        }
-    )
-  ),
-  s({
-    trig = "vigoPassReset",
-    desc = "Email client for password reset"
-  }, fmt([[
-      Hi {name},
-
-      {greeting}
-
-      I will reset your password to: {password}
-
-      Please confirm you have read and taken note of this password by replying to this email. We will only proceed with the password reset once you have replied.
-
-      Important: Once we reset your password, you may be signed out of all sessions you are currently logged in. You can log back in using the new password mentioned above.
-
-      {outmsg},
-      Simon
-      ]], {
-          name = i(1, "Name"),
-          --NOTE: Could separate out the greeting to be reused
-          greeting = greeting_choice(2),
-          password = i(3, "PASSWORD"),
-          outmsg = message_end(4),
-        }
-    )
-  ),
-  s({
-    trig = "vigocomplete",
-    desc = "Complete builds message"
-  }, fmt([[
-      Hi {name},
-
-      {greeting}
-
-      We have completed setting up {name2} {device} and it is ready for collection, we are open Monday to Friday 9am to 5pm.
-      Alternatively, I can arrange to have one of our mobile engineers drop the laptop of for you.
-
-      {outmsg},
-      Simon
-      ]], {
-          name = i(1, "Name"),
-          --NOTE: Could separate out the greeting to be reused
-          greeting = greeting_choice(2),
-          name2 = i(3, "Name"),
-          device = c(4, {t("laptop"), t("desktop")}),
-          outmsg = message_end(5),
-        }
-    )
-  ),
 })
 ```
 
@@ -3279,21 +3525,44 @@ s({
 
 ### GitCommit
 
-Snippets for git commit file type, used for committing with [fugitive](#fugitive).
+Intelligent snippets for writing conventional Git commit messages that follow industry standards. These snippets help you create consistent, semantic commit messages that clearly communicate the nature and scope of your changes to other developers.
+
+This snippet collection provides:
+- **Conventional Commits support**: Automatic formatting following the conventional commits specification
+- **Semantic prefixes**: Quick access to standard commit types like feat, fix, docs, refactor, etc.
+- **Scope handling**: Optional scope specification with proper formatting and breaking change indicators
+- **Consistency enforcement**: Ensures all commit messages follow the same structured format
+- **Team collaboration**: Makes commit history more readable and useful for automated tools
+- **Changelog generation**: Enables automatic changelog creation from commit messages
+
+**Usage**: When writing commit messages in Git, use the trigger abbreviations (like `fe:` for features, `fi:` for fixes) to automatically expand into properly formatted conventional commit messages.
+
+**Help**: The snippets follow the format `type(scope): description` where type indicates the kind of change, scope is optional and indicates what part of the codebase is affected, and description briefly explains the change.
+
+For example, `fe:` expands to `feat(scope): description` for new features, while `fi:` becomes `fix(scope): description` for bug fixes. Add `!` for breaking changes.
 ___
 ```lua
+local function git_commit_snip(opts)
+  return s(
+    {trig = opts.trig, regTrig = true},
+    fmt(opts.prefix .. [[{}: {}]], {  c(1, { sn(nil, {t("("), i(1, "scope"), t(")")}), sn(nil, {t("("), i(1, "scope"), t(")!")}), t(""),t("!")}), i(2, opts.description)})
+  )
+end
+
 snippet("gitcommit", {
   -- conventional commit snippets
   -- see https://www.conventionalcommits.org/en/v1.0.0/#summary
-  s({trig = "^br", regTrig = true}, t("BREAKING CHANGE: ")),
-  s({trig = "^fe", regTrig = true}, fmt([[feat({}){}: {}]], { i(1, "scope"), c(3, {t(""),t("!")}), i(2, "new feature")})),
-  s({trig = "^fi", regTrig = true}, fmt([[fix({}){}: {}]], { i(1, "scope"), c(3, {t(""),t("!")}), i(2, "bug fix")})),
-  s({trig = "^do", regTrig = true}, fmt([[docs({}){}: {}]], { i(1, "scope"), c(3, {t(""),t("!")}), i(2, "documentation only change")})),
-  s({trig = "^bu", regTrig = true}, fmt([[build({}){}: {}]], { i(1, "scope"), c(3, {t(""),t("!")}), i(2, "build system or external dependency change")})),
-  s({trig = "^pe", regTrig = true}, fmt([[perf({}){}: {}]], { i(1, "scope"), c(3, {t(""),t("!")}), i(2, "performance improvement change")})),
-  s({trig = "^re", regTrig = true}, fmt([[refactor({}){}: {}]], { i(1, "scope"), c(3, {t(""),t("!")}), i(2, "code change that neither fixes a bug or adds a feature")})),
-  s({trig = "^st", regTrig = true}, fmt([[style({}){}: {}]], { i(1, "scope"), c(3, {t(""),t("!")}), i(2, "change that does not affect the meaning of the code")})),
-  s({trig = "^pe", regTrig = true}, fmt([[perf({}){}: {}]], { i(1, "scope"), c(3, {t(""),t("!")}), i(2, "adding new or correcting existing test")})),
+  s({trig = "^BR:", regTrig = true}, t("BREAKING CHANGE: ")),
+  git_commit_snip({trig = "^fe:", prefix = "feat", description = "new feature"}),
+  git_commit_snip({trig = "^fi:", prefix = "fix", description = "bug fix"}),
+  git_commit_snip({trig = "^do:", prefix = "docs", description = "documentation only change"}),
+  git_commit_snip({trig = "^bu:", prefix = "build", description = "build system or external dependency change"}),
+  git_commit_snip({trig = "^pe:", prefix = "perf", description = "performance improvement change"}),
+  git_commit_snip({trig = "^re:", prefix = "refactor", description = "code change that neither fixes a bug nor adds a feature"}),
+  git_commit_snip({trig = "^st:", prefix = "style", description = "change that does not affect the meaning of the code"}),
+  git_commit_snip({trig = "^te:", prefix = "test", description = "adding missing tests or correcting existing tests"}),
+  git_commit_snip({trig = "^ch:", prefix = "chore", description = "coding chore, no feat or fix just has to be done"}),
+  git_commit_snip({trig = "^ci:", prefix = "ci", description = "changes to CI configuration files and scripts"}),
 },{ type = "autosnippets" })
 ```
 
@@ -3317,3 +3586,5 @@ snippet("gitcommit", {
   end,
   })
 ```
+
+
