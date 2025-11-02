@@ -1364,14 +1364,10 @@ A collection of small QoL plugins for Neovim.
           vim.keymap.set("n", "<localleader>sr", snacks.picker.lsp_references, opts("Search for lsp refrences"))
   
           -- Which-key registration
-          wk.register({
-            s = {
-              name = "Search",
-            },
-            l = {
-              name = "LSP",
-            }
-          }, { prefix = "<localleader>", buffer = bufnr })
+          wk.add({
+            { "<localleader>s", group = "Search" },
+            { "<localleader>l", group = "LSP" },
+          }, {buffer = bufnr})
   
           -- Attach navic if supported
           if client.server_capabilities.documentSymbolProvider then
@@ -2100,8 +2096,9 @@ A collection of small QoL plugins for Neovim.
   plug({
     'folke/which-key.nvim',
     enabled = true,
-    opts = {
-      spec = {
+    config = function()
+      local wk = require("which-key")
+      wk.add({
         { "<leader>;", group = "Command" },
         { "<leader><Tab>", group = "Tab" },
         { "<leader>C", group = "Case" },
@@ -2112,13 +2109,15 @@ A collection of small QoL plugins for Neovim.
         { "<leader>d", group = "Debug" },
         { "<leader>f", group = "Find" },
         { "<leader>g", group = "Git" },
+        { "<leader>G", group = "Github" },
         { "<leader>h", group = "Hunk" },
         { "<leader>s", group = "Search" },
         { "<leader>t", group = "Table" },
         { "<leader>w", group = "Window" },
         { "<leader>x", group = "Diagnostics" },
-      },
-    },
+        { "<leader><space>", group = "Local" },
+      })
+    end,
   })
   @end
 * HLSLENS
