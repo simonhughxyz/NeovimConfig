@@ -769,7 +769,7 @@ A collection of small QoL plugins for Neovim.
       vim.keymap.set('n', '<leader>/', pick.grep_word, { desc = 'Search current word' })
 
       -- Find Files
-      vim.keymap.set('n', '<leader>ff', pick.files, { desc = 'Find Files' })
+      vim.keymap.set('n', '<leader>ff', pick.smart, { desc = 'Find Files' })
       vim.keymap.set('n', '<leader>fb', pick.buffers, { desc = 'Find Buffers' })
       vim.keymap.set('n', '<leader>fr', pick.recent, { desc = 'Find Recent Files' })
       vim.keymap.set('n', '<leader>fg', pick.git_files, { desc = 'Find Git Files' })
@@ -783,6 +783,7 @@ A collection of small QoL plugins for Neovim.
   
       -- Search for content, help and functions
       vim.keymap.set('n', '<leader>st', function() pick.commands() end, { desc = 'Search Commands' })
+      vim.keymap.set('n', '<leader>sP', pick.pick, { desc = 'Search snack pickers' })
       vim.keymap.set('n', '<leader>sh', pick.help, { desc = 'Search Help' })
       vim.keymap.set('n', '<leader>sw', pick.grep_word, { desc = 'Search Current Word' })
       vim.keymap.set('n', '<leader>sg', pick.grep, { desc = 'Search by Grep' })
@@ -791,6 +792,8 @@ A collection of small QoL plugins for Neovim.
       vim.keymap.set('n', "<leader>s'", pick.marks, { desc = 'Search Marks' })
       vim.keymap.set('n', '<leader>s"', pick.registers, { desc = 'Search Registers' })
       vim.keymap.set('n', '<leader>sf', pick.grep_word, { desc = 'Search word under cursor' })
+      vim.keymap.set('n', '<leader>su', pick.undo, { desc = 'Search undo' })
+      vim.keymap.set('n', '<leader>sc', pick.cliphist, { desc = 'Search clipboard history' })
   
       -- git
       vim.keymap.set('n', '<leader>gsll', pick.git_log, { desc = 'Search Git Log' })
