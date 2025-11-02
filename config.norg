@@ -1291,6 +1291,7 @@ A collection of small QoL plugins for Neovim.
     config = function()
       local navic = require("nvim-navic")
       local wk = require("which-key")
+      local snacks = require("snacks")
       local cmp = require("cmp")
       local luasnip = require("luasnip")
       local cmp_lsp = require("cmp_nvim_lsp")
@@ -1358,19 +1359,17 @@ A collection of small QoL plugins for Neovim.
           vim.keymap.set("n", "<localleader>lR", vim.lsp.buf.rename, opts("Rename"))
           vim.keymap.set("n", "<localleader>lI", "<cmd>LspInfo<CR>", opts("LspInfo"))
   
+          vim.keymap.set("n", "<localleader>ss", snacks.picker.lsp_symbols, opts("Search for lsp symbols"))
+          vim.keymap.set("n", "<localleader>sS", snacks.picker.lsp_workspace_symbols, opts("Search for lsp workspace symbols"))
+          vim.keymap.set("n", "<localleader>sr", snacks.picker.lsp_references, opts("Search for lsp refrences"))
+  
           -- Which-key registration
           wk.register({
+            s = {
+              name = "Search",
+            },
             l = {
               name = "LSP",
-              f = "Lsp format buffer",
-              a = "Code Action",
-              h = "Hover",
-              H = "Signature Help",
-              s = "Workspace Symbol",
-              r = "References",
-              i = "Implementation",
-              R = "Rename",
-              I = "Lsp Info",
             }
           }, { prefix = "<localleader>", buffer = bufnr })
   
@@ -2114,7 +2113,6 @@ A collection of small QoL plugins for Neovim.
         { "<leader>f", group = "Find" },
         { "<leader>g", group = "Git" },
         { "<leader>h", group = "Hunk" },
-        { "<leader>l", group = "Lsp" },
         { "<leader>s", group = "Search" },
         { "<leader>t", group = "Table" },
         { "<leader>w", group = "Window" },
