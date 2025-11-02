@@ -757,6 +757,8 @@ A collection of small QoL plugins for Neovim.
     config = function(_, opts)
       require("snacks").setup(opts)
       vim.notify = Snacks.notifier.notify
+  
+      local wk = require("which-key")
     
       -- Add snacks picker keymaps
       local pick = Snacks.picker
@@ -778,9 +780,8 @@ A collection of small QoL plugins for Neovim.
       vim.keymap.set('n', '<leader>fp', function() pick.files({ cwd = '~/Projects' }) end, { desc = 'Find Projects' })
       vim.keymap.set('n', '<leader>fc', function() pick.files({ cwd = vim.fn.stdpath('config') }) end, { desc = 'Find Config' })
       vim.keymap.set('n', '<leader>fB', function() pick.files({ cwd = '~/.local/bin' }) end, { desc = 'Find Local Bin' })
-
+  
       -- Search for content, help and functions
-      vim.keymap.set('n', '<leader>sc', pick.git_log, { desc = 'Search Git Commits' })
       vim.keymap.set('n', '<leader>st', function() pick.commands() end, { desc = 'Search Commands' })
       vim.keymap.set('n', '<leader>sh', pick.help, { desc = 'Search Help' })
       vim.keymap.set('n', '<leader>sw', pick.grep_word, { desc = 'Search Current Word' })
@@ -790,6 +791,26 @@ A collection of small QoL plugins for Neovim.
       vim.keymap.set('n', "<leader>s'", pick.marks, { desc = 'Search Marks' })
       vim.keymap.set('n', '<leader>s"', pick.registers, { desc = 'Search Registers' })
       vim.keymap.set('n', '<leader>sf', pick.grep_word, { desc = 'Search word under cursor' })
+  
+      -- git
+      vim.keymap.set('n', '<leader>gsll', pick.git_log, { desc = 'Search Git Log' })
+      vim.keymap.set('n', '<leader>gslf', pick.git_log_file, { desc = 'Search Git Log File' })
+      vim.keymap.set('n', '<leader>gslL', pick.git_log_line, { desc = 'Search Git Log File' })
+      vim.keymap.set('n', '<leader>gsg', pick.git_grep, { desc = 'Search Git Grep' })
+      vim.keymap.set('n', '<leader>gsf', pick.git_files, { desc = 'Search Git Files' })
+      vim.keymap.set('n', '<leader>gss', pick.git_stash, { desc = 'Search Git Stash' })
+      vim.keymap.set('n', '<leader>gsb', pick.git_stash, { desc = 'Search Git Branch' })
+  
+      -- github
+      vim.keymap.set('n', '<leader>Gp', pick.gh_pr, { desc = 'Github Pull Requests' })
+      vim.keymap.set('n', '<leader>GP', function() pick.gh_pr({ state= "all" }) end, { desc = 'Github All Pull Requests' })
+      vim.keymap.set('n', '<leader>Gi', pick.gh_issue, { desc = 'Github Issues' })
+      vim.keymap.set('n', '<leader>GI', function() pick.gh_issue({ state= "all" }) end, { desc = 'Github All Issues' })
+  
+      wk.add({
+        {"<leader>gs", group = "Git Search"},
+        {"<leader>gsl", group = "Git Search Log"}
+      })
     end,
     keys = {
       {
