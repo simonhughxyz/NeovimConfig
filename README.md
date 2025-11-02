@@ -10,7 +10,7 @@ tangle:
   languages: 
     lua: ./lua/config.lua
 created: 2024-03-06T23:01:44+0100
-updated: 2025-10-27T22:44:12+0100
+updated: 2025-11-02T22:47:24+0100
 version: 1.1.1
 ---
 
@@ -95,6 +95,12 @@ P = function(v)
   print(vim.inspect(v))
   return v
 end
+
+B = function(v)
+  vim.cmd("new")
+  vim.api.nvim_buf_set_lines(0, 0, -1, false, vim.split(vim.inspect(v), "\n"))
+  return v
+end
 ```
 
 
@@ -148,6 +154,8 @@ end
 Configure inbuilt Neovim options.
 ___
 ```lua
+o.exrc = true
+o.secure = true
 o.autowrite = true           -- Enable auto write
 o.clipboard = "unnamedplus"  -- Sync with system clipboard
 o.completeopt = "menu,menuone,noselect" -- Completion options for better experience
@@ -784,6 +792,8 @@ plug({
   config = function(_, opts)
     require("snacks").setup(opts)
     vim.notify = Snacks.notifier.notify
+
+    local wk = require("which-key")
   
     -- Add snacks picker keymaps
     local pick = Snacks.picker
@@ -794,7 +804,7 @@ plug({
     vim.keymap.set('n', '<leader>/', pick.grep_word, { desc = 'Search current word' })
 
     -- Find Files
-    vim.keymap.set('n', '<leader>ff', pick.files, { desc = 'Find Files' })
+    vim.keymap.set('n', '<leader>ff', pick.smart, { desc = 'Find Files' })
     vim.keymap.set('n', '<leader>fb', pick.buffers, { desc = 'Find Buffers' })
     vim.keymap.set('n', '<leader>fr', pick.recent, { desc = 'Find Recent Files' })
     vim.keymap.set('n', '<leader>fg', pick.git_files, { desc = 'Find Git Files' })
@@ -807,8 +817,8 @@ plug({
     vim.keymap.set('n', '<leader>fB', function() pick.files({ cwd = '~/.local/bin' }) end, { desc = 'Find Local Bin' })
 
     -- Search for content, help and functions
-    vim.keymap.set('n', '<leader>sc', pick.git_log, { desc = 'Search Git Commits' })
     vim.keymap.set('n', '<leader>st', function() pick.commands() end, { desc = 'Search Commands' })
+    vim.keymap.set('n', '<leader>sP', pick.pick, { desc = 'Search snack pickers' })
     vim.keymap.set('n', '<leader>sh', pick.help, { desc = 'Search Help' })
     vim.keymap.set('n', '<leader>sw', pick.grep_word, { desc = 'Search Current Word' })
     vim.keymap.set('n', '<leader>sg', pick.grep, { desc = 'Search by Grep' })
@@ -817,6 +827,28 @@ plug({
     vim.keymap.set('n', "<leader>s'", pick.marks, { desc = 'Search Marks' })
     vim.keymap.set('n', '<leader>s"', pick.registers, { desc = 'Search Registers' })
     vim.keymap.set('n', '<leader>sf', pick.grep_word, { desc = 'Search word under cursor' })
+    vim.keymap.set('n', '<leader>su', pick.undo, { desc = 'Search undo' })
+    vim.keymap.set('n', '<leader>sc', pick.cliphist, { desc = 'Search clipboard history' })
+
+    -- git
+    vim.keymap.set('n', '<leader>gsll', pick.git_log, { desc = 'Search Git Log' })
+    vim.keymap.set('n', '<leader>gslf', pick.git_log_file, { desc = 'Search Git Log File' })
+    vim.keymap.set('n', '<leader>gslL', pick.git_log_line, { desc = 'Search Git Log File' })
+    vim.keymap.set('n', '<leader>gsg', pick.git_grep, { desc = 'Search Git Grep' })
+    vim.keymap.set('n', '<leader>gsf', pick.git_files, { desc = 'Search Git Files' })
+    vim.keymap.set('n', '<leader>gss', pick.git_stash, { desc = 'Search Git Stash' })
+    vim.keymap.set('n', '<leader>gsb', pick.git_stash, { desc = 'Search Git Branch' })
+
+    -- github
+    vim.keymap.set('n', '<leader>Gp', pick.gh_pr, { desc = 'Github Pull Requests' })
+    vim.keymap.set('n', '<leader>GP', function() pick.gh_pr({ state= "all" }) end, { desc = 'Github All Pull Requests' })
+    vim.keymap.set('n', '<leader>Gi', pick.gh_issue, { desc = 'Github Issues' })
+    vim.keymap.set('n', '<leader>GI', function() pick.gh_issue({ state= "all" }) end, { desc = 'Github All Issues' })
+
+    wk.add({
+      {"<leader>gs", group = "Git Search"},
+      {"<leader>gsl", group = "Git Search Log"}
+    })
   end,
   keys = {
     {
@@ -1305,236 +1337,183 @@ plug({
 
 # LSP
 
-Language Server Protocol
-___
-The Language Server Protocol (LSP) defines the protocol used between an editor or IDE and a language server that provides language features like auto complete, go to definition, find all references etc. The goal of the Language Server Index Format (LSIF, pronounced like "else if") is to support rich code navigation in development tools or a Web UI without needing a local copy of the source code.
+A comprehensive Language Server Protocol implementation that transforms Neovim into a powerful IDE with intelligent code analysis, completion, and navigation capabilities. LSP provides seamless integration with language servers to deliver rich programming language features directly in your editor.
+
+This LSP configuration delivers:
+- **Intelligent code completion**: Context-aware suggestions with detailed documentation and type information
+- **Advanced navigation**: Go to definition, find references, and symbol search across your entire codebase
+- **Real-time diagnostics**: Instant error detection, warnings, and linting with inline feedback
+- **Code actions**: Automated refactoring, quick fixes, and intelligent code transformations
+- **Hover documentation**: Instant access to function signatures, type information, and documentation
+- **Workspace symbols**: Fast navigation through classes, functions, and variables across multiple files
+- **Signature help**: Real-time parameter hints and function documentation while typing
+- **Semantic highlighting**: Enhanced syntax highlighting based on code semantics rather than just syntax
+
+**Usage**: LSP features activate automatically when you open supported file types. Use the configured keybindings for navigation (`gd` for definition, `<localleader>lr` for references), hover information (`<localleader>lh`), and code actions (`<localleader>la`).
+
+**Help**: Run `:LspInfo` to see active language servers and their status. The configuration includes Mason for automatic language server installation and management.
+
+For example, when editing Python code, you get intelligent completion for imported modules, instant error highlighting for syntax issues, and quick navigation to function definitions across your project.
 ___
 [Official LSP Home](https://microsoft.github.io/language-server-protocol/)
 ```lua
 plug({
--- Collection of functions that will help you setup Neovim's LSP client
-'VonHeikemen/lsp-zero.nvim',
-branch = 'v3.x',
-dependencies = {
-  -- LSP Support
-  { 'neovim/nvim-lspconfig' },             -- Required
-  { 'williamboman/mason.nvim' },           -- Optional
-  { 'williamboman/mason-lspconfig.nvim' }, -- Optional
-
-  -- Format
-  { 'onsails/lspkind.nvim' }, -- shows icons on completion menu
-  { 'kosayoda/nvim-lightbulb' },
-  {
-    'weilbith/nvim-code-action-menu',
-    cmd = 'CodeActionMenu',
+  "neovim/nvim-lspconfig",
+  dependencies = {
+    "williamboman/mason.nvim",
+    "williamboman/mason-lspconfig.nvim",
+    "onsails/lspkind.nvim",
+    "kosayoda/nvim-lightbulb",
+    { "weilbith/nvim-code-action-menu", cmd = "CodeActionMenu" },
+    "hrsh7th/nvim-cmp",
+    "hrsh7th/cmp-nvim-lsp",
+    "L3MON4D3/LuaSnip",
+    "saadparwaiz1/cmp_luasnip",
+    "hrsh7th/cmp-nvim-lua",
+    "hrsh7th/cmp-buffer",
+    "hrsh7th/cmp-cmdline",
+    "hrsh7th/cmp-path",
+    "hrsh7th/cmp-emoji",
+    "hrsh7th/cmp-calc",
+    "SmiteshP/nvim-navic",
+    { "folke/which-key.nvim", config = function() require("which-key").setup {} end },
   },
+  config = function()
+    local navic = require("nvim-navic")
+    local wk = require("which-key")
+    local snacks = require("snacks")
+    local cmp = require("cmp")
+    local luasnip = require("luasnip")
+    local cmp_lsp = require("cmp_nvim_lsp")
 
-  -- Autocompletion
-  { 'hrsh7th/nvim-cmp' },
-  { 'hrsh7th/cmp-nvim-lsp' },
-  {
-    'L3MON4D3/LuaSnip',
-    dependencies = { "rafamadriz/friendly-snippets" },
-  },
-  { 'nvimtools/none-ls.nvim',     dependencies = { 'nvim-lua/plenary.nvim' } },
-  { "jay-babu/mason-null-ls.nvim" },
+    -- Capabilities for LSP + CMP
+    local capabilities = vim.lsp.protocol.make_client_capabilities()
+    capabilities = cmp_lsp.default_capabilities(capabilities)
 
-  { 'saadparwaiz1/cmp_luasnip' },
-  { 'hrsh7th/cmp-nvim-lua' },
-  { 'hrsh7th/cmp-buffer' },
-  { 'hrsh7th/cmp-cmdline' },
-  { 'hrsh7th/cmp-path' },
-  { 'hrsh7th/cmp-emoji' },
-  { 'hrsh7th/cmp-calc' },
-},
-config = function()
-  local lsp_zero = require('lsp-zero')
+    -- Mason setup
+    require("mason").setup()
+    require("mason-lspconfig").setup({
+      ensure_installed = { "lua_ls", "bashls", "pyright", "html", "clangd", "marksman" },
+    })
 
-  lsp_zero.on_attach(function(client, bufnr)
-    -- see :help lsp-zero-keybindings
-    -- to learn the available actions
-    lsp_zero.default_keymaps({ buffer = bufnr })
+    -- Servers list
+    local servers = {
+      lua_ls = {
+        settings = {
+          Lua = {
+            runtime = { version = "LuaJIT" },
+            workspace = { checkThirdParty = false, library = { vim.env.VIMRUNTIME } },
+            diagnostics = { globals = { "vim" } },
+            telemetry = { enable = false },
+          },
+        },
+      },
+      bashls = {},
+      pyright = {},
+      html = {},
+      clangd = {},
+      marksman = {},
+    }
 
-    local opts = function(desc)
-      return { buffer = bufnr, remap = false, desc = desc }
+    -- Enable & configure servers via new API
+    for name, config in pairs(servers) do
+      vim.lsp.enable(name)
+      if config then
+        vim.lsp.config(name, vim.tbl_extend("force", { capabilities = capabilities }, config))
+      end
     end
 
-    vim.keymap.set({ 'n', 'x' }, '<leader>lf', function()
-      vim.lsp.buf.format({ async = false, timeout_ms = 10000 })
-    end, opts('Lsp format buffer'))
+    -- Global LspAttach for keymaps and navic
+    vim.api.nvim_create_autocmd("LspAttach", {
+      callback = function(args)
+        local bufnr = args.buf
+        local client = vim.lsp.get_client_by_id(args.data.client_id)
 
-    vim.keymap.set("n", "[d", function() vim.diagnostic.goto_next() end, opts("Go To Next Diagnostic"))
-    vim.keymap.set("n", "]d", function() vim.diagnostic.goto_prev() end, opts("Go To Previous Diagnostic"))
-    vim.keymap.set("n", "gd", function() Snacks.picker.lsp_definitions() end, opts("Go To Definition"))
-    vim.keymap.set("n", "<leader>la", function() vim.lsp.buf.code_action() end, opts("Code Action"))
-    vim.keymap.set("n", "<leader>lh", function() vim.lsp.buf.hover() end, opts("Hover"))
-    vim.keymap.set("n", "<leader>lH", function() vim.lsp.buf.signature_help() end, opts("Signiture Help"))
-    vim.keymap.set("n", "<leader>ls", function() Snacks.picker.lsp_workspace_symbols() end, opts("Workspace Symbol"))
-    vim.keymap.set("n", "<leader>lr", function() Snacks.picker.lsp_references() end, opts("References"))
-    vim.keymap.set("n", "<leader>li", function() vim.lsp.buf.implementation() end, opts("Implementation"))
-    vim.keymap.set("n", "<leader>lR", function() vim.lsp.buf.rename() end, opts("Rename"))
-    vim.keymap.set("n", "<leader>lI", '<cmd>LspInfo<CR>', opts("LspInfo"))
-  end)
+        -- Key mapping helper
+        local function opts(desc) return { buffer = bufnr, remap = false, desc = desc } end
 
-  require('mason').setup({})
-  require('mason-lspconfig').setup({
-    ensure_installed = {
-      'lua_ls',
-      'bashls',
-      'pyright',    -- python
-      'html',
-      'clangd',
-      "marksman",   -- markdown
-    },
-    handlers = {
-      lsp_zero.default_setup,
-      lua_ls = function()
-        local lua_opts = lsp_zero.nvim_lua_ls()
-        require('lspconfig').lua_ls.setup(lua_opts)
+        -- Keymaps
+        vim.keymap.set({ "n", "x" }, "<localleader>lf", function()
+          vim.lsp.buf.format({ async = false, timeout_ms = 10000 })
+        end, opts("Lsp format buffer"))
+
+        vim.keymap.set("n", "[d", vim.diagnostic.goto_next, opts("Go To Next Diagnostic"))
+        vim.keymap.set("n", "]d", vim.diagnostic.goto_prev, opts("Go To Previous Diagnostic"))
+        vim.keymap.set("n", "gd", vim.lsp.buf.definition, opts("Go To Definition"))
+        vim.keymap.set("n", "<localleader>la", vim.lsp.buf.code_action, opts("Code Action"))
+        vim.keymap.set("n", "<localleader>lh", vim.lsp.buf.hover, opts("Hover"))
+        vim.keymap.set("n", "<localleader>lH", vim.lsp.buf.signature_help, opts("Signature Help"))
+        vim.keymap.set("n", "<localleader>ls", vim.lsp.buf.workspace_symbol, opts("Workspace Symbol"))
+        vim.keymap.set("n", "<localleader>lr", vim.lsp.buf.references, opts("References"))
+        vim.keymap.set("n", "<localleader>li", vim.lsp.buf.implementation, opts("Implementation"))
+        vim.keymap.set("n", "<localleader>lR", vim.lsp.buf.rename, opts("Rename"))
+        vim.keymap.set("n", "<localleader>lI", "<cmd>LspInfo<CR>", opts("LspInfo"))
+
+        vim.keymap.set("n", "<localleader>ss", snacks.picker.lsp_symbols, opts("Search for lsp symbols"))
+        vim.keymap.set("n", "<localleader>sS", snacks.picker.lsp_workspace_symbols, opts("Search for lsp workspace symbols"))
+        vim.keymap.set("n", "<localleader>sr", snacks.picker.lsp_references, opts("Search for lsp refrences"))
+
+        -- Which-key registration
+        wk.add({
+          { "<localleader>s", group = "Search" },
+          { "<localleader>l", group = "LSP" },
+        }, {buffer = bufnr})
+
+        -- Attach navic if supported
+        if client.server_capabilities.documentSymbolProvider then
+          navic.attach(client, bufnr)
+        end
       end,
-      marksman = function()
-        require('lspconfig').marksman.setup({})
-      end,
-    }
-  })
-
-  -- Open Mason UI
-  vim.keymap.set("n", "<leader>;m", "<cmd>Mason<cr>", { desc = "Mason Plugin Manager" })
-
-  local null_ls = require("null-ls")
-
-  local o = vim.o
-  null_ls.setup({
-    sources = {
-      null_ls.builtins.formatting.stylua.with({ extra_args = { '--indent_type=spaces', '--indent_width=' .. o.tabstop } }),
-      null_ls.builtins.diagnostics.trail_space,
-
-      null_ls.builtins.formatting.black, -- python formatting
-
-      null_ls.builtins.completion.spell,
-      null_ls.builtins.diagnostics.codespell,
-      null_ls.builtins.diagnostics.write_good,
-
-      null_ls.builtins.formatting.prettierd,
-      null_ls.builtins.diagnostics.markdownlint, -- markdown
-    },
-  })
-
-  require("mason-null-ls").setup({
-    ensure_installed = {
-      "stylua",
-      "ruff",  -- python linter
-      "mypy",  -- python type checker
-      "black", -- python formatter
-      "trail_space",
-      "spell",
-      "codespell",
-      "write_good",
-      "prettierd",
-      "markdownlint", -- markdown linter
-    }
-  })
-
-  local cmp = require('cmp')
-  local cmp_action = require('lsp-zero').cmp_action()
-
-  -- load snippets
-  require('luasnip.loaders.from_lua').lazy_load({ paths = './snippets/' })
-  require('luasnip.loaders.from_vscode').lazy_load()
-
-
-  local types = require("luasnip.util.types")
-
-  require('luasnip').config.set_config({
-    -- This one is cool cause if you have dynamic snippets, it updates as you type!
-    updateevents = "TextChanged,TextChangedI",
-
-    enable_autosnippets = true,
-
-    ext_opts = {
-      [types.choiceNode] = {
-        active = {
-          virt_text = { { " ⬅️c ", "NonTest" } },
-        },
-      },
-      [types.insertNode] = {
-        active = {
-          virt_text = { { " ⬅️t", "NonTest" } },
-        },
-      },
-    },
-  })
-
-  -- snippet keymap
-  vim.keymap.set("i", "<c-o>", require "luasnip.extras.select_choice")
-  vim.keymap.set("n", "<leader>csc", require "luasnip.extras.select_choice")
-  vim.keymap.set("i", "<c-d>", "<Plug>luasnip-next-choice")
-  vim.keymap.set("s", "<c-d>", "<Plug>luasnip-next-choice")
-  vim.keymap.set("i", "<c-u>", "<Plug>luasnip-prev-choice")
-  vim.keymap.set("s", "<c-u>", "<Plug>luasnip-prev-choice")
-
-  cmp.setup({
-    sources = {
-      { name = 'nvim_lsp' }, -- completion for neovim
-      { name = 'nvim_lua' }, -- completion for neovim lua api
-      { name = 'luasnip' },  -- show snippets
-      { name = 'buffer' },   -- show elements from your buffer
-      { name = 'path' },     -- show file paths
-      { name = 'calc' },     -- completion for math calculation
-      { name = 'emoji' },    -- show emoji's
-    },
-    snippet = {
-      expand = function(args)
-        require('luasnip').lsp_expand(args.body)
-      end,
-    },
-    mapping = cmp.mapping.preset.insert({
-      ['<CR>'] = cmp.mapping.confirm({ select = false }),
-      -- scroll up and down the documentation window
-      ['<C-u>'] = cmp.mapping.scroll_docs(-4),
-      ['<C-d>'] = cmp.mapping.scroll_docs(4),
-
-      ['<C-l>'] = cmp_action.luasnip_jump_forward(),
-      ['<C-h>'] = cmp_action.luasnip_jump_backward(),
-    }),
-    formatting = {
-      fields = { 'abbr', 'kind', 'menu' },
-      format = require('lspkind').cmp_format({
-        mode = 'symbol_text',  -- show only symbol annotations
-        maxwidth = 50,         -- prevent the popup from showing more than provided characters
-        ellipsis_char = '...', -- when popup menu exceed maxwidth, the truncated part would show ellipsis_char instead
-      })
-    }
-  })
-
-  -- `/` cmdline setup.
-  cmp.setup.cmdline('/', {
-    mapping = cmp.mapping.preset.cmdline(),
-    sources = {
-      { name = 'buffer' }
-    }
-  })
-
-  -- `:` cmdline setup.
-  cmp.setup.cmdline(':', {
-    mapping = cmp.mapping.preset.cmdline(),
-    sources = cmp.config.sources({
-      { name = 'path' }
-    }, {
-      { name = 'cmdline' }
     })
-  })
 
-  require("nvim-lightbulb").setup({
-    autocmd = { enabled = true },
-    virtual_text = {
-      enabled = true,
-      text = '󰌵'
-    },
-  })
-end,
+    -- CMP setup
+    require("luasnip.loaders.from_lua").lazy_load({ paths = "./snippets/" })
+    require("luasnip.loaders.from_vscode").lazy_load()
+
+    cmp.setup({
+      snippet = { expand = function(args) luasnip.lsp_expand(args.body) end },
+      mapping = cmp.mapping.preset.insert({
+        ["<CR>"] = cmp.mapping.confirm({ select = false }),
+        ["<C-u>"] = cmp.mapping.scroll_docs(-4),
+        ["<C-d>"] = cmp.mapping.scroll_docs(4),
+        ["<C-l>"] = cmp.mapping(function(fallback)
+          if luasnip.expand_or_jumpable() then luasnip.expand_or_jump() else fallback() end
+        end, { "i", "s" }),
+        ["<C-h>"] = cmp.mapping(function(fallback)
+          if luasnip.jumpable(-1) then luasnip.jump(-1) else fallback() end
+        end, { "i", "s" }),
+      }),
+      sources = {
+        { name = "nvim_lsp" },
+        { name = "nvim_lua" },
+        { name = "luasnip" },
+        { name = "buffer" },
+        { name = "path" },
+        { name = "calc" },
+        { name = "emoji" },
+      },
+      formatting = {
+        fields = { "abbr", "kind", "menu" },
+        format = require("lspkind").cmp_format({ mode = "symbol_text", maxwidth = 50, ellipsis_char = "..." }),
+      },
+    })
+
+    -- cmdline completion
+    cmp.setup.cmdline("/", { mapping = cmp.mapping.preset.cmdline(), sources = { { name = "buffer" } } })
+    cmp.setup.cmdline(":", {
+      mapping = cmp.mapping.preset.cmdline(),
+      sources = cmp.config.sources({ { name = "path" } }, { { name = "cmdline" } }),
+    })
+
+    -- nvim-lightbulb
+    require("nvim-lightbulb").setup({
+      autocmd = { enabled = true },
+      virtual_text = { enabled = true, text = "󰌵" },
+    })
+  end,
 })
 ```
+
 
 # DEBUG
 
@@ -2255,8 +2234,9 @@ ___
 plug({
   'folke/which-key.nvim',
   enabled = true,
-  opts = {
-    spec = {
+  config = function()
+    local wk = require("which-key")
+    wk.add({
       { "<leader>;", group = "Command" },
       { "<leader><Tab>", group = "Tab" },
       { "<leader>C", group = "Case" },
@@ -2267,14 +2247,15 @@ plug({
       { "<leader>d", group = "Debug" },
       { "<leader>f", group = "Find" },
       { "<leader>g", group = "Git" },
+      { "<leader>G", group = "Github" },
       { "<leader>h", group = "Hunk" },
-      { "<leader>l", group = "Lsp" },
       { "<leader>s", group = "Search" },
       { "<leader>t", group = "Table" },
       { "<leader>w", group = "Window" },
       { "<leader>x", group = "Diagnostics" },
-    },
-  },
+      { "<leader><space>", group = "Local" },
+    })
+  end,
 })
 ```
 
@@ -3252,7 +3233,7 @@ end
 
 util.datef = function(datestr, date)
   local date = date or os.date("*t", os.time())
-  local datestr = string.gsub(datestr, "%%o", M.number_ordinal(date.day))
+  local datestr = string.gsub(datestr, "%%o", util.number_ordinal(date.day))
   return os.date(datestr, os.time(date))
 end
 ```
@@ -3297,21 +3278,21 @@ snip_utils.get_name_choice = function()
 end
 
 snip_utils.shebang = {
-  lua = "!/bin/lua",
-  sh = "!/bin/sh",
-  bash = "!/bin/bash",
-  zsh = "!/bin/zsh",
+  lua = "#!/bin/lua",
+  sh = "#!/bin/sh",
+  bash = "#!/bin/bash",
+  zsh = "#!/bin/zsh",
 }
 
 
 snip_utils.get_date_choice = function (arg)
   return c(arg and arg or 1, {
-        f(function() return utils.datef("%d%o %B %Y") end),
-        f(function() return utils.datef(os.date "%d%o %b %Y") end),
-        f(function() return utils.datef(os.date "%a %d%o %b %Y") end),
-        f(function() return utils.datef(os.date "%A %d%o %b %Y") end),
-        f(function() return utils.datef(os.date "%a %d%o %B %Y") end),
-        f(function() return utils.datef(os.date "%A %d%o %B %Y") end),
+        f(function() return util.datef("%d%o %B %Y") end),
+        f(function() return util.datef("%d%o %b %Y") end),
+        f(function() return util.datef("%a %d%o %b %Y") end),
+        f(function() return util.datef("%A %d%o %b %Y") end),
+        f(function() return util.datef("%a %d%o %B %Y") end),
+        f(function() return util.datef("%A %d%o %B %Y") end),
         f(function() return os.date "%d-%m-%Y" end),
         f(function() return os.date "%d/%m/%Y" end),
         f(function() return os.date "%d-%m-%y" end),
@@ -3330,7 +3311,7 @@ snip_utils.get_header = function(opts)
           f(function() return vim.fn.expand("%:t:r") end),
         }),
       author = c(2, {t(shm.signiture), t(shm.worksigniture)}),
-      date = M.get_date_choice(3),
+      date = snip_utils.get_date_choice(3),
       desc = i(4, "Description"),
   }
 
