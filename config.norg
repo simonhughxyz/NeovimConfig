@@ -802,7 +802,7 @@ A collection of small QoL plugins for Neovim.
       vim.keymap.set('n', '<leader>gsg', pick.git_grep, { desc = 'Search Git Grep' })
       vim.keymap.set('n', '<leader>gsf', pick.git_files, { desc = 'Search Git Files' })
       vim.keymap.set('n', '<leader>gss', pick.git_stash, { desc = 'Search Git Stash' })
-      vim.keymap.set('n', '<leader>gsb', pick.git_stash, { desc = 'Search Git Branch' })
+      vim.keymap.set('n', '<leader>gsb', pick.git_branches, { desc = 'Search Git Branch' })
   
       -- github
       vim.keymap.set('n', '<leader>Gp', pick.gh_pr, { desc = 'Github Pull Requests' })
