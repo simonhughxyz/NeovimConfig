@@ -769,11 +769,11 @@ A collection of small QoL plugins for Neovim.
       vim.keymap.set('n', '<leader>/', pick.grep_word, { desc = 'Search current word' })
 
       -- Find Files
-      vim.keymap.set('n', '<leader>ff', pick.smart, { desc = 'Find Files' })
-      vim.keymap.set('n', '<leader>fb', pick.buffers, { desc = 'Find Buffers' })
-      vim.keymap.set('n', '<leader>fr', pick.recent, { desc = 'Find Recent Files' })
-      vim.keymap.set('n', '<leader>fg', pick.git_files, { desc = 'Find Git Files' })
-      vim.keymap.set('n', '<leader>fs', pick.git_status, { desc = 'Find Git Status' })
+      vim.keymap.set('n', '<leader>gff', pick.smart, { desc = 'Find Files' })
+      vim.keymap.set('n', '<leader>gfb', pick.buffers, { desc = 'Find Buffers' })
+      vim.keymap.set('n', '<leader>gfr', pick.recent, { desc = 'Find Recent Files' })
+      vim.keymap.set('n', '<leader>gfg', pick.git_files, { desc = 'Find Git Files' })
+      vim.keymap.set('n', '<leader>gfs', pick.git_status, { desc = 'Find Git Status' })
 
       vim.keymap.set('n', '<leader>fd', function() pick.files({ cwd = '~/Documents' }) end, { desc = 'Find Documents' })
       vim.keymap.set('n', '<leader>fD', function() pick.files({ cwd = '~/Downloads' }) end, { desc = 'Find Downloads' })
