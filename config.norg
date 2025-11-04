@@ -809,6 +809,7 @@ A collection of small QoL plugins for Neovim.
       vim.keymap.set('n', '<leader>GP', function() pick.gh_pr({ state= "all" }) end, { desc = 'Github All Pull Requests' })
       vim.keymap.set('n', '<leader>Gi', pick.gh_issue, { desc = 'Github Issues' })
       vim.keymap.set('n', '<leader>GI', function() pick.gh_issue({ state= "all" }) end, { desc = 'Github All Issues' })
+      vim.keymap.set('n', '<leader>Gb', Snacks.gitbrowse.open, { desc = 'Open git repo in browser' })
   
       wk.add({
         {"<leader>gs", group = "Git Search"},
