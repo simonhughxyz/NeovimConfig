@@ -763,6 +763,10 @@ A collection of small QoL plugins for Neovim.
       -- Add snacks picker keymaps
       local pick = Snacks.picker
     
+      -- Scratch buffer
+      vim.keymap.set('n', '<leader>.', Snacks.scratch.open, { desc = 'Open scratch pad' })
+      vim.keymap.set('n', '<leader>fs', Snacks.scratch.select, { desc = 'Find scratch pad' })
+
       -- Shortcuts
       vim.keymap.set('n', '<leader>?', pick.recent, { desc = 'Find Recently Files' })
       vim.keymap.set('n', '<leader>,', pick.buffers, { desc = 'Find buffers' })
