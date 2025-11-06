@@ -13,7 +13,7 @@ tangle: {
   }
 }
 created: 2024-03-06T23:01:44+0100
-updated: 2025-11-06T09:07:24+0100
+updated: 2025-11-06T23:46:46+0100
 version: 1.1.1
 @end
 
@@ -185,13 +185,13 @@ version: 1.1.1
   o.wildmode = "longest:full,full" -- Command-line completion mode
   o.winminwidth = 5            -- Minimum window width
   o.wrap = false               -- Disable line wrap
-  o.foldlevelstart = 0         -- Enable foldlevel when opening file
-  o.foldnestmax = 2            -- Set max nested foldlevel
-  vim.opt.foldenable = true    -- Enable folding
-  vim.opt.foldmethod = "expr"  -- Use expression for folding
-  vim.opt.foldexpr = "v:lua.vim.treesitter.foldexpr()" -- Use treesitter for fold expression
-  vim.o.foldtext = ''          -- Use default fold text
-  vim.o.fillchars = 'fold: '   -- Characters to fill folds
+  -- o.foldlevelstart = 0         -- Enable foldlevel when opening file
+  -- o.foldnestmax = 2            -- Set max nested foldlevel
+  -- vim.opt.foldenable = true    -- Enable folding
+  -- vim.opt.foldmethod = "expr"  -- Use expression for folding
+  -- vim.opt.foldexpr = "v:lua.vim.treesitter.foldexpr()" -- Use treesitter for fold expression
+  -- vim.o.foldtext = ''          -- Use default fold text
+  -- vim.o.fillchars = 'fold: '   -- Characters to fill folds
   
   if vim.fn.has("nvim-0.9.0") == 1 then
     o.splitkeep = "screen"
@@ -595,6 +595,237 @@ version: 1.1.1
    })
    @end
 @end
+
+** ufo
+   @code lua
+   plug({
+     'kevinhwang91/nvim-ufo',
+     dependencies = 'kevinhwang91/promise-async',
+     config = function()
+         local ufo = require("ufo")
+         
+         vim.o.foldcolumn = "0" -- show fold column
+         vim.o.foldlevel = 99   -- start unfolded
+         vim.o.foldlevelstart = 99
+         vim.o.foldenable = true
+         -- vim.o.foldlevelstart = 0     -- 0 means all folds start closed
+         -- vim.o.foldlevel = 0          -- current fold level
+   
+         -- Set up keymaps
+         vim.keymap.set("n", "zR", ufo.openAllFolds)
+         vim.keymap.set("n", "zM", ufo.closeAllFolds)
+         vim.keymap.set("n", "zr", ufo.openFoldsExceptKinds)  -- open more folds selectively
+         vim.keymap.set("n", "zm", ufo.closeFoldsWith)        -- close folds selectively
+         vim.keymap.set('n', 'K', function()
+             local ok, ufo = pcall(require, 'ufo')
+             local line = vim.fn.line('.')
+             if vim.fn.foldclosed(line) ~= -1 and ok then
+                 -- Cursor is on a folded line
+                 local winid = ufo.peekFoldedLinesUnderCursor()
+                 if not winid then
+                     print("No folded lines to peek")
+                 end
+             else
+                   pcall(vim.lsp.buf.hover)
+             end
+         end)
+   
+         -- Function to pick the right provider for UFO
+         local function provider_selector(bufnr)
+           -- Get all active LSP clients for this buffer
+           local clients = vim.lsp.get_active_clients({bufnr = bufnr})
+           for _, client in ipairs(clients) do
+             -- Check if this client supports folding
+             if client.server_capabilities.foldingRangeProvider then
+               return "lsp"
+             end
+           end
+           -- Fallback to treesitter if no LSP supports folding
+           return "treesitter"
+         end
+   
+         -- local capabilities = vim.lsp.protocol.make_client_capabilities()
+         -- capabilities.textDocument.foldingRange = {
+         --     dynamicRegistration = false,
+         --     lineFoldingOnly = true
+         -- }
+         -- local language_servers = vim.lsp.get_clients() -- or list servers manually like {'gopls', 'clangd'}
+         -- for _, ls in ipairs(language_servers) do
+         --     require('lspconfig')[ls].setup({
+         --         capabilities = capabilities
+         --         -- you can add other fields for setting up lsp server in this table
+         --     })
+         -- end
+   
+         -- Set provider selector
+         ufo.setup({
+           close_fold_kinds_for_ft = {
+               -- Python
+               python = {
+                   "class_definition",
+                   "function_definition",
+                   "if_statement",
+                   "for_statement",
+                   "while_statement",
+                   "try_statement",
+                   "with_statement",
+                   "import_statement",
+                   "import_from_statement",
+                   "decorated_definition",
+                   "string",
+                   "argument_list",
+                   "parenthesized_expression",
+                   "dictionary",
+                   -- "parameters",
+               },
+   
+               -- Lua
+               lua = {
+                   "function_definition",
+                   "if_statement",
+                   "for_statement",
+                   "while_statement",
+                   "repeat_statement",
+                   "table_constructor",
+                   "do_statement",
+               },
+   
+               -- Bash / Shell
+               bash = {
+                   "function_definition",
+                   "if_statement",
+                   "for_statement",
+                   "while_statement",
+                   "until_statement",
+                   "case_statement",
+                   "compound_command",
+               },
+   
+               -- C / C++ / Objective-C
+               c = {
+                   "function_definition",
+                   "if_statement",
+                   "for_statement",
+                   "while_statement",
+                   "switch_statement",
+                   "struct_definition",
+                   "enum_definition",
+                   "compound_statement",
+               },
+               cpp = {
+                   "function_definition",
+                   "if_statement",
+                   "for_statement",
+                   "while_statement",
+                   "switch_statement",
+                   "class_definition",
+                   "struct_definition",
+                   "enum_definition",
+                   "compound_statement",
+               },
+   
+               -- JavaScript / TypeScript
+               javascript = {
+                   "function",
+                   "method_definition",
+                   "class_declaration",
+                   "if_statement",
+                   "for_statement",
+                   "while_statement",
+                   "switch_statement",
+                   "try_statement",
+                   "block",
+               },
+               typescript = {
+                   "function",
+                   "method_definition",
+                   "class_declaration",
+                   "if_statement",
+                   "for_statement",
+                   "while_statement",
+                   "switch_statement",
+                   "try_statement",
+                   "block",
+               },
+   
+               -- Rust
+               rust = {
+                   "function_item",
+                   "impl_item",
+                   "struct_item",
+                   "enum_item",
+                   "trait_item",
+                   "mod_item",
+                   "if_expression",
+                   "for_expression",
+                   "while_expression",
+                   "loop_expression",
+                   "block",
+               },
+   
+               -- Go
+               go = {
+                   "function_declaration",
+                   "method_declaration",
+                   "type_spec",
+                   "if_statement",
+                   "for_statement",
+                   "switch_statement",
+                   "select_statement",
+                   "block",
+               },
+   
+               -- Markdown
+               markdown = {
+                   "atx_heading",
+                   "setext_heading",
+                   "fenced_code_block",
+                   "list_item",
+                   "blockquote",
+               },
+   
+               -- Neorg
+               norg = {
+                   "heading1",
+                   "heading2",
+               },
+           },
+   
+           provider_selector = function(bufnr, filetype, buftype)
+           return {provider_selector(), "indent"} 
+           end,
+   
+           fold_virt_text_handler = function(virtText, lnum, endLnum, width, truncate)
+             local newVirtText = {}
+             local suffix = (' 󰁂 %d '):format(endLnum - lnum)
+             local sufWidth = vim.fn.strdisplaywidth(suffix)
+             local targetWidth = width - sufWidth
+             local curWidth = 0
+             for _, chunk in ipairs(virtText) do
+                 local chunkText = chunk[1]
+                 local chunkWidth = vim.fn.strdisplaywidth(chunkText)
+                 if targetWidth > curWidth + chunkWidth then
+                     table.insert(newVirtText, chunk)
+                 else
+                     chunkText = truncate(chunkText, targetWidth - curWidth)
+                     local hlGroup = chunk[2]
+                     table.insert(newVirtText, {chunkText, hlGroup})
+                     chunkWidth = vim.fn.strdisplaywidth(chunkText)
+                     -- str width returned from truncate() may less than 2nd argument, need padding
+                     if curWidth + chunkWidth < targetWidth then
+                         suffix = suffix .. (' '):rep(targetWidth - curWidth - chunkWidth)
+                     end
+                     break
+                 end
+                 curWidth = curWidth + chunkWidth
+             end
+             table.insert(newVirtText, {suffix, 'MoreMsg'})
+             return newVirtText
+           end,
+         })
+     end
+   })
+   @end
 * NEORG
   An all-encompassing tool based around structured note taking, project and task management, time tracking, slideshows, writing typeset documents and much more.
   ___
@@ -620,7 +851,7 @@ version: 1.1.1
           ["core.defaults"] = {}, -- Loads default behaviour
           ["core.concealer"] = {  -- Adds pretty icons to your documents
             config = {
-              foldlevelstart = "0",
+              foldlevelstart = "99",
               icon_preset = "diamond",
               icons = {
                 code_block = {
@@ -1337,6 +1568,7 @@ A collection of small QoL plugins for Neovim.
       -- Capabilities for LSP + CMP
       local capabilities = vim.lsp.protocol.make_client_capabilities()
       capabilities = cmp_lsp.default_capabilities(capabilities)
+      capabilities.textDocument.foldingRange = { dynamicRegistration = false, lineFoldingOnly = true }
   
       -- Mason setup
       require("mason").setup()
@@ -3350,9 +3582,6 @@ A collection of small QoL plugins for Neovim.
     pattern = "norg",
     callback = function()
         o.wrap = true
-        o.foldlevelstart = 0             -- Enable foldlevel when opening file
-        o.foldnestmax = 6                -- Set max nested foldlevel
-        o.foldenable = true
     end,
     })
    @end
