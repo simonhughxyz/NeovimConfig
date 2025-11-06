@@ -13,7 +13,7 @@ tangle: {
   }
 }
 created: 2024-03-06T23:01:44+0100
-updated: 2025-11-04T10:24:44+0100
+updated: 2025-11-06T09:07:24+0100
 version: 1.1.1
 @end
 
@@ -776,12 +776,10 @@ A collection of small QoL plugins for Neovim.
       vim.keymap.set('n', '<leader>/', pick.grep_word, { desc = 'Search current word' })
 
       -- Find Files
-      vim.keymap.set('n', '<leader>gff', pick.smart, { desc = 'Find Files' })
-      vim.keymap.set('n', '<leader>gfb', pick.buffers, { desc = 'Find Buffers' })
-      vim.keymap.set('n', '<leader>gfr', pick.recent, { desc = 'Find Recent Files' })
-      vim.keymap.set('n', '<leader>gfg', pick.git_files, { desc = 'Find Git Files' })
-      vim.keymap.set('n', '<leader>gfs', pick.git_status, { desc = 'Find Git Status' })
-
+      vim.keymap.set('n', '<leader>ff', pick.smart, { desc = 'Find Files' })
+      vim.keymap.set('n', '<leader>fb', pick.buffers, { desc = 'Find Buffers' })
+      vim.keymap.set('n', '<leader>fr', pick.recent, { desc = 'Find Recent Files' })
+  
       vim.keymap.set('n', '<leader>fd', function() pick.files({ cwd = '~/Documents' }) end, { desc = 'Find Documents' })
       vim.keymap.set('n', '<leader>fD', function() pick.files({ cwd = '~/Downloads' }) end, { desc = 'Find Downloads' })
       vim.keymap.set('n', '<leader>fp', function() pick.files({ cwd = '~/Projects' }) end, { desc = 'Find Projects' })
@@ -803,6 +801,8 @@ A collection of small QoL plugins for Neovim.
       vim.keymap.set('n', '<leader>sc', pick.cliphist, { desc = 'Search clipboard history' })
   
       -- git
+      vim.keymap.set('n', '<leader>gfg', pick.git_files, { desc = 'Find Git Files' })
+      vim.keymap.set('n', '<leader>gfs', pick.git_status, { desc = 'Find Git Status' })
       vim.keymap.set('n', '<leader>gsll', pick.git_log, { desc = 'Search Git Log' })
       vim.keymap.set('n', '<leader>gslf', pick.git_log_file, { desc = 'Search Git Log File' })
       vim.keymap.set('n', '<leader>gslL', pick.git_log_line, { desc = 'Search Git Log File' })
