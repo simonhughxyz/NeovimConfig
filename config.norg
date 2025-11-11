@@ -989,6 +989,7 @@ A collection of small QoL plugins for Neovim.
       scratch = {
         enabled = true,
         ft = "norg",
+        root = "~/Documents/Notes/scratch",
         filekey = {
             id = nil, ---@type string? unique id used instead of name for the filename hash
             cwd = true, -- use current working directory
