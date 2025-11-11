@@ -986,6 +986,16 @@ A collection of small QoL plugins for Neovim.
       scope = { enabled = false },
       scroll = { enabled = false },
       statuscolumn = { enabled = false },
+      scratch = {
+        enabled = true,
+        ft = "norg",
+        filekey = {
+            id = nil, ---@type string? unique id used instead of name for the filename hash
+            cwd = true, -- use current working directory
+            branch = true, -- use current branch name
+            count = false, -- use vim.v.count1
+          },
+      }
     },
     config = function(_, opts)
       require("snacks").setup(opts)
