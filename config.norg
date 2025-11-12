@@ -905,7 +905,13 @@ version: 1.1.1
             }
           },
           ["core.summary"] = {},
-          ["core.esupports.metagen"] = { config = { type = "auto", update_date = true } },
+          ["core.esupports.metagen"] = { 
+            config = {
+              type = "auto",
+              author = "Simon H Moore <simon@simonhugh.xyz>",
+              update_date = true
+            }
+          },
           ["core.ui.calendar"] = {},
           ["core.integrations.otter"] = {},
         }
