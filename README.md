@@ -10,7 +10,7 @@ tangle:
   languages: 
     lua: ./lua/config.lua
 created: 2024-03-06T23:01:44+0100
-updated: 2025-11-02T22:47:24+0100
+updated: 2025-11-23T22:43:29+0100
 version: 1.1.1
 ---
 
@@ -154,8 +154,6 @@ end
 Configure inbuilt Neovim options.
 ___
 ```lua
-o.exrc = true
-o.secure = true
 o.autowrite = true           -- Enable auto write
 o.clipboard = "unnamedplus"  -- Sync with system clipboard
 o.completeopt = "menu,menuone,noselect" -- Completion options for better experience
@@ -198,13 +196,13 @@ o.updatetime = 200           -- Save swap file and trigger CursorHold
 o.wildmode = "longest:full,full" -- Command-line completion mode
 o.winminwidth = 5            -- Minimum window width
 o.wrap = false               -- Disable line wrap
-o.foldlevelstart = 0         -- Enable foldlevel when opening file
-o.foldnestmax = 2            -- Set max nested foldlevel
-vim.opt.foldenable = true    -- Enable folding
-vim.opt.foldmethod = "expr"  -- Use expression for folding
-vim.opt.foldexpr = "v:lua.vim.treesitter.foldexpr()" -- Use treesitter for fold expression
-vim.o.foldtext = ''          -- Use default fold text
-vim.o.fillchars = 'fold: '   -- Characters to fill folds
+-- o.foldlevelstart = 0         -- Enable foldlevel when opening file
+-- o.foldnestmax = 2            -- Set max nested foldlevel
+-- vim.opt.foldenable = true    -- Enable folding
+-- vim.opt.foldmethod = "expr"  -- Use expression for folding
+-- vim.opt.foldexpr = "v:lua.vim.treesitter.foldexpr()" -- Use treesitter for fold expression
+-- vim.o.foldtext = ''          -- Use default fold text
+-- vim.o.fillchars = 'fold: '   -- Characters to fill folds
 
 if vim.fn.has("nvim-0.9.0") == 1 then
   o.splitkeep = "screen"
@@ -627,6 +625,239 @@ plug({
 ```
 @end
 
+
+## ufo
+
+```lua
+plug({
+  'kevinhwang91/nvim-ufo',
+  dependencies = 'kevinhwang91/promise-async',
+  config = function()
+      local ufo = require("ufo")
+      
+      vim.o.foldcolumn = "0" -- show fold column
+      vim.o.foldlevel = 99   -- start unfolded
+      vim.o.foldlevelstart = 99
+      vim.o.foldenable = true
+      -- vim.o.foldlevelstart = 0     -- 0 means all folds start closed
+      -- vim.o.foldlevel = 0          -- current fold level
+
+      -- Set up keymaps
+      vim.keymap.set("n", "zR", ufo.openAllFolds)
+      vim.keymap.set("n", "zM", ufo.closeAllFolds)
+      vim.keymap.set("n", "zr", ufo.openFoldsExceptKinds)  -- open more folds selectively
+      vim.keymap.set("n", "zm", ufo.closeFoldsWith)        -- close folds selectively
+      vim.keymap.set('n', 'K', function()
+          local ok, ufo = pcall(require, 'ufo')
+          local line = vim.fn.line('.')
+          if vim.fn.foldclosed(line) ~= -1 and ok then
+              -- Cursor is on a folded line
+              local winid = ufo.peekFoldedLinesUnderCursor()
+              if not winid then
+                  print("No folded lines to peek")
+              end
+          else
+                pcall(vim.lsp.buf.hover)
+          end
+      end)
+
+      -- Function to pick the right provider for UFO
+      local function provider_selector(bufnr)
+        -- Get all active LSP clients for this buffer
+        local clients = vim.lsp.get_active_clients({bufnr = bufnr})
+        for _, client in ipairs(clients) do
+          -- Check if this client supports folding
+          if client.server_capabilities.foldingRangeProvider then
+            return "lsp"
+          end
+        end
+        -- Fallback to treesitter if no LSP supports folding
+        return "treesitter"
+      end
+
+      -- local capabilities = vim.lsp.protocol.make_client_capabilities()
+      -- capabilities.textDocument.foldingRange = {
+      --     dynamicRegistration = false,
+      --     lineFoldingOnly = true
+      -- }
+      -- local language_servers = vim.lsp.get_clients() -- or list servers manually like {'gopls', 'clangd'}
+      -- for _, ls in ipairs(language_servers) do
+      --     require('lspconfig')[ls].setup({
+      --         capabilities = capabilities
+      --         -- you can add other fields for setting up lsp server in this table
+      --     })
+      -- end
+
+      -- Set provider selector
+      ufo.setup({
+        close_fold_kinds_for_ft = {
+            -- Python
+            python = {
+                "class_definition",
+                "function_definition",
+                "if_statement",
+                "for_statement",
+                "while_statement",
+                "try_statement",
+                "with_statement",
+                "import_statement",
+                "import_from_statement",
+                "decorated_definition",
+                "string",
+                "argument_list",
+                "parenthesized_expression",
+                "dictionary",
+                -- "parameters",
+            },
+
+            -- Lua
+            lua = {
+                "function_definition",
+                "if_statement",
+                "for_statement",
+                "while_statement",
+                "repeat_statement",
+                "table_constructor",
+                "do_statement",
+            },
+
+            -- Bash / Shell
+            bash = {
+                "function_definition",
+                "if_statement",
+                "for_statement",
+                "while_statement",
+                "until_statement",
+                "case_statement",
+                "compound_command",
+            },
+
+            -- C / C++ / Objective-C
+            c = {
+                "function_definition",
+                "if_statement",
+                "for_statement",
+                "while_statement",
+                "switch_statement",
+                "struct_definition",
+                "enum_definition",
+                "compound_statement",
+            },
+            cpp = {
+                "function_definition",
+                "if_statement",
+                "for_statement",
+                "while_statement",
+                "switch_statement",
+                "class_definition",
+                "struct_definition",
+                "enum_definition",
+                "compound_statement",
+            },
+
+            -- JavaScript / TypeScript
+            javascript = {
+                "function",
+                "method_definition",
+                "class_declaration",
+                "if_statement",
+                "for_statement",
+                "while_statement",
+                "switch_statement",
+                "try_statement",
+                "block",
+            },
+            typescript = {
+                "function",
+                "method_definition",
+                "class_declaration",
+                "if_statement",
+                "for_statement",
+                "while_statement",
+                "switch_statement",
+                "try_statement",
+                "block",
+            },
+
+            -- Rust
+            rust = {
+                "function_item",
+                "impl_item",
+                "struct_item",
+                "enum_item",
+                "trait_item",
+                "mod_item",
+                "if_expression",
+                "for_expression",
+                "while_expression",
+                "loop_expression",
+                "block",
+            },
+
+            -- Go
+            go = {
+                "function_declaration",
+                "method_declaration",
+                "type_spec",
+                "if_statement",
+                "for_statement",
+                "switch_statement",
+                "select_statement",
+                "block",
+            },
+
+            -- Markdown
+            markdown = {
+                "atx_heading",
+                "setext_heading",
+                "fenced_code_block",
+                "list_item",
+                "blockquote",
+            },
+
+            -- Neorg
+            norg = {
+                "heading1",
+                "heading2",
+            },
+        },
+
+        provider_selector = function(bufnr, filetype, buftype)
+        return {provider_selector(), "indent"} 
+        end,
+
+        fold_virt_text_handler = function(virtText, lnum, endLnum, width, truncate)
+          local newVirtText = {}
+          local suffix = (' 󰁂 %d '):format(endLnum - lnum)
+          local sufWidth = vim.fn.strdisplaywidth(suffix)
+          local targetWidth = width - sufWidth
+          local curWidth = 0
+          for _, chunk in ipairs(virtText) do
+              local chunkText = chunk[1]
+              local chunkWidth = vim.fn.strdisplaywidth(chunkText)
+              if targetWidth > curWidth + chunkWidth then
+                  table.insert(newVirtText, chunk)
+              else
+                  chunkText = truncate(chunkText, targetWidth - curWidth)
+                  local hlGroup = chunk[2]
+                  table.insert(newVirtText, {chunkText, hlGroup})
+                  chunkWidth = vim.fn.strdisplaywidth(chunkText)
+                  -- str width returned from truncate() may less than 2nd argument, need padding
+                  if curWidth + chunkWidth < targetWidth then
+                      suffix = suffix .. (' '):rep(targetWidth - curWidth - chunkWidth)
+                  end
+                  break
+              end
+              curWidth = curWidth + chunkWidth
+          end
+          table.insert(newVirtText, {suffix, 'MoreMsg'})
+          return newVirtText
+        end,
+      })
+  end
+})
+```
+
 # NEORG
 
 An all-encompassing tool based around structured note taking, project and task management, time tracking, slideshows, writing typeset documents and much more.
@@ -644,6 +875,7 @@ plug({
     "nvim-treesitter/nvim-treesitter",
     "nvim-treesitter/nvim-treesitter-textobjects",
     "hrsh7th/nvim-cmp",
+    'jmbuhr/otter.nvim',
   },
    -- ft = "norg",
    -- cmd = "Neorg",
@@ -653,7 +885,7 @@ plug({
         ["core.defaults"] = {}, -- Loads default behaviour
         ["core.concealer"] = {  -- Adds pretty icons to your documents
           config = {
-            foldlevelstart = "0",
+            foldlevelstart = "99",
             icon_preset = "diamond",
             icons = {
               code_block = {
@@ -706,8 +938,15 @@ plug({
           }
         },
         ["core.summary"] = {},
-        ["core.esupports.metagen"] = { config = { type = "auto", update_date = true } },
+        ["core.esupports.metagen"] = { 
+          config = {
+            type = "auto",
+            author = "Simon H Moore <simon@simonhugh.xyz>",
+            update_date = true
+          }
+        },
         ["core.ui.calendar"] = {},
+        ["core.integrations.otter"] = {},
       }
     })
 
@@ -788,6 +1027,17 @@ plug({
     scope = { enabled = false },
     scroll = { enabled = false },
     statuscolumn = { enabled = false },
+    scratch = {
+      enabled = true,
+      ft = "norg",
+      root = "~/Documents/Notes/scratch",
+      filekey = {
+          id = nil, ---@type string? unique id used instead of name for the filename hash
+          cwd = true, -- use current working directory
+          branch = true, -- use current branch name
+          count = false, -- use vim.v.count1
+        },
+    }
   },
   config = function(_, opts)
     require("snacks").setup(opts)
@@ -798,6 +1048,13 @@ plug({
     -- Add snacks picker keymaps
     local pick = Snacks.picker
   
+    -- Scratch buffer
+    vim.keymap.set('n', '<leader>.', Snacks.scratch.open, { desc = 'Open scratch pad' })
+    vim.keymap.set('n', '<leader>fs', Snacks.scratch.select, { desc = 'Find scratch pad' })
+
+    -- terminal
+    vim.keymap.set({'n', 'i', 't'}, '<c-b>', Snacks.terminal.toggle, { desc = 'Open toggle term' })
+
     -- Shortcuts
     vim.keymap.set('n', '<leader>?', pick.recent, { desc = 'Find Recently Files' })
     vim.keymap.set('n', '<leader>,', pick.buffers, { desc = 'Find buffers' })
@@ -807,8 +1064,6 @@ plug({
     vim.keymap.set('n', '<leader>ff', pick.smart, { desc = 'Find Files' })
     vim.keymap.set('n', '<leader>fb', pick.buffers, { desc = 'Find Buffers' })
     vim.keymap.set('n', '<leader>fr', pick.recent, { desc = 'Find Recent Files' })
-    vim.keymap.set('n', '<leader>fg', pick.git_files, { desc = 'Find Git Files' })
-    vim.keymap.set('n', '<leader>fs', pick.git_status, { desc = 'Find Git Status' })
 
     vim.keymap.set('n', '<leader>fd', function() pick.files({ cwd = '~/Documents' }) end, { desc = 'Find Documents' })
     vim.keymap.set('n', '<leader>fD', function() pick.files({ cwd = '~/Downloads' }) end, { desc = 'Find Downloads' })
@@ -831,19 +1086,22 @@ plug({
     vim.keymap.set('n', '<leader>sc', pick.cliphist, { desc = 'Search clipboard history' })
 
     -- git
+    vim.keymap.set('n', '<leader>gfg', pick.git_files, { desc = 'Find Git Files' })
+    vim.keymap.set('n', '<leader>gfs', pick.git_status, { desc = 'Find Git Status' })
     vim.keymap.set('n', '<leader>gsll', pick.git_log, { desc = 'Search Git Log' })
     vim.keymap.set('n', '<leader>gslf', pick.git_log_file, { desc = 'Search Git Log File' })
     vim.keymap.set('n', '<leader>gslL', pick.git_log_line, { desc = 'Search Git Log File' })
     vim.keymap.set('n', '<leader>gsg', pick.git_grep, { desc = 'Search Git Grep' })
     vim.keymap.set('n', '<leader>gsf', pick.git_files, { desc = 'Search Git Files' })
     vim.keymap.set('n', '<leader>gss', pick.git_stash, { desc = 'Search Git Stash' })
-    vim.keymap.set('n', '<leader>gsb', pick.git_stash, { desc = 'Search Git Branch' })
+    vim.keymap.set('n', '<leader>gsb', pick.git_branches, { desc = 'Search Git Branch' })
 
     -- github
     vim.keymap.set('n', '<leader>Gp', pick.gh_pr, { desc = 'Github Pull Requests' })
     vim.keymap.set('n', '<leader>GP', function() pick.gh_pr({ state= "all" }) end, { desc = 'Github All Pull Requests' })
     vim.keymap.set('n', '<leader>Gi', pick.gh_issue, { desc = 'Github Issues' })
     vim.keymap.set('n', '<leader>GI', function() pick.gh_issue({ state= "all" }) end, { desc = 'Github All Issues' })
+    vim.keymap.set('n', '<leader>Gb', Snacks.gitbrowse.open, { desc = 'Open git repo in browser' })
 
     wk.add({
       {"<leader>gs", group = "Git Search"},
@@ -1389,6 +1647,7 @@ plug({
     -- Capabilities for LSP + CMP
     local capabilities = vim.lsp.protocol.make_client_capabilities()
     capabilities = cmp_lsp.default_capabilities(capabilities)
+    capabilities.textDocument.foldingRange = { dynamicRegistration = false, lineFoldingOnly = true }
 
     -- Mason setup
     require("mason").setup()
@@ -1620,6 +1879,130 @@ config = function()
   end
 end,
 })
+```
+
+
+# REPL
+
+## iron.nvim
+
+A powerful and flexible REPL (Read-Eval-Print Loop) management plugin that provides seamless integration between Neovim and interactive programming environments. Iron.nvim transforms your editor into a comprehensive development environment by enabling direct code execution and interaction with language interpreters.
+
+This REPL manager delivers:
+- **Multi-language support**: Works with Python, R, Lua, JavaScript, and many other interpreted languages
+- **Flexible execution modes**: Send individual lines, code blocks, visual selections, or entire files to the REPL
+- **Smart code block detection**: Automatically identifies and sends code blocks marked with language-specific delimiters
+- **Multiple REPL instances**: Manage different REPL sessions for various projects or languages simultaneously
+- **Customizable layouts**: Configure REPL windows as splits, floating windows, or separate tabs
+- **DAP integration**: Seamlessly works with nvim-dap for debugging workflows when a debug session is active
+- **Persistent sessions**: Maintain REPL state across Neovim sessions for continuous development
+
+**Usage**: Use the configured keybindings to toggle REPLs (`<leader>rr`), send code selections (`<leader>rsc`), execute entire files (`<leader>rsf`), and manage REPL sessions. The plugin supports both manual code sending and automatic execution of code blocks.
+
+**Help**: Run `:help iron` for comprehensive documentation. The plugin is particularly useful for data science workflows, interactive development, and exploratory programming where immediate feedback is essential.
+
+For example, in Python development, you can send function definitions to an IPython REPL, test them interactively, and iterate on your code without leaving your editor, making it perfect for data analysis and machine learning workflows.
+___
+[GitHub](https://github.com/Vigemus/iron.nvim)
+
+```lua
+ plug({
+   'Vigemus/iron.nvim',
+   
+   config = function()
+      local iron = require("iron.core")
+      local view = require("iron.view")
+      local common = require("iron.fts.common")
+      local wk = require("which-key")
+
+      wk.add({
+        {"<leader>r", group = "REPL"},
+      })
+
+      iron.setup({
+        config = {
+          -- Whether a repl should be discarded or not
+          scratch_repl = false,
+          -- Your repl definitions come here
+          repl_definition = {
+            sh = {
+              -- Can be a table or a function that
+              -- returns a table (see below)
+              command = {"zsh"}
+            },
+            python = {
+              command = { "ipython", "--no-autoindent" },
+              format = common.bracketed_paste_python,
+              block_dividers = { "# %%", "#%%" },
+              env = {PYTHON_BASIC_REPL = "1"} --this is needed for python3.13 and up.
+            }
+          },
+          -- set the file type of the newly created repl to ft
+          -- bufnr is the buffer id of the REPL and ft is the filetype of the 
+          -- language being used for the REPL. 
+          repl_filetype = function(bufnr, ft)
+            return ft
+            -- or return a string name such as the following
+            -- return "iron"
+          end,
+          -- Send selections to the DAP repl if an nvim-dap session is running.
+          dap_integration = true,
+          -- How the repl window will be displayed
+          -- See below for more information
+          repl_open_cmd = view.split.vertical.botright(50),
+
+          -- repl_open_cmd can also be an array-style table so that multiple 
+          -- repl_open_commands can be given.
+          -- When repl_open_cmd is given as a table, the first command given will
+          -- be the command that `IronRepl` initially toggles.
+          -- Moreover, when repl_open_cmd is a table, each key will automatically
+          -- be available as a keymap (see `keymaps` below) with the names 
+          -- toggle_repl_with_cmd_1, ..., toggle_repl_with_cmd_k
+          -- For example,
+          -- 
+          -- repl_open_cmd = {
+          --   view.split.vertical.rightbelow("%40"), -- cmd_1: open a repl to the right
+          --   view.split.rightbelow("%25")  -- cmd_2: open a repl below
+          -- }
+
+        },
+        -- Iron doesn't set keymaps by default anymore.
+        -- You can set them here or manually add keymaps to the functions in iron.core
+        keymaps = {
+          toggle_repl = "<leader>rr", -- toggles the repl open and closed.
+          -- If repl_open_command is a table as above, then the following keymaps are
+          -- available
+          -- toggle_repl_with_cmd_1 = "<leader>rv",
+          -- toggle_repl_with_cmd_2 = "<leader>rh",
+          restart_repl = "<leader>rR", -- calls `IronRestart` to restart the repl
+          send_motion = "<leader>rsc",
+          visual_send = "<leader>rsc",
+          send_file = "<leader>rsf",
+          send_line = "<leader>rsl",
+          send_paragraph = "<leader>rsp",
+          send_until_cursor = "<leader>rsu",
+          send_mark = "<leader>rsm",
+          send_code_block = "<leader>rsb",
+          send_code_block_and_move = "<leader>rsn",
+          mark_motion = "<leader>rmc",
+          mark_visual = "<leader>rmc",
+          remove_mark = "<leader>rmd",
+          cr = "<leader>rs<cr>",
+          interrupt = "<leader>ri",
+          exit = "<leader>rq",
+          clear = "<leader>rc",
+          hide = "<leader>rh",
+        },
+        -- If the highlight is on, you can change how it looks
+        -- For the available options, check nvim_set_hl
+        highlight = {
+          italic = true
+        },
+        ignore_blank_lines = true, -- ignore blank lines when sending visual select lines
+      })
+   end
+
+ })
 ```
 
 # TEXT MANIPULATION
@@ -1919,72 +2302,6 @@ plug({
 
 # TERMINAL
 
-## Toggle Term
-
-Persist and toggle multiple terminals during an editing session.
-___
-[GitHub](https://github.com/akinsho/toggleterm.nvim)
-```lua
-plug({
-  'akinsho/toggleterm.nvim',
-  version = "*",
-  opts = {},
-  config = function()
-    require("toggleterm").setup()
-
-    -- set keymaps to toggle toggleterm
-    vim.keymap.set('n', '<c-b>', [[<Cmd>exe v:count1 . "ToggleTerm size=12 direction=horizontal"<CR>]],
-      { desc = 'Toggle Term Horizontal' })
-    vim.keymap.set('i', '<c-b>', [[<Cmd>exe v:count1 . "ToggleTerm size=12 direction=horizontal"<CR>]],
-      { desc = 'Toggle Term Horizontal' })
-    vim.keymap.set('t', '<c-b>', [[<Cmd>exe v:count1 . "ToggleTerm size=12 direction=horizontal"<CR>]],
-      { desc = 'Toggle Term Horizontal' })
-
-    vim.keymap.set('n', '<c-t>', [[<Cmd>exe v:count1 . "ToggleTerm size=80 direction=vertical"<CR>]],
-      { desc = 'Toggle Term Vertical' })
-    vim.keymap.set('i', '<c-t>', [[<Cmd>exe v:count1 . "ToggleTerm size=80 direction=vertical"<CR>]],
-      { desc = 'Toggle Term Vertical' })
-    vim.keymap.set('t', '<c-t>', [[<Cmd>exe v:count1 . "ToggleTerm size=80 direction=vertical"<CR>]],
-      { desc = 'Toggle Term Vertical' })
-
-    vim.keymap.set('n', '<c-f>', [[<Cmd>exe v:count1 . "ToggleTerm size=80 direction=float"<CR>]],
-      { desc = 'Toggle Term Vertical' })
-    vim.keymap.set('i', '<c-f>', [[<Cmd>exe v:count1 . "ToggleTerm size=80 direction=float"<CR>]],
-      { desc = 'Toggle Term Vertical' })
-    vim.keymap.set('t', '<c-f>', [[<Cmd>exe v:count1 . "ToggleTerm size=80 direction=float"<CR>]],
-      { desc = 'Toggle Term Vertical' })
-
-    local terminal = require("toggleterm.terminal").Terminal
-
-    -- Set up task warrior Vit tui app toggle
-    local vit = terminal:new({
-      cmd = "vit",
-      count = 1000,
-      direction = "horizontal",
-      hidden = true,
-      close_on_exit = true,
-      auto_scroll = false,
-      start_in_insert = true,
-    })
-
-    vim.keymap.set({"n", "i", "t", "v"}, "<cm-v>", function () vit:toggle() end, {noremap = true, silent = true, desc = "Toggle Vit"})
-
-    -- Set up powershell toggle term
-    local powershell = terminal:new({
-      cmd = "powershell.exe",
-      count = 2,
-      direction = "horizontal",
-      hidden = false,
-      close_on_exit = false,
-      auto_scroll = true,
-      start_in_insert = true,
-    })
-
-    vim.keymap.set({"n", "i", "t", "v"}, "<cm-p>", function () powershell:toggle() end, {noremap = true, silent = true, desc = "Toggle Powershell"})
-  end,
-})
-```
-
 ## Flatten
 
 A smart session management plugin that prevents nested Neovim instances when opening files from terminal buffers, providing seamless file editing without disrupting your workflow. Flatten automatically detects when you're trying to open files from within a terminal and handles them intelligently.
@@ -2008,9 +2325,12 @@ ___
 ```lua
 plug({
   "willothy/flatten.nvim",
+  dependencies = { "folke/snacks.nvim" },
   opts = function()
-    ---@type Terminal?
+    ---@type SnacksTerminal?
     local saved_terminal
+
+    local Snacks = require("snacks")
 
     return {
       window = {
@@ -2018,41 +2338,22 @@ plug({
       },
       hooks = {
         should_block = function(argv)
-          -- Note that argv contains all the parts of the CLI command, including
-          -- Neovim's path, commands, options and files.
-          -- See: :help v:argv
-
-          -- In this case, we would block if we find the `-b` flag
-          -- This allows you to use `nvim -b file1` instead of
-          -- `nvim --cmd 'let g:flatten_wait=1' file1`
           return vim.tbl_contains(argv, "-b")
-
-          -- Alternatively, we can block if we find the diff-mode option
-          -- return vim.tbl_contains(argv, "-d")
         end,
         pre_open = function()
-          local term = require("toggleterm.terminal")
-          local termid = term.get_focused_id()
-          saved_terminal = term.get(termid)
+          -- get the currently open snacks terminal
+          saved_terminal = Snacks.terminal.get()
         end,
         post_open = function(bufnr, winnr, ft, is_blocking)
           if is_blocking and saved_terminal then
-            -- Hide the terminal while it's blocking
-            saved_terminal:close()
+            -- hide the terminal while blocking
+            Snacks.terminal.toggle(saved_terminal, { open = false })
           else
             if winnr and vim.api.nvim_win_is_valid(winnr) then
               vim.api.nvim_set_current_win(winnr)
             end
-
-            -- If we're in a different wezterm pane/tab, switch to the current one
-            -- Requires willothy/wezterm.nvim
-            -- require("wezterm").switch_pane.id(
-            --   tonumber(os.getenv("WEZTERM_PANE"))
-            -- )
           end
 
-          -- If the file is a git commit, create one-shot autocmd to delete its buffer on write
-          -- If you just want the toggleable terminal integration, ignore this bit
           if ft == "gitcommit" or ft == "gitrebase" then
             vim.api.nvim_create_autocmd("BufWritePost", {
               buffer = bufnr,
@@ -2064,10 +2365,9 @@ plug({
           end
         end,
         block_end = function()
-          -- After blocking ends (for a git commit, etc), reopen the terminal
           vim.schedule(function()
             if saved_terminal then
-              saved_terminal:open()
+              Snacks.terminal.toggle(saved_terminal, { open = true })
               saved_terminal = nil
             end
           end)
@@ -2084,14 +2384,8 @@ Table creator & formatter allowing one to create neat tables as you type.
 ___
 [GitHub](https://github.com/dhruvasagar/vim-table-mode)
 ```lua
-plug({ 'yochem/jq-playground.nvim' })
+plug({ "https://github.com/dhruvasagar/vim-table-mode" })
 ```
-
-
-# JQ
-
- 
-
 
 # TODO COMMENTS
 
@@ -2461,23 +2755,6 @@ plug({
 })
 ```
 
-# EMAIL
-
-## NOTMUCH
-
-```lua
-plug({
-  dir="~/Projects/nvim/notmuch.nvim",
-  opts = {
-        notmuch_db_path = "/home/simon/.mail/.notmuch",
-        maildir_sync_cmd = "mail-sync",
-        keymaps = {
-            sendmail = "<C-g><C-g>",
-        },
-    },
-})
-```
-
 # AI
 
 ## Aider
@@ -2544,41 +2821,6 @@ plug({
     },
 })
 ```
-
-## OpenCode
-
-
-```lua
-plug({
-  "NickvanDyke/opencode.nvim",
-    dependencies = {
-      -- Recommended for `ask()` and `select()`.
-      -- Required for `toggle()`.
-      { "folke/snacks.nvim", opts = { input = {}, picker = {} } },
-    },
-    config = function()
-      vim.g.opencode_opts = {
-        -- Your configuration, if any — see `lua/opencode/config.lua`, or "goto definition" on `opencode_opts`.
-      }
-
-      -- Required for `vim.g.opencode_opts.auto_reload`.
-      vim.o.autoread = true
-
-      -- Recommended/example keymaps.
-      vim.keymap.set({ "n", "x" }, "<leader>oa", function() require("opencode").ask("@this: ", { submit = true }) end, { desc = "Ask about this" })
-      vim.keymap.set({ "n", "x" }, "<leader>os", function() require("opencode").select() end, { desc = "Select prompt" })
-      vim.keymap.set({ "n", "x" }, "<leader>o+", function() require("opencode").prompt("@this") end, { desc = "Add this" })
-      vim.keymap.set("n", "<leader>ot", function() require("opencode").toggle() end, { desc = "Toggle embedded" })
-      vim.keymap.set("n", "<leader>oc", function() require("opencode").command() end, { desc = "Select command" })
-      vim.keymap.set("n", "<leader>on", function() require("opencode").command("session_new") end, { desc = "New session" })
-      vim.keymap.set("n", "<leader>oi", function() require("opencode").command("session_interrupt") end, { desc = "Interrupt session" })
-      vim.keymap.set("n", "<leader>oA", function() require("opencode").command("agent_cycle") end, { desc = "Cycle selected agent" })
-      vim.keymap.set("n", "<S-C-u>",    function() require("opencode").command("messages_half_page_up") end, { desc = "Messages half page up" })
-      vim.keymap.set("n", "<S-C-d>",    function() require("opencode").command("messages_half_page_down") end, { desc = "Messages half page down" })
-    end,
-})
-```
-
 
 # TREESITTER
 
@@ -3233,7 +3475,7 @@ end
 
 util.datef = function(datestr, date)
   local date = date or os.date("*t", os.time())
-  local datestr = string.gsub(datestr, "%%o", util.number_ordinal(date.day))
+  local datestr = string.gsub(datestr, "%%o", M.number_ordinal(date.day))
   return os.date(datestr, os.time(date))
 end
 ```
@@ -3278,21 +3520,21 @@ snip_utils.get_name_choice = function()
 end
 
 snip_utils.shebang = {
-  lua = "#!/bin/lua",
-  sh = "#!/bin/sh",
-  bash = "#!/bin/bash",
-  zsh = "#!/bin/zsh",
+  lua = "!/bin/lua",
+  sh = "!/bin/sh",
+  bash = "!/bin/bash",
+  zsh = "!/bin/zsh",
 }
 
 
 snip_utils.get_date_choice = function (arg)
   return c(arg and arg or 1, {
-        f(function() return util.datef("%d%o %B %Y") end),
-        f(function() return util.datef("%d%o %b %Y") end),
-        f(function() return util.datef("%a %d%o %b %Y") end),
-        f(function() return util.datef("%A %d%o %b %Y") end),
-        f(function() return util.datef("%a %d%o %B %Y") end),
-        f(function() return util.datef("%A %d%o %B %Y") end),
+        f(function() return utils.datef("%d%o %B %Y") end),
+        f(function() return utils.datef(os.date "%d%o %b %Y") end),
+        f(function() return utils.datef(os.date "%a %d%o %b %Y") end),
+        f(function() return utils.datef(os.date "%A %d%o %b %Y") end),
+        f(function() return utils.datef(os.date "%a %d%o %B %Y") end),
+        f(function() return utils.datef(os.date "%A %d%o %B %Y") end),
         f(function() return os.date "%d-%m-%Y" end),
         f(function() return os.date "%d/%m/%Y" end),
         f(function() return os.date "%d-%m-%y" end),
@@ -3311,7 +3553,7 @@ snip_utils.get_header = function(opts)
           f(function() return vim.fn.expand("%:t:r") end),
         }),
       author = c(2, {t(shm.signiture), t(shm.worksigniture)}),
-      date = snip_utils.get_date_choice(3),
+      date = M.get_date_choice(3),
       desc = i(4, "Description"),
   }
 
@@ -3329,7 +3571,6 @@ snip_utils.get_header = function(opts)
 
   return fmt(table.concat(formattable, "\n"), sntable, {dedent = true})
 end
-
 ```
 
 ## Snippets
@@ -3376,7 +3617,7 @@ snippet("all", {
     {
       c(1, {
         t("simon@simonhugh.xyz"),
-        t("simon.moore@audiebant.co.uk"),
+        t("simonm@vigoitsolutions.com"),
       }),
     }),
   s({
@@ -3404,7 +3645,7 @@ snippet("all", {
       desc = 'Work Sign'
     },
     {
-      t("Simon H Moore <simon.moore@audiebant.co.uk>")
+      t("Simon H Moore <simonm@vigoitsolutions.com>")
     }),
   s({
       trig = 'date',
@@ -3439,6 +3680,101 @@ snippet("all", {
         f(function() return os.date "%I:%M:%S %p" end),
       })
     }),
+  s({
+    trig = 'vigogreeting',
+    desc = 'A greeting for vigo email'
+  }, fmt([[
+      Hi {name},
+
+      {greeting}
+      ]], {
+          name = i(1, "Name"),
+          greeting = greeting_choice(2),
+        }
+    )
+  ),
+  s({
+    trig = "vigopass",
+    desc = "Complete builds message"
+  }, fmt([[
+      Hi {name},
+
+      {greeting}
+
+      I am currently setting up your {device} and I need your password to continue. Could you send it to me please?
+      If you feel uncomfortable sharing your password over email{passmsg}
+
+      Could you also send me a list of apps you would like to see installed?
+
+      {outmsg},
+      Simon
+      ]], {
+          name = i(1, "Name"),
+          --NOTE: Could separate out the greeting to be reused
+          greeting = greeting_choice(2),
+          device = c(3,{
+            t("new laptop"),
+            t("laptop"),
+            t("new desktop"),
+            t("desktop"),
+            i(1, "device"),
+          }),
+          passmsg = c(4,{
+            t(", you can call our office, or we can reset your password to a temporary one."),
+            t(" you can also call our office."),
+          }),
+          outmsg = message_end(5),
+        }
+    )
+  ),
+  s({
+    trig = "vigoPassReset",
+    desc = "Email client for password reset"
+  }, fmt([[
+      Hi {name},
+
+      {greeting}
+
+      I will reset your password to: {password}
+
+      Please confirm you have read and taken note of this password by replying to this email. We will only proceed with the password reset once you have replied.
+
+      Important: Once we reset your password, you may be signed out of all sessions you are currently logged in. You can log back in using the new password mentioned above.
+
+      {outmsg},
+      Simon
+      ]], {
+          name = i(1, "Name"),
+          --NOTE: Could separate out the greeting to be reused
+          greeting = greeting_choice(2),
+          password = i(3, "PASSWORD"),
+          outmsg = message_end(4),
+        }
+    )
+  ),
+  s({
+    trig = "vigocomplete",
+    desc = "Complete builds message"
+  }, fmt([[
+      Hi {name},
+
+      {greeting}
+
+      We have completed setting up {name2} {device} and it is ready for collection, we are open Monday to Friday 9am to 5pm.
+      Alternatively, I can arrange to have one of our mobile engineers drop the laptop of for you.
+
+      {outmsg},
+      Simon
+      ]], {
+          name = i(1, "Name"),
+          --NOTE: Could separate out the greeting to be reused
+          greeting = greeting_choice(2),
+          name2 = i(3, "Name"),
+          device = c(4, {t("laptop"), t("desktop")}),
+          outmsg = message_end(5),
+        }
+    )
+  ),
 })
 ```
 
@@ -3506,44 +3842,21 @@ s({
 
 ### GitCommit
 
-Intelligent snippets for writing conventional Git commit messages that follow industry standards. These snippets help you create consistent, semantic commit messages that clearly communicate the nature and scope of your changes to other developers.
-
-This snippet collection provides:
-- **Conventional Commits support**: Automatic formatting following the conventional commits specification
-- **Semantic prefixes**: Quick access to standard commit types like feat, fix, docs, refactor, etc.
-- **Scope handling**: Optional scope specification with proper formatting and breaking change indicators
-- **Consistency enforcement**: Ensures all commit messages follow the same structured format
-- **Team collaboration**: Makes commit history more readable and useful for automated tools
-- **Changelog generation**: Enables automatic changelog creation from commit messages
-
-**Usage**: When writing commit messages in Git, use the trigger abbreviations (like `fe:` for features, `fi:` for fixes) to automatically expand into properly formatted conventional commit messages.
-
-**Help**: The snippets follow the format `type(scope): description` where type indicates the kind of change, scope is optional and indicates what part of the codebase is affected, and description briefly explains the change.
-
-For example, `fe:` expands to `feat(scope): description` for new features, while `fi:` becomes `fix(scope): description` for bug fixes. Add `!` for breaking changes.
+Snippets for git commit file type, used for committing with [fugitive](#fugitive).
 ___
 ```lua
-local function git_commit_snip(opts)
-  return s(
-    {trig = opts.trig, regTrig = true},
-    fmt(opts.prefix .. [[{}: {}]], {  c(1, { sn(nil, {t("("), i(1, "scope"), t(")")}), sn(nil, {t("("), i(1, "scope"), t(")!")}), t(""),t("!")}), i(2, opts.description)})
-  )
-end
-
 snippet("gitcommit", {
   -- conventional commit snippets
   -- see https://www.conventionalcommits.org/en/v1.0.0/#summary
-  s({trig = "^BR:", regTrig = true}, t("BREAKING CHANGE: ")),
-  git_commit_snip({trig = "^fe:", prefix = "feat", description = "new feature"}),
-  git_commit_snip({trig = "^fi:", prefix = "fix", description = "bug fix"}),
-  git_commit_snip({trig = "^do:", prefix = "docs", description = "documentation only change"}),
-  git_commit_snip({trig = "^bu:", prefix = "build", description = "build system or external dependency change"}),
-  git_commit_snip({trig = "^pe:", prefix = "perf", description = "performance improvement change"}),
-  git_commit_snip({trig = "^re:", prefix = "refactor", description = "code change that neither fixes a bug nor adds a feature"}),
-  git_commit_snip({trig = "^st:", prefix = "style", description = "change that does not affect the meaning of the code"}),
-  git_commit_snip({trig = "^te:", prefix = "test", description = "adding missing tests or correcting existing tests"}),
-  git_commit_snip({trig = "^ch:", prefix = "chore", description = "coding chore, no feat or fix just has to be done"}),
-  git_commit_snip({trig = "^ci:", prefix = "ci", description = "changes to CI configuration files and scripts"}),
+  s({trig = "^br", regTrig = true}, t("BREAKING CHANGE: ")),
+  s({trig = "^fe", regTrig = true}, fmt([[feat({}){}: {}]], { i(1, "scope"), c(3, {t(""),t("!")}), i(2, "new feature")})),
+  s({trig = "^fi", regTrig = true}, fmt([[fix({}){}: {}]], { i(1, "scope"), c(3, {t(""),t("!")}), i(2, "bug fix")})),
+  s({trig = "^do", regTrig = true}, fmt([[docs({}){}: {}]], { i(1, "scope"), c(3, {t(""),t("!")}), i(2, "documentation only change")})),
+  s({trig = "^bu", regTrig = true}, fmt([[build({}){}: {}]], { i(1, "scope"), c(3, {t(""),t("!")}), i(2, "build system or external dependency change")})),
+  s({trig = "^pe", regTrig = true}, fmt([[perf({}){}: {}]], { i(1, "scope"), c(3, {t(""),t("!")}), i(2, "performance improvement change")})),
+  s({trig = "^re", regTrig = true}, fmt([[refactor({}){}: {}]], { i(1, "scope"), c(3, {t(""),t("!")}), i(2, "code change that neither fixes a bug or adds a feature")})),
+  s({trig = "^st", regTrig = true}, fmt([[style({}){}: {}]], { i(1, "scope"), c(3, {t(""),t("!")}), i(2, "change that does not affect the meaning of the code")})),
+  s({trig = "^pe", regTrig = true}, fmt([[perf({}){}: {}]], { i(1, "scope"), c(3, {t(""),t("!")}), i(2, "adding new or correcting existing test")})),
 },{ type = "autosnippets" })
 ```
 
@@ -3561,11 +3874,6 @@ snippet("gitcommit", {
   pattern = "norg",
   callback = function()
       o.wrap = true
-      o.foldlevelstart = 0             -- Enable foldlevel when opening file
-      o.foldnestmax = 6                -- Set max nested foldlevel
-      o.foldenable = true
   end,
   })
 ```
-
-
