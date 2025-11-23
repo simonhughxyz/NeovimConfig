@@ -13,7 +13,7 @@ tangle: {
   }
 }
 created: 2024-03-06T23:01:44+0100
-updated: 2025-11-23T22:43:29+0100
+updated: 2025-11-23T23:17:27+0100
 version: 1.1.1
 @end
 
@@ -1938,6 +1938,89 @@ A collection of small QoL plugins for Neovim.
       end
    
     })
+   @end
+
+** yarepl.nvim
+   Yet Another REPL (Read-Eval-Print Loop) plugin that provides a modern and flexible approach to interactive programming in Neovim. Yarepl.nvim offers enhanced REPL management with support for multiple languages and advanced formatting capabilities.
+
+   This REPL manager provides:
+   - *Multi-language support*: Works seamlessly with Python, R, JavaScript, Bash, and many other interpreted languages
+   - *Advanced formatting*: Multiple formatting options including bracketed pasting and smart line trimming
+   - *Flexible window management*: Configurable REPL window positioning and behavior
+   - *Cross-platform compatibility*: Optimized for Linux, macOS, and Windows environments
+   - *Session persistence*: Maintains REPL state and history across Neovim sessions
+   - *Smart command execution*: Intelligent handling of different command types and syntax requirements
+   - *Integration friendly*: Works well with existing Neovim plugins and workflows
+
+   **Usage**: The plugin automatically detects file types and provides appropriate REPL environments. Use the configured commands to send code selections, lines, or entire files to the active REPL session.
+
+   *Help*: Run `:help yarepl` for comprehensive documentation. The plugin supports extensive customization for different programming languages and workflow preferences.
+
+   For example, when working with Python files, yarepl automatically launches IPython with bracketed paste support, allowing you to send complex code blocks while preserving formatting and indentation.
+   ___
+   [GitHub]{https://github.com/milanglacier/yarepl.nvim}
+
+   @code lua
+   plug(
+     {
+       'milanglacier/yarepl.nvim',
+       config = function()
+   -- below is the default configuration, there's no need to copy paste them if
+   -- you are satisfied with the default configuration, just calling
+   -- `require('yarepl').setup {}` is sufficient.
+         local yarepl = require('yarepl')
+   
+         yarepl.setup({
+             -- see `:h buflisted`, whether the REPL buffer should be buflisted.
+             buflisted = false,
+             -- whether the REPL buffer should be a scratch buffer.
+             scratch = true,
+             -- the filetype of the REPL buffer created by `yarepl`
+             ft = 'REPL',
+             -- How yarepl open the REPL window, can be a string or a lua function.
+             -- See below example for how to configure this option
+             wincmd = 'vertical 60 split',
+             -- The available REPL palattes that `yarepl` can create REPL based on.
+             -- To disable a built-in meta, set its key to `false`, e.g., `metas = { R = false }`
+             metas = {
+                 aichat = { cmd = 'aichat', formatter = 'bracketed_pasting', source_syntax = 'aichat' },
+                 radian = { cmd = 'radian', formatter = 'bracketed_pasting_no_final_new_line', source_syntax = 'R' },
+                 ipython = { cmd = 'ipython', formatter = 'bracketed_pasting', source_syntax = 'ipython' },
+                 python = { cmd = 'python', formatter = 'trim_empty_lines', source_syntax = 'python' },
+                 R = { cmd = 'R', formatter = 'trim_empty_lines', source_syntax = 'R' },
+                 bash = {
+                     cmd = 'bash',
+                     formatter = vim.fn.has 'linux' == 1 and 'bracketed_pasting' or 'trim_empty_lines',
+                     source_syntax = 'bash',
+                 },
+                 zsh = { cmd = 'zsh', formatter = 'bracketed_pasting', source_syntax = 'bash' },
+             },
+             -- when a REPL process exits, should the window associated with those REPLs closed?
+             close_on_exit = true,
+             -- whether automatically scroll to the bottom of the REPL window after sending
+             -- text? This feature would be helpful if you want to ensure that your view
+             -- stays updated with the latest REPL output.
+             scroll_to_bottom_after_sending = true,
+             -- Format REPL buffer names as #repl_name#n (e.g., #ipython#1) instead of using terminal defaults
+             format_repl_buffers_names = true,
+             os = {
+                 -- Some hacks for Windows. macOS and Linux users can simply ignore
+                 -- them. The default options are recommended for Windows user.
+                 windows = {
+                     -- Send a final `\r` to the REPL with delay,
+                     send_delayed_final_cr = true,
+                 },
+             },
+             -- Display the first line as virtual text to indicate the actual
+             -- command sent to the REPL.
+             source_command_hint = {
+                 enabled = true,
+                 hl_group = 'Comment',
+             },
+         })
+       end
+     }
+   )
    @end
 * TEXT MANIPULATION
 ** Comment.nvim
