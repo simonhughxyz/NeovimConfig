@@ -8,10 +8,6 @@ local result, err = pcall(require, "config")
 
 -- NOTE: Will only be run once to bootstap the norg config
 if not(result) then
-  -- NOTE: On bootstrap, will see an error that config can'tbe found, this is normal and should be ignored
-  -- Close neovim and open again, run `:Neorg tangle` to generate `lua/config.lua` to remove error
-  print(err)
-
   local lazypath = vim.fn.stdpath 'data' .. '/lazy/lazy.nvim'
   if not vim.loop.fs_stat(lazypath) then
     vim.fn.system {
