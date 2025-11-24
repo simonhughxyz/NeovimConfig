@@ -2,6 +2,7 @@
 --
 -- Only used to boostrap config and to call `lua/config.lua`
 -- user config.norg to edit config and then run `:Neorg tangle` to generate `lua/config.lua`
+-- Or simply run `nvim --headless -c "edit config.norg" -c "Neorg tangle current-file" -c "qa"` to bootstap
 
 -- NOTE: `lua/config.lua` is generated from config.norg using `tangle`
 local result, err = pcall(require, "config")
