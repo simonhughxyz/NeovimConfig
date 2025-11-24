@@ -13,7 +13,7 @@ tangle: {
   }
 }
 created: 2024-03-06T23:01:44+0100
-updated: 2025-11-23T23:17:27+0100
+updated: 2025-11-24T14:19:44+0100
 version: 1.1.1
 @end
 
@@ -1820,126 +1820,6 @@ A collection of small QoL plugins for Neovim.
   @end
 
 * REPL
-** iron.nvim
-   A powerful and flexible REPL (Read-Eval-Print Loop) management plugin that provides seamless integration between Neovim and interactive programming environments. Iron.nvim transforms your editor into a comprehensive development environment by enabling direct code execution and interaction with language interpreters.
-
-   This REPL manager delivers:
-   - *Multi-language support*: Works with Python, R, Lua, JavaScript, and many other interpreted languages
-   - *Flexible execution modes*: Send individual lines, code blocks, visual selections, or entire files to the REPL
-   - *Smart code block detection*: Automatically identifies and sends code blocks marked with language-specific delimiters
-   - *Multiple REPL instances*: Manage different REPL sessions for various projects or languages simultaneously
-   - *Customizable layouts*: Configure REPL windows as splits, floating windows, or separate tabs
-   - *DAP integration*: Seamlessly works with nvim-dap for debugging workflows when a debug session is active
-   - *Persistent sessions*: Maintain REPL state across Neovim sessions for continuous development
-
-   *Usage*: Use the configured keybindings to toggle REPLs (`<leader>rr`), send code selections (`<leader>rsc`), execute entire files (`<leader>rsf`), and manage REPL sessions. The plugin supports both manual code sending and automatic execution of code blocks.
-
-   *Help*: Run `:help iron` for comprehensive documentation. The plugin is particularly useful for data science workflows, interactive development, and exploratory programming where immediate feedback is essential.
-
-   For example, in Python development, you can send function definitions to an IPython REPL, test them interactively, and iterate on your code without leaving your editor, making it perfect for data analysis and machine learning workflows.
-   ___
-   [GitHub]{https://github.com/Vigemus/iron.nvim}
-
-   @code lua
-    plug({
-      'Vigemus/iron.nvim',
-      
-      config = function()
-         local iron = require("iron.core")
-         local view = require("iron.view")
-         local common = require("iron.fts.common")
-         local wk = require("which-key")
-   
-         wk.add({
-           {"<leader>r", group = "REPL"},
-         })
-   
-         iron.setup({
-           config = {
-             -- Whether a repl should be discarded or not
-             scratch_repl = false,
-             -- Your repl definitions come here
-             repl_definition = {
-               sh = {
-                 -- Can be a table or a function that
-                 -- returns a table (see below)
-                 command = {"zsh"}
-               },
-               python = {
-                 command = { "ipython", "--no-autoindent" },
-                 format = common.bracketed_paste_python,
-                 block_dividers = { "# %%", "#%%" },
-                 env = {PYTHON_BASIC_REPL = "1"} --this is needed for python3.13 and up.
-               }
-             },
-             -- set the file type of the newly created repl to ft
-             -- bufnr is the buffer id of the REPL and ft is the filetype of the 
-             -- language being used for the REPL. 
-             repl_filetype = function(bufnr, ft)
-               return ft
-               -- or return a string name such as the following
-               -- return "iron"
-             end,
-             -- Send selections to the DAP repl if an nvim-dap session is running.
-             dap_integration = true,
-             -- How the repl window will be displayed
-             -- See below for more information
-             repl_open_cmd = view.split.vertical.botright(50),
-   
-             -- repl_open_cmd can also be an array-style table so that multiple 
-             -- repl_open_commands can be given.
-             -- When repl_open_cmd is given as a table, the first command given will
-             -- be the command that `IronRepl` initially toggles.
-             -- Moreover, when repl_open_cmd is a table, each key will automatically
-             -- be available as a keymap (see `keymaps` below) with the names 
-             -- toggle_repl_with_cmd_1, ..., toggle_repl_with_cmd_k
-             -- For example,
-             -- 
-             -- repl_open_cmd = {
-             --   view.split.vertical.rightbelow("%40"), -- cmd_1: open a repl to the right
-             --   view.split.rightbelow("%25")  -- cmd_2: open a repl below
-             -- }
-   
-           },
-           -- Iron doesn't set keymaps by default anymore.
-           -- You can set them here or manually add keymaps to the functions in iron.core
-           keymaps = {
-             toggle_repl = "<leader>rr", -- toggles the repl open and closed.
-             -- If repl_open_command is a table as above, then the following keymaps are
-             -- available
-             -- toggle_repl_with_cmd_1 = "<leader>rv",
-             -- toggle_repl_with_cmd_2 = "<leader>rh",
-             restart_repl = "<leader>rR", -- calls `IronRestart` to restart the repl
-             send_motion = "<leader>rsc",
-             visual_send = "<leader>rsc",
-             send_file = "<leader>rsf",
-             send_line = "<leader>rsl",
-             send_paragraph = "<leader>rsp",
-             send_until_cursor = "<leader>rsu",
-             send_mark = "<leader>rsm",
-             send_code_block = "<leader>rsb",
-             send_code_block_and_move = "<leader>rsn",
-             mark_motion = "<leader>rmc",
-             mark_visual = "<leader>rmc",
-             remove_mark = "<leader>rmd",
-             cr = "<leader>rs<cr>",
-             interrupt = "<leader>ri",
-             exit = "<leader>rq",
-             clear = "<leader>rc",
-             hide = "<leader>rh",
-           },
-           -- If the highlight is on, you can change how it looks
-           -- For the available options, check nvim_set_hl
-           highlight = {
-             italic = true
-           },
-           ignore_blank_lines = true, -- ignore blank lines when sending visual select lines
-         })
-      end
-   
-    })
-   @end
-
 ** yarepl.nvim
    Yet Another REPL (Read-Eval-Print Loop) plugin that provides a modern and flexible approach to interactive programming in Neovim. Yarepl.nvim offers enhanced REPL management with support for multiple languages and advanced formatting capabilities.
 
@@ -1964,11 +1844,23 @@ A collection of small QoL plugins for Neovim.
    plug(
      {
        'milanglacier/yarepl.nvim',
+       event = 'VeryLazy',
        config = function()
    -- below is the default configuration, there's no need to copy paste them if
    -- you are satisfied with the default configuration, just calling
    -- `require('yarepl').setup {}` is sufficient.
          local yarepl = require('yarepl')
+   
+   
+         require('yarepl.extensions.aider').setup {
+             aider_cmd = 'aider',
+             --NOTE: make sure you pass a list of string, not string,
+             aider_args = { '--watch-files' },
+             -- Display a winbar (e.g., "aider#<id>") in the floating window.
+             show_winbar_in_float_win = true,
+             -- The default wincmd is to open aider in a floating window at the bottom-right corner
+             wincmd = 'vertical 60 split',
+         }
    
          yarepl.setup({
              -- see `:h buflisted`, whether the REPL buffer should be buflisted.
@@ -1983,11 +1875,12 @@ A collection of small QoL plugins for Neovim.
              -- The available REPL palattes that `yarepl` can create REPL based on.
              -- To disable a built-in meta, set its key to `false`, e.g., `metas = { R = false }`
              metas = {
-                 aichat = { cmd = 'aichat', formatter = 'bracketed_pasting', source_syntax = 'aichat' },
-                 radian = { cmd = 'radian', formatter = 'bracketed_pasting_no_final_new_line', source_syntax = 'R' },
+                 aider = require('yarepl.extensions.aider').create_aider_meta(),
+                 aichat = false,
+                 radian = false,
                  ipython = { cmd = 'ipython', formatter = 'bracketed_pasting', source_syntax = 'ipython' },
                  python = { cmd = 'python', formatter = 'trim_empty_lines', source_syntax = 'python' },
-                 R = { cmd = 'R', formatter = 'trim_empty_lines', source_syntax = 'R' },
+                 R = false,
                  bash = {
                      cmd = 'bash',
                      formatter = vim.fn.has 'linux' == 1 and 'bracketed_pasting' or 'trim_empty_lines',
@@ -2017,6 +1910,156 @@ A collection of small QoL plugins for Neovim.
                  enabled = true,
                  hl_group = 'Comment',
              },
+         })
+   
+   
+         local keymap = vim.api.nvim_set_keymap
+   
+         -- general keymap from yarepl
+         keymap('n', '<Leader>a/', '<Plug>(REPLStart-aider)', {
+             desc = 'Start an aider REPL',
+         })
+         keymap('n', '<Leader>af', '<Plug>(REPLFocus-aider)', {
+             desc = 'Focus on aider REPL',
+         })
+         keymap('n', '<Leader>ah', '<Plug>(REPLHide-aider)', {
+             desc = 'Hide aider REPL',
+         })
+         keymap('v', '<Leader>ar', '<Plug>(REPLSendVisual-aider)', {
+             desc = 'Send visual region to aider',
+         })
+         keymap('n', '<Leader>arr', '<Plug>(REPLSendLine-aider)', {
+             desc = 'Send lines to aider',
+         })
+         keymap('n', '<Leader>ar', '<Plug>(REPLSendOperator-aider)', {
+             desc = 'Send Operator to aider',
+         })
+   
+         -- special keymap from aider
+         keymap('n', '<Leader>ae', '<Plug>(AiderExec)', {
+             desc = 'Execute command in aider',
+         })
+         keymap('n', '<Leader>ay', '<Plug>(AiderSendYes)', {
+             desc = 'Send y to aider',
+         })
+         keymap('n', '<Leader>an', '<Plug>(AiderSendNo)', {
+             desc = 'Send n to aider',
+         })
+         keymap('n', '<Leader>ap', '<Plug>(AiderSendPaste)', {
+             desc = 'Send /paste to aider',
+         })
+         keymap('n', '<Leader>aa', '<Plug>(AiderSendAbort)', {
+             desc = 'Send abort to aider',
+         })
+         keymap('n', '<Leader>aq', '<Plug>(AiderSendExit)', {
+             desc = 'Send exit to aider',
+         })
+         keymap('n', '<Leader>ag', '<cmd>AiderSetPrefix<cr>', {
+             desc = 'set aider prefix',
+         })
+         keymap('n', '<Leader>ama', '<Plug>(AiderSendAskMode)', {
+             desc = 'Switch aider to ask mode',
+         })
+         keymap('n', '<Leader>amA', '<Plug>(AiderSendArchMode)', {
+             desc = 'Switch aider to architect mode',
+         })
+         keymap('n', '<Leader>amc', '<Plug>(AiderSendCodeMode)', {
+             desc = 'Switch aider to code mode',
+         })
+         keymap('n', '<Leader>aG', '<cmd>AiderRemovePrefix<cr>', {
+             desc = 'remove aider prefix',
+         })
+         keymap('n', '<Leader>a<space>', '<cmd>checktime<cr>', {
+             desc = 'sync file changes by aider to nvim buffer',
+         })
+         keymap('n', '<Leader>fR', function() require('yarepl.extensions.snacks').repl_show() end, {
+           desc = 'Find Repl buffer'
+         })
+   
+       end,
+   
+       init = function()
+         local wk = require("which-key")
+         wk.add({
+           { "<localleader>r", group = "Repl" },
+         })
+   
+         local bufmap = vim.api.nvim_buf_set_keymap
+         local autocmd = vim.api.nvim_create_autocmd
+         local ft_to_repl = {
+             r = 'radian',
+             R = 'radian',
+             rmd = 'radian',
+             quarto = 'radian',
+             markdown = 'radian',
+             python = 'ipython',
+             sh = 'bash',
+         }
+   
+         autocmd('FileType', {
+             pattern = { 
+               'quarto',
+               'markdown',
+               'markdown.pandoc',
+               'rmd',
+               'python',
+               'sh',
+               'REPL',
+               'r'
+             },
+             group = my_augroup,
+             desc = 'set up REPL keymap',
+             callback = function()
+                 local repl = ft_to_repl[vim.bo.filetype]
+                 repl = repl and ('-' .. repl) or ''
+   
+                 bufmap(0, 'n', '<LocalLeader>r/', string.format('<Plug>(REPLStart%s)', repl), {
+                     desc = 'Start an REPL',
+                 })
+                 bufmap(0, 'n', '<LocalLeader>rf', '<Plug>(REPLFocus)', {
+                     desc = 'Focus on REPL',
+                 })
+                 bufmap(0, 'n', '<LocalLeader>rh', '<Plug>(REPLHide)', {
+                     desc = 'Hide REPL',
+                 })
+                 bufmap(0, 'v', '<LocalLeader>rs', '<Plug>(REPLSendVisual)', {
+                     desc = 'Send visual region to REPL',
+                 })
+                 bufmap(0, 'v', '<LocalLeader>rS', '<Plug>(REPLSourceVisual)', {
+                     desc = 'Source visual region to REPL',
+                 })
+                 bufmap(0, 'n', '<LocalLeader>rss', '<Plug>(REPLSendLine)', {
+                     desc = 'Send line to REPL',
+                 })
+                 bufmap(0, 'n', '<LocalLeader>rs', '<Plug>(REPLSendOperator)', {
+                     desc = 'Send operator to REPL',
+                 })
+                 bufmap(0, 'n', '<LocalLeader>rS', '<Plug>(REPLSourceOperator)', {
+                     desc = 'Source operator to REPL',
+                 })
+                 bufmap(0, 'n', '<LocalLeader>re', '<Plug>(REPLExec)', {
+                     desc = 'Execute command in REPL',
+                     expr = true,
+                 })
+                 bufmap(0, 'n', '<LocalLeader>rq', '<Plug>(REPLClose)', {
+                     desc = 'Quit REPL',
+                 })
+                 bufmap(0, 'n', '<LocalLeader>rc', '<CMD>REPLCleanup<CR>', {
+                     desc = 'Clear REPLs.',
+                 })
+                 bufmap(0, 'n', '<LocalLeader>rw', '<CMD>REPLSwap<CR>', {
+                     desc = 'Swap REPLs.',
+                 })
+                 bufmap(0, 'n', '<LocalLeader>r?', '<Plug>(REPLStart)', {
+                     desc = 'Start an REPL from available REPL metas',
+                 })
+                 bufmap(0, 'n', '<LocalLeader>ra', '<CMD>REPLAttachBufferToREPL<CR>', {
+                     desc = 'Attach current buffer to a REPL',
+                 })
+                 bufmap(0, 'n', '<LocalLeader>rd', '<CMD>REPLDetachBufferToREPL<CR>', {
+                     desc = 'Detach current buffer to any REPL',
+                 })
+             end,
          })
        end
      }
@@ -2728,70 +2771,6 @@ A collection of small QoL plugins for Neovim.
     end,
   })
   @end
-* AI
-** Aider
-   AI-powered coding assistant that helps you edit code in your terminal. Aider can make coordinated edits across multiple files, understand your codebase, and work with you to implement features, fix bugs, and refactor code using various AI models.
-
-   This plugin provides:
-   - **AI-powered code editing**: Get intelligent suggestions and automated code changes
-   - **Multi-file coordination**: Make changes across multiple files in a single session
-   - **Git integration**: Automatically commits changes with descriptive commit messages
-   - **Multiple AI models**: Support for GPT-4, Claude, and other leading AI models
-   - **Context awareness**: Understands your entire codebase for better suggestions
-   - **Interactive sessions**: Chat with AI about your code and get real-time assistance
-
-   **Usage**: Use the configured keybindings to toggle Aider, send code selections, add/drop files, and manage your AI coding sessions. The plugin integrates seamlessly with your existing workflow.
-
-   **Help**: Aider works best when you provide clear, specific instructions about what you want to accomplish. It can help with everything from small bug fixes to large feature implementations.
-
-   For example, you can ask Aider to "refactor this function to use async/await" or "add error handling to this API call" and it will make the appropriate changes across your codebase.
-   ___
-   [GitHub]{https://github.com/GeorgesAlkhouri/nvim-aider}
-   @code lua
-   plug({
-       "GeorgesAlkhouri/nvim-aider",
-       cmd = "Aider",
-       -- Example key mappings for common actions:
-       keys = {
-         { "<leader>a/", "<cmd>Aider toggle<cr>", desc = "Toggle Aider" },
-         { "<leader>as", "<cmd>Aider send<cr>", desc = "Send to Aider", mode = { "n", "v" } },
-         { "<leader>ac", "<cmd>Aider command<cr>", desc = "Aider Commands" },
-         { "<leader>ab", "<cmd>Aider buffer<cr>", desc = "Send Buffer" },
-         { "<leader>a+", "<cmd>Aider add<cr>", desc = "Add File" },
-         { "<leader>a-", "<cmd>Aider drop<cr>", desc = "Drop File" },
-         { "<leader>ar", "<cmd>Aider add readonly<cr>", desc = "Add Read-Only" },
-         { "<leader>aR", "<cmd>Aider reset<cr>", desc = "Reset Session" },
-         -- Example nvim-tree.lua integration if needed
-         { "<leader>a+", "<cmd>AiderTreeAddFile<cr>", desc = "Add File from Tree to Aider", ft = "NvimTree" },
-         { "<leader>a-", "<cmd>AiderTreeDropFile<cr>", desc = "Drop File from Tree from Aider", ft = "NvimTree" },
-       },
-       dependencies = {
-         "folke/snacks.nvim",
-         --- The below dependencies are optional
-         "catppuccin/nvim",
-         "nvim-tree/nvim-tree.lua",
-         --- Neo-tree integration
-         {
-           "nvim-neo-tree/neo-tree.nvim",
-           opts = function(_, opts)
-             -- Example mapping configuration (already set by default)
-             -- opts.window = {
-             --   mappings = {
-             --     ["+"] = { "nvim_aider_add", desc = "add to aider" },
-             --     ["-"] = { "nvim_aider_drop", desc = "drop from aider" }
-             --     ["="] = { "nvim_aider_add_read_only", desc = "add read-only to aider" }
-             --   }
-             -- }
-             require("nvim_aider.neo_tree").setup(opts)
-           end,
-         },
-       },
-       config = true,
-       opts = {
-         auto_reload = true,
-       },
-   })
-   @end
 * TREESITTER
 ** Treesitter
    The goal of nvim-treesitter is both to provide a simple and easy way to use the interface for tree-sitter in Neovim and to provide some basic functionality such as highlighting based on it.
