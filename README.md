@@ -870,7 +870,7 @@ plug({
   cmd = "FeMaco",
   opts = {},
   keys = {
-    { "<localleader>cg", "<cmd>FeMaco<cr>", desc = "Edit code block (FeMaco)", ft = "markdown" },
+    { "<localleader>cg", "<cmd>FeMaco<cr>", desc = "Edit code block (FeMaco)" },
   },
 })
 ```
