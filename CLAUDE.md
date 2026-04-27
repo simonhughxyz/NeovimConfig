@@ -43,6 +43,33 @@ Just run `nvim`. `init.lua` notices `lua/config.lua` is missing, runs `tangle.lu
 - **Leaders**: `<leader>` is `<Space>`, `<localleader>` is `<Space><Space>`. Set in `# SETUP VARIABLES AND FUNCTIONS / Leader keys` and must stay first.
 - **Globals exposed**: `P(v)` pretty-prints a Lua value via `vim.inspect`; `B(v)` opens a scratch buffer with the inspected value. Use these for debugging.
 
+## Philosophy
+
+Simon's priorities, in order: **stability > speed > simplicity**. When in doubt, prefer the boring, proven choice.
+
+- **Vim-native first**: prefer built-in Neovim features and APIs over plugin equivalents. Only reach for a plugin when the built-in genuinely cannot do the job. Don't fight vim's model — motions, operators, text objects, and the buffer/window/tab hierarchy should all work as expected.
+- **Stability over features**: avoid plugins that are unstable, frequently-breaking, or require constant workarounds. Pinned versions and conservative upgrades are fine.
+- **Speed**: startup time matters. Plugins should be lazy-loaded where possible (`event`, `cmd`, `ft`, `keys`). Don't add plugins that block the main loop or slow `BufReadPost`.
+- **Simplicity**: fewer plugins doing more is better than many plugins each doing one tiny thing. Prefer removing code over adding it. Don't configure things that don't need configuring — if the default is fine, leave it alone. `opts = {}` and `enabled = true` are noise; remove them.
+- **No deviations from vim conventions**: keymaps should follow vim's mental model (`[`/`]` for prev/next, `g` prefix for extended motions, `z` for fold/view, operator+motion composition). Don't remap standard keys (`H`, `L`, `K`, `gw`, etc.) without a strong reason.
+
+## Comments
+
+Write comments in config code when the *why* is non-obvious — a hidden constraint, a workaround, a subtle interaction between plugins. Don't describe what the code does if the code is self-evident.
+
+Use these tags in comments:
+- `-- NOTE:` for important context or non-obvious behaviour the reader should know
+- `-- FIX:` for known issues, bugs, or workarounds that should eventually be resolved
+- `-- HACK:` for pragmatic compromises that work but feel wrong
+- `-- TODO:` for things that should be done but aren't yet
+
+Example:
+```lua
+-- NOTE: capabilities must be set before vim.lsp.enable() is called
+-- FIX: lua_ls incorrectly flags vim.* globals without this diagnostics override
+vim.lsp.config("lua_ls", { settings = { Lua = { diagnostics = { globals = { "vim" } } } } })
+```
+
 ## Conventions
 
 - Commit messages follow Conventional Commits (`feat:`, `fix:`, `docs:`, `chore:` …) — see recent `git log` and the `gitcommit` snippets in the `# SNIPPETS` section.
