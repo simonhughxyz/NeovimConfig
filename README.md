@@ -117,13 +117,17 @@ local function require_main(plugin)
       candidates[#candidates + 1] = c
     end
   end
+  local function variants(s)
+    add(s)
+    add((s:gsub("%.nvim$", "")))
+    add((s:gsub("%.lua$", "")))
+    add((s:gsub("%.nvim$", ""):gsub("%.lua$", "")))
+    add((s:gsub("^nvim%-", ""):gsub("%.nvim$", ""):gsub("%.lua$", "")))
+    add((s:gsub("^vim%-", ""):gsub("%.nvim$", ""):gsub("%.lua$", "")))
+  end
   add(plugin.name)
-  add(last)
-  add((last:gsub("%.nvim$", "")))
-  add((last:gsub("%.lua$", "")))
-  add((last:gsub("%.nvim$", ""):gsub("%.lua$", "")))
-  add((last:gsub("^nvim%-", ""):gsub("%.nvim$", ""):gsub("%.lua$", "")))
-  add((last:gsub("^vim%-", ""):gsub("%.nvim$", ""):gsub("%.lua$", "")))
+  variants(last)
+  variants(last:lower())   -- also try lowercased (e.g. nvim-FeMaco.lua → femaco)
   for _, c in ipairs(candidates) do
     local ok, mod = pcall(require, c)
     if ok then return mod end
@@ -3045,6 +3049,7 @@ local build_hooks     = {}    -- name -> string|function from spec.build
 local specs_by_name   = {}    -- name -> { spec, deps = { dep_name, ... } }
 local toplevel_names  = {}    -- name -> true for plugins registered via plug()
 local pending_dep_refs = {}   -- bare-name dep refs to resolve in pass 2
+local cmd_stubs       = {}    -- name -> { cmd_name, ... } (so load_plugin can clear them)
 local idx_counter     = 0     -- insertion counter for stable sort
 
 -- VeryLazy: fire `User VeryLazy` once after the UI is ready.
@@ -3111,6 +3116,13 @@ local function load_plugin(name)
   if not rec then return end
   for _, dep_name in ipairs(rec.deps) do load_plugin(dep_name) end
   if rec.spec.init then pcall(rec.spec.init) end
+  -- Drop our cmd stubs so the plugin's setup can create the real commands
+  -- with the same name without colliding (nvim_create_user_command errors
+  -- on duplicate when force=false, which is the default in most plugins).
+  for _, c in ipairs(cmd_stubs[name] or {}) do
+    pcall(vim.api.nvim_del_user_command, c)
+  end
+  cmd_stubs[name] = nil
   pcall(vim.cmd.packadd, name)
   if rec.spec.config then pcall(rec.spec.config, rec.spec, resolve_opts(rec.spec)) end
 end
@@ -3156,10 +3168,10 @@ end
 
 local function register_cmd(spec, name)
   local cmds = type(spec.cmd) == "table" and spec.cmd or { spec.cmd }
+  cmd_stubs[name] = cmds
   for _, c in ipairs(cmds) do
     vim.api.nvim_create_user_command(c, function(a)
-      vim.api.nvim_del_user_command(c)
-      load_plugin(name)
+      load_plugin(name)   -- this clears our stubs and runs setup → real cmd exists
       vim.cmd({
         cmd = c,
         args = a.fargs,
