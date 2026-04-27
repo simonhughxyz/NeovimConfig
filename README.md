@@ -6,54 +6,37 @@ categories:
   - config
   - neovim
   - lua
-tangle: 
-  languages: 
-    lua: ./lua/config.lua
+  - markdown
+tangle:
+  source: ./README.md
+  target: ./lua/config.lua
 created: 2024-03-06T23:01:44+0100
-updated: 2025-11-23T22:43:29+0100
-version: 1.1.1
+updated: 2026-04-27T00:00:00+0100
+version: 2.0.0
 ---
-
- 
-
-
 
 # INSTALL INSTRUCTIONS
 
-All of my main config is contained in this file `config.norg`, to be able to use this config you have to first `tangle` the file to generate the `config.lua` file.
+This file is the literate source. All `lua` fenced code blocks below are tangled (in document order) into `lua/config.lua` by `tangle.lua`.
+
 ___
-1. Create `lua` directory.
-A `lua` directory is needed so that the `config.lua` file can be crated inside of it.
-Run the below command inside of your shell at the root of this config:
+
+1. Tangle `README.md` into `lua/config.lua`:
 ```sh
-mkdir lua
+nvim --headless -l tangle.lua
 ```
-2. Open Neovim to bootstrap the config.
-A. Because the Lazy.nvim package manager and Neorg plugin is required to `tangle` the config, you have to bootstrap the config for the first time.
-Don't worry this happens automatically, you just have to open Neovim by running:
+On a fresh clone you can also just open Neovim — `init.lua` runs the tangler automatically when `lua/config.lua` is missing.
+
+2. Open Neovim. Lazy will bootstrap itself and install all plugins.
 ```sh
 nvim
 ```
-You will see some errors pop up, don't worry about them this just happens because Neovim expects there to be a config which is not there yet.
+You may need to reopen Neovim once or twice while Lazy installs and sets up plugins.
 
-B. After this is done, close Neovim again by running the below command:
+3. Inside Neovim, after editing `README.md`, regenerate the config with:
 ```vim
-:qa
+:Tangle
 ```
-4. Tangle the `config.norg` file.
-A. Last, we need to `tangle` the config.norg file, to do so open the file with Neovim by running the following command:
-```sh
-nvim config.norg
-```
-B. After the `config.norg` file is opened in Neovim, run the following command inside Neovim:
-```vim
-:Neorg tangle
-```
-Neovim will ask you which file to tangle, select `config.norg`
-
-5. Reopen Neovim and enjoy
-Close and reopen Neovim and the `Lazy` plugin manager will install everything needed.
-You might have to reopen Neovim a few times to make sure everything is installed.
 
 
 # SETUP VARIABLES AND FUNCTIONS
@@ -289,7 +272,6 @@ plug({
        Folded = { bg = "#202020" },
        -- fix markdown todo colors
        ["@lsp.type.class.markdown"] = { fg = "#000000" },
-       ["@neorg.tags.ranged_verbatim.code_block"] = { bg = "#222222" },
      }
    })
    o.background = "dark"
@@ -429,77 +411,6 @@ plug({
   init = function()
     -- `matchparen.vim` needs to be disabled manually in case of lazy loading
     vim.g.loaded_matchparen = 1
-  end,
-})
-```
-
-## Headlines
-
-This plugin adds highlights for text filetypes, like markdown, orgmode, and neorg.
-___
-  [GitHub](https://github.com/lukas-reineke/headlines.nvim)
-```lua
-plug({
-  "lukas-reineke/headlines.nvim",
-  dependencies = "nvim-treesitter/nvim-treesitter",
-  config = function()
-
-    vim.cmd [[highlight Headline1 guibg=#1e2718]]
-    vim.cmd [[highlight Headline2 guibg=#21262d]]
-    vim.cmd [[highlight CodeBlock guibg=#1c1c1c]]
-    vim.cmd [[highlight Dash guibg=#D19A66 gui=bold]]
-    require("headlines").setup {
-      norg = {
-        query = vim.treesitter.query.parse(
-                "norg",
-                [[
-                    [
-                        (heading1_prefix)
-                        (heading2_prefix)
-                        (heading3_prefix)
-                        (heading4_prefix)
-                        (heading5_prefix)
-                        (heading6_prefix)
-                    ] @headline
-
-                    (weak_paragraph_delimiter) @dash
-                    (strong_paragraph_delimiter) @doubledash
-
-                    ([(ranged_tag
-                        name: (tag_name) @_name
-                        (#eq? @_name "code")
-                    )
-                    (ranged_verbatim_tag
-                        name: (tag_name) @_name
-                        (#eq? @_name "code")
-                    )] @codeblock (#offset! @codeblock 0 0 1 0))
-
-                    (quote1_prefix) @quote
-                ]]
-            ),
-        headline_highlights = { "Headline1", "Headline2" },
-            bullet_highlights = {
-                "@neorg.headings.1.prefix",
-                "@neorg.headings.2.prefix",
-                "@neorg.headings.3.prefix",
-                "@neorg.headings.4.prefix",
-                "@neorg.headings.5.prefix",
-                "@neorg.headings.6.prefix",
-            },
-            bullets = { "◉", "○", "✸", "✿" },
-            codeblock_highlight = false,
-            dash_highlight = "Dash",
-            dash_string = "-",
-            doubledash_highlight = "DoubleDash",
-            doubledash_string = "=",
-            quote_highlight = "Quote",
-            quote_string = "┃",
-            fat_headlines = true,
-            fat_headline_upper_string = "▄",
-            fat_headline_lower_string = "▀",
-        },
-    }
-
   end,
 })
 ```
@@ -814,12 +725,6 @@ plug({
                 "list_item",
                 "blockquote",
             },
-
-            -- Neorg
-            norg = {
-                "heading1",
-                "heading2",
-            },
         },
 
         provider_selector = function(bufnr, filetype, buftype)
@@ -858,119 +763,115 @@ plug({
 })
 ```
 
-# NEORG
+# OBSIDIAN
 
-An all-encompassing tool based around structured note taking, project and task management, time tracking, slideshows, writing typeset documents and much more.
+A markdown-native notes manager. Replaces neorg's `core.dirman`, `core.journal`, `core.completion`, `core.esupports.metagen` (frontmatter) and link-following workflows. Workspaces map 1:1 to the previous neorg workspaces.
 ___
-[GitHub](https://github.com/nvim-neorg/neorg)
-[Spec](https://github.com/nvim-neorg/norg-specs/blob/main/1.0-specification.norg)
+[GitHub](https://github.com/epwalsh/obsidian.nvim)
 ```lua
 plug({
-  "nvim-neorg/neorg",
-  lazy = false, -- Neorg does not like lazy loading
-  build = ":Neorg sync-parsers",
+  "epwalsh/obsidian.nvim",
+  version = "*",
+  lazy = true,
+  ft = "markdown",
   dependencies = {
     "nvim-lua/plenary.nvim",
-    "Pocco81/true-zen.nvim",
-    "nvim-treesitter/nvim-treesitter",
-    "nvim-treesitter/nvim-treesitter-textobjects",
     "hrsh7th/nvim-cmp",
-    'jmbuhr/otter.nvim',
   },
-   -- ft = "norg",
-   -- cmd = "Neorg",
-  config = function()
-    require("neorg").setup({
-      load = {
-        ["core.defaults"] = {}, -- Loads default behaviour
-        ["core.concealer"] = {  -- Adds pretty icons to your documents
-          config = {
-            foldlevelstart = "99",
-            icon_preset = "diamond",
-            icons = {
-              code_block = {
-                width = "content",
-                min_width = 85,
-                conceal = true,
-              },
-            },
-          },
-        },
-        ["core.dirman"] = { -- Manages Neorg workspaces
-          config = {
-            workspaces = {
-              documents = "~/Documents",
-              notes = "~/Documents/Notes",
-              career = "~/Documents/Career",
-              profiles = "~/Documents/Profiles",
-            },
-            default_workspace = "documents",
-          },
-        },
-        ["core.completion"] = {
-          config = {
-            engine = 'nvim-cmp',
-            name = "[Norg]",
-          }
-        },
-        ["core.integrations.nvim-cmp"] = {},
-        ["core.qol.toc"] = {
-          config = {
-            close_split_on_jump = true,
-            toc_split_placement = "right",
-          }
-        },
-        ["core.export"] = {},
-        ["core.export.markdown"] = {
-          config = {
-            extensions = "all",
-          }
-        },
-        ["core.presenter"] = {
-          config = {
-            zen_mode = "truezen",
-          }
-        },
-        ["core.journal"] = {
-          config = {
-            workspace = "journal",
-            strategy = "flat",
-          }
-        },
-        ["core.summary"] = {},
-        ["core.esupports.metagen"] = { 
-          config = {
-            type = "auto",
-            author = "Simon H Moore <simon@simonhugh.xyz>",
-            update_date = true
-          }
-        },
-        ["core.ui.calendar"] = {},
-        ["core.integrations.otter"] = {},
-      }
-    })
+  opts = {
+    workspaces = {
+      { name = "documents", path = "~/Documents" },
+      { name = "notes",     path = "~/Documents/Notes" },
+      { name = "career",    path = "~/Documents/Career" },
+      { name = "profiles",  path = "~/Documents/Profiles" },
+    },
+    daily_notes = {
+      folder = "journal",
+      date_format = "%Y-%m-%d",
+    },
+    completion = {
+      nvim_cmp = true,
+      min_chars = 2,
+    },
+    note_frontmatter_func = function(note)
+      local out = { id = note.id, aliases = note.aliases, tags = note.tags }
+      out.author = "Simon H Moore <simon@simonhugh.xyz>"
+      if note.metadata ~= nil and not vim.tbl_isempty(note.metadata) then
+        for k, v in pairs(note.metadata) do out[k] = v end
+      end
+      return out
+    end,
+    ui = { enable = false }, -- defer rendering to render-markdown.nvim
+  },
+})
+```
 
-    local neorg_callbacks = require("neorg.core.callbacks")
+# RENDER-MARKDOWN
 
-    neorg_callbacks.on_event("core.keybinds.events.enable_keybinds", function(_, keybinds)
-      -- Map all the below keybinds only when the "norg" mode is active
-      keybinds.map_event_to_mode("norg", {
-        n = { -- Bind keys in normal mode
-          { "<localleader>ff", function() Snacks.picker.files({ cwd = vim.fn.getcwd() }) end, opts = { desc = 'Find Norg Files' } },
-          { "<localleader>sh", function() Snacks.picker.grep({ cwd = vim.fn.getcwd() }) end, opts = { desc = 'Search Headings' } },
-          { "<localleader>cg", "core.looking-glass.magnify-code-block", opts = { desc = 'Looking Glass' } },
-        },
-
-        i = { -- Bind in insert mode
-          { "<C-l>", function() print("Link insertion not available with snacks") end, opts = { desc = 'Insert Link (unavailable)' } },
-          { "<C-L>", function() print("File link insertion not available with snacks") end, opts = { desc = 'Insert File Link (unavailable)' } },
-        },
-      }, {
-        silent = true,
-        noremap = true,
-      })
-    end)
+Replaces neorg's `core.concealer` and the old `headlines.nvim` block. Conceals heading prefixes with bullets, styles code blocks, tables, checkboxes, and quotes — all natively for markdown.
+___
+[GitHub](https://github.com/MeanderingProgrammer/render-markdown.nvim)
+```lua
+plug({
+  "MeanderingProgrammer/render-markdown.nvim",
+  dependencies = {
+    "nvim-treesitter/nvim-treesitter",
+    "nvim-tree/nvim-web-devicons",
+  },
+  ft = { "markdown" },
+  opts = {
+    heading = {
+      icons = { "◉ ", "○ ", "✸ ", "✿ ", "❯ ", "❯ " },
+      backgrounds = { "Headline1", "Headline2", "Headline2", "Headline2", "Headline2", "Headline2" },
+    },
+    code = {
+      style = "normal",
+      width = "block",
+      min_width = 85,
+    },
+    bullet = {
+      icons = { "•", "◦", "▪", "▫" },
+    },
+  },
+  config = function(_, opts)
+    vim.cmd [[highlight Headline1 guibg=#1e2718]]
+    vim.cmd [[highlight Headline2 guibg=#21262d]]
+    require("render-markdown").setup(opts)
   end,
+})
+```
+
+# OTTER
+
+Embedded LSP for fenced code blocks inside markdown — gives `lua`, `python`, `bash` blocks real LSP/completion/diagnostics. Previously bundled as a neorg dependency; now standalone.
+___
+[GitHub](https://github.com/jmbuhr/otter.nvim)
+```lua
+plug({
+  "jmbuhr/otter.nvim",
+  dependencies = {
+    "nvim-treesitter/nvim-treesitter",
+    "hrsh7th/nvim-cmp",
+  },
+  ft = { "markdown" },
+  opts = {},
+})
+```
+
+# FEMACO
+
+Edit a fenced code block in a dedicated floating buffer (with its own filetype + LSP). Replaces neorg's "looking glass" code-block magnification.
+___
+[GitHub](https://github.com/AckslD/nvim-FeMaco.lua)
+```lua
+plug({
+  "AckslD/nvim-FeMaco.lua",
+  ft = { "markdown" },
+  cmd = "FeMaco",
+  opts = {},
+  keys = {
+    { "<localleader>cg", "<cmd>FeMaco<cr>", desc = "Edit code block (FeMaco)", ft = "markdown" },
+  },
 })
 ```
 
@@ -1029,7 +930,7 @@ plug({
     statuscolumn = { enabled = false },
     scratch = {
       enabled = true,
-      ft = "norg",
+      ft = "markdown",
       root = "~/Documents/Notes/scratch",
       filekey = {
           id = nil, ---@type string? unique id used instead of name for the filename hash
@@ -2269,7 +2170,6 @@ plug({
     "text",
     "tex",
     "plaintex",
-    "norg",
   },
   config = function()
     require("autolist").setup()
@@ -2846,7 +2746,6 @@ plug({
       'lua',
       'vim',
       'vimdoc',
-      'norg',
       'regex',
       'bash',
       'c',
@@ -3424,6 +3323,11 @@ end, {
       }
     end,
   })
+
+command("Tangle", function()
+  dofile(vim.fn.stdpath("config") .. "/tangle.lua")
+  vim.notify("Tangled README.md -> lua/config.lua. Restart Neovim to load changes.", vim.log.levels.INFO)
+end, { desc = "Re-tangle README.md into lua/config.lua" })
 ```
 
 # SHM
@@ -3866,12 +3770,12 @@ snippet("gitcommit", {
 
 
 
-## Norg
+## Markdown
 
 ```lua
   vim.api.nvim_create_autocmd("BufEnter", {
   group = augroup("ftplugin"),
-  pattern = "norg",
+  pattern = "markdown",
   callback = function()
       o.wrap = true
   end,
