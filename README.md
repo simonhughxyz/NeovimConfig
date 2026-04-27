@@ -2730,9 +2730,10 @@ ___
 plug({
   -- Highlight, edit, and navigate code
   'nvim-treesitter/nvim-treesitter',
+  branch = 'master', -- legacy v0.9 API; 'main' is the v1.0 rewrite without nvim-treesitter.configs
   priority = 5000,
   dependencies = {
-    'nvim-treesitter/nvim-treesitter-textobjects',
+    { 'nvim-treesitter/nvim-treesitter-textobjects', branch = 'master' },
     { "JoosepAlviste/nvim-ts-context-commentstring", lazy = true }
   },
   build = ':TSUpdate',
