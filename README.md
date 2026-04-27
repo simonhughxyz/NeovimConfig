@@ -880,37 +880,72 @@ plug({
 })
 ```
 
-# FEMACO
+# EDIT CODE BLOCK
 
-Edit a fenced code block in a dedicated floating buffer (with its own filetype + LSP). Replaces neorg's "looking glass" code-block magnification.
+Open the fenced code block under the cursor in a dedicated floating buffer
+with the inner block's filetype set, edit it with full LSP / completion as
+that filetype, and on `:w` splice the changes back into the host buffer.
+
+Replaces `nvim-FeMaco.lua` (unmaintained since 2024-04, broken by nvim 0.12's
+treesitter API) with a small native function. No dependency to break — uses
+`vim.treesitter` and floating windows directly.
 ___
-[GitHub](https://github.com/AckslD/nvim-FeMaco.lua)
 ```lua
-plug({
-  "AckslD/nvim-FeMaco.lua",
-  ft = { "markdown" },
-  cmd = "FeMaco",
-  keys = {
-    { "<localleader>cg", "<cmd>FeMaco<cr>", desc = "Edit code block" },
-  },
-  -- HACK: femaco is unmaintained (last commit 2024-04). On nvim 0.12 the
-  -- treesitter API returns `match.injection.content.node` as a table of
-  -- TSNodes, which trips edit.lua:18 ("compare number with userdata").
-  -- femaco/edit.lua caches `vim.treesitter.get_node_range` at module-load
-  -- time; we patch the global so when edit is first required (on `:FeMaco`)
-  -- it captures the tolerant version.
-  config = function()
-    local orig = vim.treesitter.get_node_range
-    vim.treesitter.get_node_range = function(node_or_range)
-      if type(node_or_range) == "table" and #node_or_range > 0
-         and type(node_or_range[1]) == "userdata" then
-        return node_or_range[1]:range(false)
-      end
-      return orig(node_or_range)
+local function edit_code_block()
+  local bufnr = vim.api.nvim_get_current_buf()
+  local row, col = unpack(vim.api.nvim_win_get_cursor(0))
+  local node = vim.treesitter.get_node({ bufnr = bufnr, pos = { row - 1, col } })
+  while node and node:type() ~= "fenced_code_block" do node = node:parent() end
+  if not node then
+    vim.notify("Not in a code block", vim.log.levels.WARN)
+    return
+  end
+
+  local lang, content
+  for child in node:iter_children() do
+    if child:type() == "info_string" then
+      lang = vim.treesitter.get_node_text(child, bufnr):match("%S+")
+    elseif child:type() == "code_fence_content" then
+      content = child
     end
-    require("femaco").setup()
-  end,
-})
+  end
+  if not content then
+    vim.notify("Empty code block", vim.log.levels.WARN)
+    return
+  end
+
+  local sr, _, er = content:range()
+  local lines = vim.api.nvim_buf_get_lines(bufnr, sr, er, false)
+
+  local scratch = vim.api.nvim_create_buf(false, true)
+  vim.api.nvim_buf_set_lines(scratch, 0, -1, false, lines)
+  if lang and lang ~= "" then vim.bo[scratch].filetype = lang end
+  vim.bo[scratch].buftype = "acwrite"      -- so :w fires BufWriteCmd
+  vim.api.nvim_buf_set_name(scratch, ("femaco://%s/%s"):format(lang or "code", sr))
+
+  local w = math.floor(vim.o.columns * 0.8)
+  local h = math.min(#lines + 4, math.floor(vim.o.lines * 0.8))
+  vim.api.nvim_open_win(scratch, true, {
+    relative = "editor", width = w, height = h,
+    row = math.floor((vim.o.lines - h) / 2),
+    col = math.floor((vim.o.columns - w) / 2),
+    style = "minimal", border = "rounded",
+    title = " " .. (lang or "code") .. " — :w to apply, :q to discard ",
+    title_pos = "center",
+  })
+
+  vim.api.nvim_create_autocmd("BufWriteCmd", {
+    buffer = scratch,
+    callback = function()
+      local new_lines = vim.api.nvim_buf_get_lines(scratch, 0, -1, false)
+      vim.api.nvim_buf_set_lines(bufnr, sr, er, false, new_lines)
+      er = sr + #new_lines                 -- track shrink/grow for repeat saves
+      vim.bo[scratch].modified = false
+    end,
+  })
+end
+
+vim.keymap.set("n", "<localleader>cg", edit_code_block, { desc = "Edit code block" })
 ```
 
 # SNACKS

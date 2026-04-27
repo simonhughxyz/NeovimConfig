@@ -125,10 +125,6 @@
       "rev": "426dbebe06b5c69fd846ceb17b42e12f890aedf1",
       "src": "https://github.com/catppuccin/nvim"
     },
-    "nvim-FeMaco.lua": {
-      "rev": "96bbf843595dbe865838b3f2484b73557f34700c",
-      "src": "https://github.com/AckslD/nvim-FeMaco.lua"
-    },
     "nvim-aider": {
       "rev": "c8a4f952937d54f17dc23bd378e9e3b373f502b2",
       "src": "https://github.com/GeorgesAlkhouri/nvim-aider"
