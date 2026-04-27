@@ -179,13 +179,6 @@ o.updatetime = 200           -- Save swap file and trigger CursorHold
 o.wildmode = "longest:full,full" -- Command-line completion mode
 o.winminwidth = 5            -- Minimum window width
 o.wrap = false               -- Disable line wrap
--- o.foldlevelstart = 0         -- Enable foldlevel when opening file
--- o.foldnestmax = 2            -- Set max nested foldlevel
--- vim.opt.foldenable = true    -- Enable folding
--- vim.opt.foldmethod = "expr"  -- Use expression for folding
--- vim.opt.foldexpr = "v:lua.vim.treesitter.foldexpr()" -- Use treesitter for fold expression
--- vim.o.foldtext = ''          -- Use default fold text
--- vim.o.fillchars = 'fold: '   -- Characters to fill folds
 
 if vim.fn.has("nvim-0.9.0") == 1 then
   o.splitkeep = "screen"
@@ -554,10 +547,10 @@ plug({
       -- vim.o.foldlevel = 0          -- current fold level
 
       -- Set up keymaps
-      vim.keymap.set("n", "zR", ufo.openAllFolds)
-      vim.keymap.set("n", "zM", ufo.closeAllFolds)
-      vim.keymap.set("n", "zr", ufo.openFoldsExceptKinds)  -- open more folds selectively
-      vim.keymap.set("n", "zm", ufo.closeFoldsWith)        -- close folds selectively
+      vim.keymap.set("n", "zR", ufo.openAllFolds,         { desc = "Open all folds" })
+      vim.keymap.set("n", "zM", ufo.closeAllFolds,        { desc = "Close all folds" })
+      vim.keymap.set("n", "zr", ufo.openFoldsExceptKinds, { desc = "Open folds (selective)" })
+      vim.keymap.set("n", "zm", ufo.closeFoldsWith,       { desc = "Close folds (selective)" })
       vim.keymap.set('n', 'K', function()
           local ok, ufo = pcall(require, 'ufo')
           local line = vim.fn.line('.')
@@ -851,7 +844,7 @@ plug({
     "hrsh7th/nvim-cmp",
   },
   ft = { "markdown" },
-  opts = {},
+  config = true,
 })
 ```
 
@@ -865,9 +858,9 @@ plug({
   "AckslD/nvim-FeMaco.lua",
   ft = { "markdown" },
   cmd = "FeMaco",
-  opts = {},
+  config = true,
   keys = {
-    { "<localleader>cg", "<cmd>FeMaco<cr>", desc = "Edit code block (FeMaco)" },
+    { "<localleader>cg", "<cmd>FeMaco<cr>", desc = "Edit code block" },
   },
 })
 ```
@@ -941,86 +934,76 @@ plug({
     require("snacks").setup(opts)
     vim.notify = Snacks.notifier.notify
 
-    local wk = require("which-key")
-  
     -- Add snacks picker keymaps
     local pick = Snacks.picker
   
     -- Scratch buffer
-    vim.keymap.set('n', '<leader>.', Snacks.scratch.open, { desc = 'Open scratch pad' })
+    vim.keymap.set('n', '<leader>.', Snacks.scratch.open, { desc = 'Scratch pad' })
     vim.keymap.set('n', '<leader>fs', Snacks.scratch.select, { desc = 'Find scratch pad' })
 
     -- terminal
-    vim.keymap.set({'n', 'i', 't'}, '<c-b>', Snacks.terminal.toggle, { desc = 'Open toggle term' })
+    vim.keymap.set({'n', 'i', 't'}, '<c-b>', Snacks.terminal.toggle, { desc = 'Toggle terminal' })
 
     -- Shortcuts
-    vim.keymap.set('n', '<leader>?', pick.recent, { desc = 'Find Recently Files' })
-    vim.keymap.set('n', '<leader>,', pick.buffers, { desc = 'Find buffers' })
-    vim.keymap.set('n', '<leader>/', pick.grep_word, { desc = 'Search current word' })
+    vim.keymap.set('n', '<leader>,', pick.buffers, { desc = 'Buffers' })
+    vim.keymap.set('n', '<leader>/', pick.grep_word, { desc = 'Grep word' })
 
     -- Find Files
-    vim.keymap.set('n', '<leader>ff', pick.smart, { desc = 'Find Files' })
-    vim.keymap.set('n', '<leader>fb', pick.buffers, { desc = 'Find Buffers' })
-    vim.keymap.set('n', '<leader>fr', pick.recent, { desc = 'Find Recent Files' })
+    vim.keymap.set('n', '<leader>ff', pick.smart,  { desc = 'Files' })
+    vim.keymap.set('n', '<leader>fr', pick.recent, { desc = 'Recent files' })
 
-    vim.keymap.set('n', '<leader>fd', function() pick.files({ cwd = '~/Documents' }) end, { desc = 'Find Documents' })
-    vim.keymap.set('n', '<leader>fD', function() pick.files({ cwd = '~/Downloads' }) end, { desc = 'Find Downloads' })
-    vim.keymap.set('n', '<leader>fp', function() pick.files({ cwd = '~/Projects' }) end, { desc = 'Find Projects' })
-    vim.keymap.set('n', '<leader>fc', function() pick.files({ cwd = vim.fn.stdpath('config') }) end, { desc = 'Find Config' })
-    vim.keymap.set('n', '<leader>fB', function() pick.files({ cwd = '~/.local/bin' }) end, { desc = 'Find Local Bin' })
+    vim.keymap.set('n', '<leader>fd', function() pick.files({ cwd = '~/Documents' }) end, { desc = 'Documents' })
+    vim.keymap.set('n', '<leader>fD', function() pick.files({ cwd = '~/Downloads' }) end, { desc = 'Downloads' })
+    vim.keymap.set('n', '<leader>fp', function() pick.files({ cwd = '~/Projects' }) end,  { desc = 'Projects' })
+    vim.keymap.set('n', '<leader>fc', function() pick.files({ cwd = vim.fn.stdpath('config') }) end, { desc = 'Config' })
+    vim.keymap.set('n', '<leader>fB', function() pick.files({ cwd = '~/.local/bin' }) end, { desc = 'Local bin' })
 
     -- Search for content, help and functions
-    vim.keymap.set('n', '<leader>st', function() pick.commands() end, { desc = 'Search Commands' })
-    vim.keymap.set('n', '<leader>sP', pick.pick, { desc = 'Search snack pickers' })
-    vim.keymap.set('n', '<leader>sh', pick.help, { desc = 'Search Help' })
-    vim.keymap.set('n', '<leader>sw', pick.grep_word, { desc = 'Search Current Word' })
-    vim.keymap.set('n', '<leader>sg', pick.grep, { desc = 'Search by Grep' })
-    vim.keymap.set('n', '<leader>sd', pick.diagnostics, { desc = 'Search Diagnostics' })
-    vim.keymap.set('n', '<leader>sk', pick.keymaps, { desc = 'Search Keymaps' })
-    vim.keymap.set('n', "<leader>s'", pick.marks, { desc = 'Search Marks' })
-    vim.keymap.set('n', '<leader>s"', pick.registers, { desc = 'Search Registers' })
-    vim.keymap.set('n', '<leader>sf', pick.grep_word, { desc = 'Search word under cursor' })
-    vim.keymap.set('n', '<leader>su', pick.undo, { desc = 'Search undo' })
-    vim.keymap.set('n', '<leader>sc', pick.cliphist, { desc = 'Search clipboard history' })
+    vim.keymap.set('n', '<leader>st', function() pick.commands() end, { desc = 'Commands' })
+    vim.keymap.set('n', '<leader>sP', pick.pick,        { desc = 'Pickers' })
+    vim.keymap.set('n', '<leader>sh', pick.help,        { desc = 'Help' })
+    vim.keymap.set('n', '<leader>sw', pick.grep_word,   { desc = 'Current word' })
+    vim.keymap.set('n', '<leader>sg', pick.grep,        { desc = 'Grep' })
+    vim.keymap.set('n', '<leader>sd', pick.diagnostics, { desc = 'Diagnostics' })
+    vim.keymap.set('n', '<leader>sk', pick.keymaps,     { desc = 'Keymaps' })
+    vim.keymap.set('n', "<leader>s'", pick.marks,       { desc = 'Marks' })
+    vim.keymap.set('n', '<leader>s"', pick.registers,   { desc = 'Registers' })
+    vim.keymap.set('n', '<leader>su', pick.undo,        { desc = 'Undo history' })
+    vim.keymap.set('n', '<leader>sc', pick.cliphist,    { desc = 'Clipboard history' })
 
     -- git
-    vim.keymap.set('n', '<leader>gfg', pick.git_files, { desc = 'Find Git Files' })
-    vim.keymap.set('n', '<leader>gfs', pick.git_status, { desc = 'Find Git Status' })
-    vim.keymap.set('n', '<leader>gsll', pick.git_log, { desc = 'Search Git Log' })
-    vim.keymap.set('n', '<leader>gslf', pick.git_log_file, { desc = 'Search Git Log File' })
-    vim.keymap.set('n', '<leader>gslL', pick.git_log_line, { desc = 'Search Git Log File' })
-    vim.keymap.set('n', '<leader>gsg', pick.git_grep, { desc = 'Search Git Grep' })
-    vim.keymap.set('n', '<leader>gsf', pick.git_files, { desc = 'Search Git Files' })
-    vim.keymap.set('n', '<leader>gss', pick.git_stash, { desc = 'Search Git Stash' })
-    vim.keymap.set('n', '<leader>gsb', pick.git_branches, { desc = 'Search Git Branch' })
+    vim.keymap.set('n', '<leader>gfg', pick.git_files,  { desc = 'Files' })
+    vim.keymap.set('n', '<leader>gfs', pick.git_status, { desc = 'Status' })
+    vim.keymap.set('n', '<leader>gsll', pick.git_log,       { desc = 'Log' })
+    vim.keymap.set('n', '<leader>gslf', pick.git_log_file,  { desc = 'Log (file)' })
+    vim.keymap.set('n', '<leader>gslL', pick.git_log_line,  { desc = 'Log (line)' })
+    vim.keymap.set('n', '<leader>gsg', pick.git_grep,     { desc = 'Grep' })
+    vim.keymap.set('n', '<leader>gss', pick.git_stash,    { desc = 'Stash' })
+    vim.keymap.set('n', '<leader>gsb', pick.git_branches, { desc = 'Branches' })
 
     -- github
-    vim.keymap.set('n', '<leader>Gp', pick.gh_pr, { desc = 'Github Pull Requests' })
-    vim.keymap.set('n', '<leader>GP', function() pick.gh_pr({ state= "all" }) end, { desc = 'Github All Pull Requests' })
-    vim.keymap.set('n', '<leader>Gi', pick.gh_issue, { desc = 'Github Issues' })
-    vim.keymap.set('n', '<leader>GI', function() pick.gh_issue({ state= "all" }) end, { desc = 'Github All Issues' })
-    vim.keymap.set('n', '<leader>Gb', Snacks.gitbrowse.open, { desc = 'Open git repo in browser' })
+    vim.keymap.set('n', '<leader>Gp', pick.gh_pr,  { desc = 'Pull requests' })
+    vim.keymap.set('n', '<leader>GP', function() pick.gh_pr({ state= "all" }) end,    { desc = 'All PRs' })
+    vim.keymap.set('n', '<leader>Gi', pick.gh_issue, { desc = 'Issues' })
+    vim.keymap.set('n', '<leader>GI', function() pick.gh_issue({ state= "all" }) end, { desc = 'All issues' })
+    vim.keymap.set('n', '<leader>Gb', Snacks.gitbrowse.open, { desc = 'Browse repo' })
 
-    wk.add({
-      {"<leader>gs", group = "Git Search"},
-      {"<leader>gsl", group = "Git Search Log"}
-    })
   end,
   keys = {
     {
       "<leader>;n",
       function() Snacks.notifier.show_history() end,
-      desc = "Notification History"
+      desc = "Notification history"
     },
     {
       "]]",
       function() Snacks.words.jump(vim.v.count1) end,
-      desc = "Next Reference"
+      desc = "Next reference"
     },
     {
       "[[", 
       function() Snacks.words.jump(-vim.v.count1) end,
-      desc = "Prev Reference"
+      desc = "Prev reference"
     },
   }
 })
@@ -1045,29 +1028,7 @@ plug({
   },
   config = function(_, opts)
     require("illuminate").configure(opts)
-
-    local function map(key, dir, buffer)
-      vim.keymap.set("n", key, function()
-        require("illuminate")["goto_" .. dir .. "_reference"](false)
-      end, { desc = dir:sub(1, 1):upper() .. dir:sub(2) .. " Reference", buffer = buffer })
-    end
-
-    map("]]", "next")
-    map("[[", "prev")
-
-    -- also set it after loading ftplugins, since a lot overwrite [[ and ]]
-    vim.api.nvim_create_autocmd("FileType", {
-      callback = function()
-        local buffer = vim.api.nvim_get_current_buf()
-        map("]]", "next", buffer)
-        map("[[", "prev", buffer)
-      end,
-    })
   end,
-  keys = {
-    { "]]", desc = "Next Reference" },
-    { "[[", desc = "Prev Reference" },
-  },
 })
 ```
 
@@ -1098,7 +1059,6 @@ ___
 plug({
    "stevearc/oil.nvim",
    dependencies = { "nvim-tree/nvim-web-devicons" },
-   enabled = true,
    lazy = true,
    config = function ()
      require("oil").setup({
@@ -1108,8 +1068,8 @@ plug({
    end,
    cmd = "Oil",
    keys = {
-     { "<leader>o", function() require("oil").toggle_float() end, desc = "Oil File Manager" },
-     { "<leader>O", function() require("oil").toggle_float(vim.fn.getcwd()) end, desc = "Oil File Manager" },
+     { "<leader>o", function() require("oil").toggle_float() end,              desc = "Oil (float)" },
+     { "<leader>O", function() require("oil").toggle_float(vim.fn.getcwd()) end, desc = "Oil (cwd)" },
    }
 })
 ```
@@ -1150,14 +1110,14 @@ plug({
       function()
         require("neo-tree.command").execute({ toggle = true, dir = vim.loop.cwd() })
       end,
-      desc = "Explorer NeoTree",
+      desc = "Explorer",
     },
     {
       "<leader>be",
       function()
         require("neo-tree.command").execute({ toggle = true, source = "buffers"  })
       end,
-      desc = "Explorer NeoTree Buffers",
+      desc = "Buffer explorer",
     },
   },
   deactivate = function()
@@ -1233,7 +1193,7 @@ plug({
           vim.cmd("cd " .. item)
         end)
       end,
-      desc = 'Search for Project',
+      desc = 'Projects',
     },
   },
 })
@@ -1302,13 +1262,12 @@ ___
 ```lua
 plug({
   "chrisgrieser/nvim-spider",
-  enabled = true,
   lazy = false,
   config = function()
-    vim.keymap.set({ "n", "o", "x" }, "w", "<cmd>lua require('spider').motion('w')<cr>", { desc = "Spider-w" })
-    vim.keymap.set({ "n", "o", "x" }, "e", "<cmd>lua require('spider').motion('e')<cr>", { desc = "Spider-e" })
-    vim.keymap.set({ "n", "o", "x" }, "b", "<cmd>lua require('spider').motion('b')<cr>", { desc = "Spider-b" })
-    vim.keymap.set({ "n", "o", "x" }, "ge", "<cmd>lua require('spider').motion('ge')<cr>", { desc = "Spider-ge" })
+    vim.keymap.set({ "n", "o", "x" }, "w",  "<cmd>lua require('spider').motion('w')<cr>",  { desc = "Word forward" })
+    vim.keymap.set({ "n", "o", "x" }, "e",  "<cmd>lua require('spider').motion('e')<cr>",  { desc = "Word end" })
+    vim.keymap.set({ "n", "o", "x" }, "b",  "<cmd>lua require('spider').motion('b')<cr>",  { desc = "Word back" })
+    vim.keymap.set({ "n", "o", "x" }, "ge", "<cmd>lua require('spider').motion('ge')<cr>", { desc = "Word end back" })
   end,
 })
 ```
@@ -1340,26 +1299,11 @@ plug({
   enabled = true,
   lazy = true,
   keys = {
-    { "<leader>gg",
-      "<cmd>Git<cr>",
-      desc = "Git"
-    },
-    { "<leader>gp",
-      "<cmd>Git push<cr>",
-      desc = "Git Push"
-    },
-    { "<leader>gP",
-      "<cmd>Git pull<cr>",
-      desc = "Git Pull"
-    },
-    { "<leader>gl",
-      "<cmd>Git log<cr>",
-      desc = "Git Log"
-    },
-    { "<leader>gd",
-      "<cmd>Git diff<cr>",
-      desc = "Git Diff"
-    },
+    { "<leader>gg", "<cmd>Git<cr>",       desc = "Open fugitive" },
+    { "<leader>gp", "<cmd>Git push<cr>",  desc = "Push" },
+    { "<leader>gP", "<cmd>Git pull<cr>",  desc = "Pull" },
+    { "<leader>gl", "<cmd>Git log<cr>",   desc = "Log" },
+    { "<leader>gd", "<cmd>Git diff<cr>",  desc = "Diff" },
   }
 })
 ```
@@ -1387,35 +1331,33 @@ ___
 ```lua
 plug({
   'lewis6991/gitsigns.nvim',
-  enabled = true,
   opts = {
     -- See `:help gitsigns.txt`
     on_attach = function(bufnr)
       local gs = package.loaded.gitsigns
-      vim.keymap.set('n', '[h', gs.prev_hunk, { buffer = bufnr, desc = 'Go to Previous Hunk' })
-      vim.keymap.set('n', ']h', gs.next_hunk, { buffer = bufnr, desc = 'Go to Next Hunk' })
-      vim.keymap.set('n', '<leader>hs', gs.stage_hunk, { buffer = bufnr, desc = 'Git Stage Hunk' })
-      vim.keymap.set('n', '<leader>hS', gs.stage_buffer, { buffer = bufnr, desc = 'Git Stage Entire Buffer' })
-      vim.keymap.set('n', '<leader>hr', gs.reset_hunk, { buffer = bufnr, desc = 'Git Reset Hunk' })
-      vim.keymap.set('n', '<leader>hR', gs.reset_buffer, { buffer = bufnr, desc = 'Git Reset Entire Buffer' })
+      vim.keymap.set('n', '[h', gs.prev_hunk, { buffer = bufnr, desc = 'Prev hunk' })
+      vim.keymap.set('n', ']h', gs.next_hunk, { buffer = bufnr, desc = 'Next hunk' })
+      vim.keymap.set('n', '<leader>hs', gs.stage_hunk,   { buffer = bufnr, desc = 'Stage hunk' })
+      vim.keymap.set('n', '<leader>hS', gs.stage_buffer, { buffer = bufnr, desc = 'Stage buffer' })
+      vim.keymap.set('n', '<leader>hr', gs.reset_hunk,   { buffer = bufnr, desc = 'Reset hunk' })
+      vim.keymap.set('n', '<leader>hR', gs.reset_buffer, { buffer = bufnr, desc = 'Reset buffer' })
       vim.keymap.set('v', '<leader>hs', function() gs.stage_hunk { vim.fn.line('.'), vim.fn.line('v') } end,
-        { buffer = bufnr, desc = 'Git Stage Selected Hunk' })
+        { buffer = bufnr, desc = 'Stage selection' })
 
       vim.keymap.set('v', '<leader>gr', function() gs.reset_hunk { vim.fn.line('.'), vim.fn.line('v') } end,
-        { buffer = bufnr, desc = 'Git Reset Selected Hunk' })
+        { buffer = bufnr, desc = 'Reset selection' })
 
-      vim.keymap.set('n', '<leader>hu', gs.undo_stage_hunk, { buffer = bufnr, desc = 'Git Undo Stage Hunk' })
-      vim.keymap.set('n', '<leader>ht', gs.toggle_deleted, { buffer = bufnr, desc = 'Git Toggle Deleted' })
-      vim.keymap.set('n', '<leader>hd', gs.diffthis, { buffer = bufnr, desc = 'Git Diff Hunk' })
-      vim.keymap.set('n', '<leader>hD', function() gs.diffthis('~') end, { buffer = bufnr, desc = 'Git Diff Hunk' })
-      vim.keymap.set('n', '<leader>hp', gs.preview_hunk, { buffer = bufnr, desc = 'Git Preview Hunk' })
-      vim.keymap.set('n', '<leader>hb', gs.blame_line, { buffer = bufnr, desc = 'Git Blame Line' })
-      vim.keymap.set('n', '<leader>hB', gs.toggle_current_line_blame,
-        { buffer = bufnr, desc = 'Git Blame Line Toggle' })
+      vim.keymap.set('n', '<leader>hu', gs.undo_stage_hunk,          { buffer = bufnr, desc = 'Undo stage' })
+      vim.keymap.set('n', '<leader>ht', gs.toggle_deleted,           { buffer = bufnr, desc = 'Toggle deleted' })
+      vim.keymap.set('n', '<leader>hd', gs.diffthis,                 { buffer = bufnr, desc = 'Diff hunk' })
+      vim.keymap.set('n', '<leader>hD', function() gs.diffthis('~') end, { buffer = bufnr, desc = 'Diff hunk (prev)' })
+      vim.keymap.set('n', '<leader>hp', gs.preview_hunk,             { buffer = bufnr, desc = 'Preview hunk' })
+      vim.keymap.set('n', '<leader>hb', gs.blame_line,               { buffer = bufnr, desc = 'Blame line' })
+      vim.keymap.set('n', '<leader>hB', gs.toggle_current_line_blame,{ buffer = bufnr, desc = 'Toggle blame' })
 
       -- Text object
-      vim.keymap.set({ 'o', 'x' }, 'ih', ':<C-U>Gitsigns select_hunk<CR>', { desc = 'Hunk' })
-      vim.keymap.set({ 'o', 'x' }, 'ah', ':<C-U>Gitsigns select_hunk<CR>', { desc = 'Hunk' })
+      vim.keymap.set({ 'o', 'x' }, 'ih', ':<C-U>Gitsigns select_hunk<CR>', { desc = 'Inner hunk' })
+      vim.keymap.set({ 'o', 'x' }, 'ah', ':<C-U>Gitsigns select_hunk<CR>', { desc = 'Around hunk' })
     end,
   },
 })
@@ -1429,7 +1371,6 @@ ___
 ```lua
 plug({
   "sindrets/diffview.nvim",
-  enabled = true,
   lazy = true,
   cmd = {
      "DiffviewOpen",
@@ -1444,7 +1385,7 @@ plug({
     {
       "<leader>dd",
       "<cmd>DiffviewOpen<cr>",
-      desc = "Open Diff View",
+      desc = "Diff view",
     }
   },
 })
@@ -1475,10 +1416,8 @@ ___
 plug({
   'pwntester/octo.nvim',
   cmd = "Octo",
-  requires = {
+  dependencies = {
     'nvim-lua/plenary.nvim',
-    -- 'nvim-telescope/telescope.nvim',
-    -- OR 'ibhagwan/fzf-lua',
     'folke/snacks.nvim',
     'nvim-tree/nvim-web-devicons',
   },
@@ -1493,144 +1432,146 @@ plug({
 
 # LSP
 
-A comprehensive Language Server Protocol implementation that transforms Neovim into a powerful IDE with intelligent code analysis, completion, and navigation capabilities. LSP provides seamless integration with language servers to deliver rich programming language features directly in your editor.
+## Mason
 
-This LSP configuration delivers:
-- **Intelligent code completion**: Context-aware suggestions with detailed documentation and type information
-- **Advanced navigation**: Go to definition, find references, and symbol search across your entire codebase
-- **Real-time diagnostics**: Instant error detection, warnings, and linting with inline feedback
-- **Code actions**: Automated refactoring, quick fixes, and intelligent code transformations
-- **Hover documentation**: Instant access to function signatures, type information, and documentation
-- **Workspace symbols**: Fast navigation through classes, functions, and variables across multiple files
-- **Signature help**: Real-time parameter hints and function documentation while typing
-- **Semantic highlighting**: Enhanced syntax highlighting based on code semantics rather than just syntax
-
-**Usage**: LSP features activate automatically when you open supported file types. Use the configured keybindings for navigation (`gd` for definition, `<localleader>lr` for references), hover information (`<localleader>lh`), and code actions (`<localleader>la`).
-
-**Help**: Run `:LspInfo` to see active language servers and their status. The configuration includes Mason for automatic language server installation and management.
-
-For example, when editing Python code, you get intelligent completion for imported modules, instant error highlighting for syntax issues, and quick navigation to function definitions across your project.
+Package manager for LSP servers, DAP adapters, linters and formatters.
 ___
-[Official LSP Home](https://microsoft.github.io/language-server-protocol/)
+[GitHub](https://github.com/williamboman/mason.nvim)
+```lua
+plug({ "williamboman/mason.nvim", config = true })
+
+plug({
+  "williamboman/mason-lspconfig.nvim",
+  dependencies = { "williamboman/mason.nvim" },
+  opts = {
+    ensure_installed = { "lua_ls", "bashls", "pyright", "html", "clangd", "marksman" },
+  },
+})
+```
+
+## LSP
+
+Language server configuration using the native `vim.lsp` API (nvim 0.11+). `nvim-lspconfig` provides server defaults (cmd, root_dir, filetypes); `vim.lsp.config` / `vim.lsp.enable` wire everything together without the old `setup()` pattern.
+___
+[GitHub](https://github.com/neovim/nvim-lspconfig)
 ```lua
 plug({
   "neovim/nvim-lspconfig",
   dependencies = {
-    "williamboman/mason.nvim",
-    "williamboman/mason-lspconfig.nvim",
-    "onsails/lspkind.nvim",
-    "kosayoda/nvim-lightbulb",
-    { "weilbith/nvim-code-action-menu", cmd = "CodeActionMenu" },
-    "hrsh7th/nvim-cmp",
     "hrsh7th/cmp-nvim-lsp",
-    "L3MON4D3/LuaSnip",
-    "saadparwaiz1/cmp_luasnip",
+    "SmiteshP/nvim-navic",
+    "kosayoda/nvim-lightbulb",
+    "folke/which-key.nvim",
+  },
+  config = function()
+    -- Global capabilities merged into every server
+    vim.lsp.config("*", {
+      capabilities = vim.tbl_deep_extend("force",
+        require("cmp_nvim_lsp").default_capabilities(),
+        { textDocument = { foldingRange = { dynamicRegistration = false, lineFoldingOnly = true } } }
+      ),
+    })
+
+    -- Per-server overrides (only what differs from lspconfig defaults)
+    vim.lsp.config("lua_ls", {
+      settings = {
+        Lua = {
+          runtime    = { version = "LuaJIT" },
+          workspace  = { checkThirdParty = false, library = { vim.env.VIMRUNTIME } },
+          diagnostics = { globals = { "vim" } },
+          telemetry  = { enable = false },
+        },
+      },
+    })
+
+    -- Enable servers (lspconfig supplies cmd/root_dir/ft for each)
+    vim.lsp.enable({ "lua_ls", "bashls", "pyright", "html", "clangd", "marksman" })
+
+    -- Per-buffer keymaps and navic breadcrumbs
+    vim.api.nvim_create_autocmd("LspAttach", {
+      callback = function(args)
+        local bufnr = args.buf
+        local client = vim.lsp.get_client_by_id(args.data.client_id)
+        local function map(lhs, rhs, desc, mode)
+          vim.keymap.set(mode or "n", lhs, rhs, { buffer = bufnr, desc = desc })
+        end
+
+        -- Navigation
+        map("gd", vim.lsp.buf.definition,  " Definition")
+        map("gD", vim.lsp.buf.declaration, " Declaration")
+        map("[d",  function() vim.diagnostic.jump({ count = -1 }) end, "← Prev diagnostic")
+        map("]d",  function() vim.diagnostic.jump({ count = 1 })  end, "→ Next diagnostic")
+
+        -- Actions
+        map("<localleader>lf", function() vim.lsp.buf.format({ async = false, timeout_ms = 10000 }) end, "Format buffer", { "n", "x" })
+        map("<localleader>la", vim.lsp.buf.code_action,      "Code action")
+        map("<localleader>lh", vim.lsp.buf.hover,            "Hover")
+        map("<localleader>lH", vim.lsp.buf.signature_help,   "Signature help")
+        map("<localleader>ls", vim.lsp.buf.workspace_symbol, "Workspace symbols")
+        map("<localleader>lr", vim.lsp.buf.references,       "References")
+        map("<localleader>li", vim.lsp.buf.implementation,   " Implementation")
+        map("<localleader>lR", vim.lsp.buf.rename,           "Rename")
+        map("<localleader>lI", "<cmd>LspInfo<CR>",           "LSP info")
+
+        -- Picker search (Snacks)
+        local pick = require("snacks").picker
+        map("<localleader>ss", pick.lsp_symbols,           "Symbols")
+        map("<localleader>sS", pick.lsp_workspace_symbols, "Workspace symbols")
+        map("<localleader>sr", pick.lsp_references,        "References")
+
+        -- Which-key group labels
+        require("which-key").add({
+          { "<localleader>l", group = "LSP" },
+          { "<localleader>s", group = "Search" },
+        }, { buffer = bufnr })
+
+        -- Breadcrumbs
+        if client.server_capabilities.documentSymbolProvider then
+          require("nvim-navic").attach(client, bufnr)
+        end
+      end,
+    })
+
+    -- Code-action lightbulb indicator
+    require("nvim-lightbulb").setup({
+      autocmd = { enabled = true },
+      virtual_text = { enabled = true, text = "" },
+    })
+  end,
+})
+```
+
+## Completion
+
+nvim-cmp with LuaSnip snippets.
+___
+[GitHub](https://github.com/hrsh7th/nvim-cmp)
+```lua
+plug({
+  "hrsh7th/nvim-cmp",
+  event = { "InsertEnter", "CmdlineEnter" },
+  dependencies = {
+    "hrsh7th/cmp-nvim-lsp",
     "hrsh7th/cmp-nvim-lua",
     "hrsh7th/cmp-buffer",
     "hrsh7th/cmp-cmdline",
     "hrsh7th/cmp-path",
     "hrsh7th/cmp-emoji",
     "hrsh7th/cmp-calc",
-    "SmiteshP/nvim-navic",
-    { "folke/which-key.nvim", config = function() require("which-key").setup {} end },
+    "L3MON4D3/LuaSnip",
+    "saadparwaiz1/cmp_luasnip",
+    "onsails/lspkind.nvim",
   },
   config = function()
-    local navic = require("nvim-navic")
-    local wk = require("which-key")
-    local snacks = require("snacks")
     local cmp = require("cmp")
     local luasnip = require("luasnip")
-    local cmp_lsp = require("cmp_nvim_lsp")
 
-    -- Capabilities for LSP + CMP
-    local capabilities = vim.lsp.protocol.make_client_capabilities()
-    capabilities = cmp_lsp.default_capabilities(capabilities)
-    capabilities.textDocument.foldingRange = { dynamicRegistration = false, lineFoldingOnly = true }
-
-    -- Mason setup
-    require("mason").setup()
-    require("mason-lspconfig").setup({
-      ensure_installed = { "lua_ls", "bashls", "pyright", "html", "clangd", "marksman" },
-    })
-
-    -- Servers list
-    local servers = {
-      lua_ls = {
-        settings = {
-          Lua = {
-            runtime = { version = "LuaJIT" },
-            workspace = { checkThirdParty = false, library = { vim.env.VIMRUNTIME } },
-            diagnostics = { globals = { "vim" } },
-            telemetry = { enable = false },
-          },
-        },
-      },
-      bashls = {},
-      pyright = {},
-      html = {},
-      clangd = {},
-      marksman = {},
-    }
-
-    -- Enable & configure servers via new API
-    for name, config in pairs(servers) do
-      vim.lsp.enable(name)
-      if config then
-        vim.lsp.config(name, vim.tbl_extend("force", { capabilities = capabilities }, config))
-      end
-    end
-
-    -- Global LspAttach for keymaps and navic
-    vim.api.nvim_create_autocmd("LspAttach", {
-      callback = function(args)
-        local bufnr = args.buf
-        local client = vim.lsp.get_client_by_id(args.data.client_id)
-
-        -- Key mapping helper
-        local function opts(desc) return { buffer = bufnr, remap = false, desc = desc } end
-
-        -- Keymaps
-        vim.keymap.set({ "n", "x" }, "<localleader>lf", function()
-          vim.lsp.buf.format({ async = false, timeout_ms = 10000 })
-        end, opts("Lsp format buffer"))
-
-        vim.keymap.set("n", "[d", vim.diagnostic.goto_next, opts("Go To Next Diagnostic"))
-        vim.keymap.set("n", "]d", vim.diagnostic.goto_prev, opts("Go To Previous Diagnostic"))
-        vim.keymap.set("n", "gd", vim.lsp.buf.definition, opts("Go To Definition"))
-        vim.keymap.set("n", "<localleader>la", vim.lsp.buf.code_action, opts("Code Action"))
-        vim.keymap.set("n", "<localleader>lh", vim.lsp.buf.hover, opts("Hover"))
-        vim.keymap.set("n", "<localleader>lH", vim.lsp.buf.signature_help, opts("Signature Help"))
-        vim.keymap.set("n", "<localleader>ls", vim.lsp.buf.workspace_symbol, opts("Workspace Symbol"))
-        vim.keymap.set("n", "<localleader>lr", vim.lsp.buf.references, opts("References"))
-        vim.keymap.set("n", "<localleader>li", vim.lsp.buf.implementation, opts("Implementation"))
-        vim.keymap.set("n", "<localleader>lR", vim.lsp.buf.rename, opts("Rename"))
-        vim.keymap.set("n", "<localleader>lI", "<cmd>LspInfo<CR>", opts("LspInfo"))
-
-        vim.keymap.set("n", "<localleader>ss", snacks.picker.lsp_symbols, opts("Search for lsp symbols"))
-        vim.keymap.set("n", "<localleader>sS", snacks.picker.lsp_workspace_symbols, opts("Search for lsp workspace symbols"))
-        vim.keymap.set("n", "<localleader>sr", snacks.picker.lsp_references, opts("Search for lsp refrences"))
-
-        -- Which-key registration
-        wk.add({
-          { "<localleader>s", group = "Search" },
-          { "<localleader>l", group = "LSP" },
-        }, {buffer = bufnr})
-
-        -- Attach navic if supported
-        if client.server_capabilities.documentSymbolProvider then
-          navic.attach(client, bufnr)
-        end
-      end,
-    })
-
-    -- CMP setup
-    require("luasnip.loaders.from_lua").lazy_load({ paths = "./snippets/" })
     require("luasnip.loaders.from_vscode").lazy_load()
 
     cmp.setup({
       snippet = { expand = function(args) luasnip.lsp_expand(args.body) end },
       mapping = cmp.mapping.preset.insert({
-        ["<CR>"] = cmp.mapping.confirm({ select = false }),
+        ["<CR>"]  = cmp.mapping.confirm({ select = false }),
         ["<C-u>"] = cmp.mapping.scroll_docs(-4),
         ["<C-d>"] = cmp.mapping.scroll_docs(4),
         ["<C-l>"] = cmp.mapping(function(fallback)
@@ -1655,17 +1596,13 @@ plug({
       },
     })
 
-    -- cmdline completion
-    cmp.setup.cmdline("/", { mapping = cmp.mapping.preset.cmdline(), sources = { { name = "buffer" } } })
+    cmp.setup.cmdline("/", {
+      mapping = cmp.mapping.preset.cmdline(),
+      sources = { { name = "buffer" } },
+    })
     cmp.setup.cmdline(":", {
       mapping = cmp.mapping.preset.cmdline(),
       sources = cmp.config.sources({ { name = "path" } }, { { name = "cmdline" } }),
-    })
-
-    -- nvim-lightbulb
-    require("nvim-lightbulb").setup({
-      autocmd = { enabled = true },
-      virtual_text = { enabled = true, text = "󰌵" },
     })
   end,
 })
@@ -1683,6 +1620,9 @@ plug({
 dependencies = {
   -- Creates a beautiful debugger UI
   'rcarriga/nvim-dap-ui',
+
+  -- required by nvim-dap-ui
+  'nvim-neotest/nvim-nio',
 
   -- add virtual text
   'theHamsta/nvim-dap-virtual-text',
@@ -1719,17 +1659,17 @@ config = function()
   }
 
   -- Basic debugging keymaps, feel free to change to your liking!
-  vim.keymap.set('n', '<F5>', dap.continue, { desc = 'Debug: Start/Continue' })
-  vim.keymap.set('n', '<F1>', dap.step_into, { desc = 'Debug: Step Into' })
-  vim.keymap.set('n', '<F2>', dap.step_over, { desc = 'Debug: Step Over' })
-  vim.keymap.set('n', '<F3>', dap.step_out, { desc = 'Debug: Step Out' })
-  vim.keymap.set('n', '<F4>', dap.step_back, { desc = 'Debug: Step Back' })
-  vim.keymap.set('n', '<leader>db', dap.toggle_breakpoint, { desc = 'Debug: Toggle Breakpoint' })
-  vim.keymap.set('n', '<leader>dB', dap.set_breakpoint, { desc = 'Debug: Set Breakpoint' })
-  vim.keymap.set('n', '<leader>dl', dap.run_last, { desc = 'Debug: Run Last' })
+  vim.keymap.set('n', '<F5>', dap.continue,  { desc = 'Start / continue' })
+  vim.keymap.set('n', '<F1>', dap.step_into, { desc = 'Step into' })
+  vim.keymap.set('n', '<F2>', dap.step_over, { desc = 'Step over' })
+  vim.keymap.set('n', '<F3>', dap.step_out,  { desc = 'Step out' })
+  vim.keymap.set('n', '<F4>', dap.step_back, { desc = 'Step back' })
+  vim.keymap.set('n', '<leader>db', dap.toggle_breakpoint, { desc = 'Toggle breakpoint' })
+  vim.keymap.set('n', '<leader>dB', dap.set_breakpoint,    { desc = 'Set breakpoint' })
+  vim.keymap.set('n', '<leader>dl', dap.run_last,          { desc = 'Run last' })
   vim.keymap.set('n', '<leader>dc', function()
     dap.set_breakpoint(vim.fn.input 'Breakpoint condition: ')
-  end, { desc = 'Debug: Set Breakpoint Condition' })
+  end, { desc = 'Conditional breakpoint' })
 
   -- Add virtual text showing contained values
   require("nvim-dap-virtual-text").setup({
@@ -1760,7 +1700,7 @@ config = function()
   }
 
   -- Toggle to see last session result. Without this, you can't see session output in case of unhandled exception.
-  vim.keymap.set('n', '<F7>', dapui.toggle, { desc = 'Debug: See last session result.' })
+  vim.keymap.set('n', '<F7>', dapui.toggle, { desc = 'Session result' })
 
   dap.listeners.after.event_initialized['dapui_config'] = dapui.open
   dap.listeners.before.event_terminated['dapui_config'] = dapui.close
@@ -1811,11 +1751,6 @@ ___
       local iron = require("iron.core")
       local view = require("iron.view")
       local common = require("iron.fts.common")
-      local wk = require("which-key")
-
-      wk.add({
-        {"<leader>r", group = "REPL"},
-      })
 
       iron.setup({
         config = {
@@ -1864,40 +1799,36 @@ ___
           -- }
 
         },
-        -- Iron doesn't set keymaps by default anymore.
-        -- You can set them here or manually add keymaps to the functions in iron.core
-        keymaps = {
-          toggle_repl = "<leader>rr", -- toggles the repl open and closed.
-          -- If repl_open_command is a table as above, then the following keymaps are
-          -- available
-          -- toggle_repl_with_cmd_1 = "<leader>rv",
-          -- toggle_repl_with_cmd_2 = "<leader>rh",
-          restart_repl = "<leader>rR", -- calls `IronRestart` to restart the repl
-          send_motion = "<leader>rsc",
-          visual_send = "<leader>rsc",
-          send_file = "<leader>rsf",
-          send_line = "<leader>rsl",
-          send_paragraph = "<leader>rsp",
-          send_until_cursor = "<leader>rsu",
-          send_mark = "<leader>rsm",
-          send_code_block = "<leader>rsb",
-          send_code_block_and_move = "<leader>rsn",
-          mark_motion = "<leader>rmc",
-          mark_visual = "<leader>rmc",
-          remove_mark = "<leader>rmd",
-          cr = "<leader>rs<cr>",
-          interrupt = "<leader>ri",
-          exit = "<leader>rq",
-          clear = "<leader>rc",
-          hide = "<leader>rh",
-        },
-        -- If the highlight is on, you can change how it looks
-        -- For the available options, check nvim_set_hl
+        -- keymaps set manually below so we can control desc symbols
         highlight = {
           italic = true
         },
-        ignore_blank_lines = true, -- ignore blank lines when sending visual select lines
+        ignore_blank_lines = true,
       })
+
+      -- NOTE: keymaps defined here (not via iron keymaps={}) so desc symbols show in which-key
+      local ic = require("iron.core")
+      local function map(lhs, fn, desc, mode)
+        vim.keymap.set(mode or "n", lhs, fn, { desc = desc })
+      end
+      map("<leader>rr",   function() vim.cmd("IronRepl") end,                        "Toggle REPL")
+      map("<leader>rR",   function() vim.cmd("IronRestart") end,                     "Restart REPL")
+      map("<leader>rsc",  function() ic.run_motion("send_motion") end,               "Send motion")
+      map("<leader>rsc",  ic.visual_send,                                            "Send selection", "v")
+      map("<leader>rsf",  ic.send_file,                                              "Send file")
+      map("<leader>rsl",  ic.send_line,                                              "Send line")
+      map("<leader>rsp",  ic.send_paragraph,                                         "Send paragraph")
+      map("<leader>rsu",  ic.send_until_cursor,                                      "Send to cursor")
+      map("<leader>rsm",  ic.send_mark,                                              "Send mark")
+      map("<leader>rsb",  function() ic.send_code_block(false) end,                  "Send block")
+      map("<leader>rsn",  function() ic.send_code_block(true) end,                   "Send block + move")
+      map("<leader>rmc",  function() ic.run_motion("mark_motion") end,               "Mark")
+      map("<leader>rmc",  ic.mark_visual,                                            "Mark selection", "v")
+      map("<leader>rmd",  require("iron.marks").drop_last,                           "Remove mark")
+      map("<leader>rs<cr>",function() ic.send(nil, string.char(13)) end,             "Send CR")
+      map("<leader>ri",   function() ic.send(nil, string.char(03)) end,              "Interrupt")
+      map("<leader>rq",   ic.close_repl,                                             "Exit REPL")
+      map("<leader>rc",   function() ic.send(nil, string.char(12)) end,              "Clear REPL")
    end
 
  })
@@ -2099,7 +2030,7 @@ plug({
   "Wansmer/treesj",
   dependencies = "nvim-treesitter/nvim-treesitter",
   keys = {
-    { "<leader>j", function() require("treesj").toggle() end, desc = "󰗈 Split-join lines" },
+    { "<leader>j", function() require("treesj").toggle() end, desc = "Split-join lines" },
   },
 })
 ```
@@ -2147,7 +2078,7 @@ plug({
         "n",
         "<leader>C" .. case.char,
         ("<cmd>lua require('textcase').lsp_rename('to_%s_case')<CR>"):format(case.arg),
-        { desc = "󰒕 " .. case.desc }
+        { desc = "" .. case.desc }
       )
     end
   end,
@@ -2298,12 +2229,12 @@ plug({
   config = true,
   -- stylua: ignore
   keys = {
-    { "]t",         function() require("todo-comments").jump_next() end, desc = "Next todo comment" },
-    { "[t",         function() require("todo-comments").jump_prev() end, desc = "Previous todo comment" },
-    { "<leader>xt", "<cmd>TodoTrouble<cr>",                              desc = "Todo (Trouble)" },
-    { "<leader>xT", "<cmd>TodoTrouble keywords=TODO,FIX,FIXME<cr>",      desc = "Todo/Fix/Fixme (Trouble)" },
+    { "]t",         function() require("todo-comments").jump_next() end, desc = "Next todo" },
+    { "[t",         function() require("todo-comments").jump_prev() end, desc = "Prev todo" },
+    { "<leader>xt", "<cmd>TodoTrouble<cr>",                              desc = "Todo list" },
+    { "<leader>xT", "<cmd>TodoTrouble keywords=TODO,FIX,FIXME<cr>",      desc = "Fixme list" },
     { "<leader>st", "<cmd>TodoTelescope<cr>",                            desc = "Todo" },
-    { "<leader>sT", "<cmd>TodoTelescope keywords=TODO,FIX,FIXME<cr>",    desc = "Todo/Fix/Fixme" },
+    { "<leader>sT", "<cmd>TodoTelescope keywords=TODO,FIX,FIXME<cr>",    desc = "Fixme" },
   },
 })
 ```
@@ -2406,12 +2337,12 @@ plug({
   lazy = true,
   dependencies = { "nvim-tree/nvim-web-devicons" },
   keys = {
-    { "<leader>xx", function() require("trouble").open() end, desc = "Trouble" },
-    { "<leader>xw", function() require("trouble").open("workspace_diagnostics") end, desc = "Workspace Diagnostics" },
-    { "<leader>xd", function() require("trouble").open("document_diagnostics") end, desc = "Document Diagnostics" },
-    { "<leader>xq", function() require("trouble").open("quickfix") end, desc = "Quickfix" },
-    { "<leader>xl", function() require("trouble").open("loclist") end, desc = "Local List" },
-    { "gR", function() require("trouble").open("lsp_references") end, desc = "Lsp References" },
+    { "<leader>xx", function() require("trouble").open() end,                              desc = "Trouble" },
+    { "<leader>xw", function() require("trouble").open("workspace_diagnostics") end,      desc = "Workspace diagnostics" },
+    { "<leader>xd", function() require("trouble").open("document_diagnostics") end,       desc = "Document diagnostics" },
+    { "<leader>xq", function() require("trouble").open("quickfix") end,                   desc = "Quickfix" },
+    { "<leader>xl", function() require("trouble").open("loclist") end,                    desc = "Location list" },
+    { "gR",         function() require("trouble").open("lsp_references") end,             desc = "LSP references" },
   },
 })
 ```
@@ -2424,29 +2355,142 @@ ___
 ```lua
 plug({
   'folke/which-key.nvim',
-  enabled = true,
-  config = function()
-    local wk = require("which-key")
-    wk.add({
-      { "<leader>;", group = "Command" },
-      { "<leader><Tab>", group = "Tab" },
-      { "<leader>C", group = "Case" },
-      { "<leader>T", group = "Text" },
-      { "<leader>a", group = "Aider" },
-      { "<leader>b", group = "Buffer" },
-      { "<leader>c", group = "Case" },
-      { "<leader>d", group = "Debug" },
-      { "<leader>f", group = "Find" },
-      { "<leader>g", group = "Git" },
-      { "<leader>G", group = "Github" },
-      { "<leader>h", group = "Hunk" },
-      { "<leader>s", group = "Search" },
-      { "<leader>t", group = "Table" },
-      { "<leader>w", group = "Window" },
-      { "<leader>x", group = "Diagnostics" },
-      { "<leader><space>", group = "Local" },
-    })
-  end,
+  opts = {
+    -- NOTE: which-key v3 only honours `plugin`, `pattern` (regex on desc) and
+    -- filetype rules in `icons.rules` — there is no `lhs` field. Per-key icons
+    -- are attached directly on each `spec` entry as `icon = { icon, color }`.
+    spec = {
+      -- Leader groups (with icons)
+      { "<leader>;",       group = "Command",          icon = { icon = "󰞷",  color = "cyan"   } },
+      { "<leader><Tab>",   group = "Tabs",             icon = { icon = "󰓩",  color = "cyan"   } },
+      { "<leader><Space>", icon = { icon = "󰘳",  color = "purple" } },
+      { "<leader>a",       group = "Aider",            icon = { icon = "󰧑",  color = "purple" } },
+      { "<leader>b",       group = "Buffer",           icon = { icon = "󰓩",  color = "cyan"   } },
+      { "<leader>c",       group = "Case",             icon = { icon = "󰬴",  color = "yellow" } },
+      { "<leader>C",       group = "Case (LSP rename)",icon = { icon = "󰬴",  color = "yellow" } },
+      { "<leader>d",       group = "Debug",            icon = { icon = "󰃤",  color = "red"    } },
+      { "<leader>f",       group = "Find",             icon = { icon = "󰍉",  color = "blue"   } },
+      { "<leader>g",       group = "Git",              icon = { icon = "󰊢",  color = "orange" } },
+      { "<leader>G",       group = "GitHub",           icon = { icon = "󰊢",  color = "orange" } },
+      { "<leader>gf",      group = "Git files",        icon = { icon = "󰊢",  color = "orange" } },
+      { "<leader>gs",      group = "Git search",       icon = { icon = "󰊢",  color = "orange" } },
+      { "<leader>gsl",     group = "Git log",          icon = { icon = "󰊢",  color = "orange" } },
+      { "<leader>h",       group = "Hunk",             icon = { icon = "󱖣",  color = "orange" } },
+      { "<leader>r",       group = "REPL",             icon = { icon = "󰆍",  color = "teal"   } },
+      { "<leader>rm",      group = "Mark",             icon = { icon = "󰸤",  color = "teal"   } },
+      { "<leader>rs",      group = "Send",             icon = { icon = "󰒊",  color = "teal"   } },
+      { "<leader>s",       group = "Search",           icon = { icon = "󰍉",  color = "blue"   } },
+      { "<leader>t",       group = "Table",            icon = { icon = "󰓫",  color = "cyan"   } },
+      { "<leader>u",       group = "UI",               icon = { icon = "󰏘",  color = "purple" } },
+      { "<leader>w",       group = "Window",           icon = { icon = "󱂬",  color = "azure"  } },
+      { "<leader>x",       group = "Diagnostics",      icon = { icon = "󰒡",  color = "red"    } },
+      { "<localleader>c",  group = "Code",             icon = { icon = "󰅩",  color = "cyan"   } },
+      { "<localleader>l",  group = "LSP",              icon = { icon = "󰒋",  color = "blue"   } },
+      { "<localleader>s",  group = "Search",           icon = { icon = "󰍉",  color = "blue"   } },
+      -- Bracket / motion / g-prefix groups
+      { "[",               group = "Prev",             icon = { icon = "󰒮",  color = "grey"   } },
+      { "]",               group = "Next",             icon = { icon = "󰒭",  color = "grey"   } },
+      { "g",               group = "Go to",            icon = { icon = "󰊕",  color = "grey"   } },
+      { "z",               group = "Fold",             icon = { icon = "󰘖",  color = "grey"   } },
+      -- Single-key leader bindings
+      { "<leader>,",       icon = { icon = "󰓩",  color = "cyan"   } },
+      { "<leader>/",       icon = { icon = "󰍉",  color = "blue"   } },
+      { "<leader>.",       icon = { icon = "󰴒",  color = "green"  } },
+      { "<leader>-",       icon = { icon = "󱂬",  color = "azure"  } },
+      { "<leader>|",       icon = { icon = "󱂬",  color = "azure"  } },
+      { "<leader>`",       icon = { icon = "󰓩",  color = "cyan"   } },
+      { "<leader>e",       icon = { icon = "󰙅",  color = "green"  } },
+      { "<leader>o",       icon = { icon = "󰙅",  color = "green"  } },
+      { "<leader>O",       icon = { icon = "󰙅",  color = "green"  } },
+      { "<leader>p",       icon = { icon = "󰅇",  color = "yellow" } },
+      { "<leader>j",       icon = { icon = "󰗈",  color = "grey"   } },
+      { "<leader>K",       icon = { icon = "󰋗",  color = "grey"   } },
+      { "<leader>S",       icon = { icon = "󰓆",  color = "grey"   } },
+      { "<leader>q",       icon = { icon = "󰗼",  color = "red"    } },
+      { "<leader>l",       icon = { icon = "󰉹",  color = "grey"   } },
+      -- Two-key leader bindings (override prefix icons)
+      { "<leader>bb",      icon = { icon = "󰓩",  color = "cyan"   } },
+      { "<leader>dd",      icon = { icon = "󰊢",  color = "orange" } }, -- diffview overrides debug prefix
+      { "<leader>fn",      icon = { icon = "󰈤",  color = "green"  } },
+      { "<leader>qq",      icon = { icon = "󰐦",  color = "red"    } },
+      { "<leader>;l",      icon = { icon = "󰒲",  color = "grey"   } },
+      { "<leader>;n",      icon = { icon = "󰂚",  color = "grey"   } },
+      { "<leader>ui",      icon = { icon = "󰙔",  color = "grey"   } },
+      { "<leader>ur",      icon = { icon = "󰑐",  color = "grey"   } },
+      -- Window / Ctrl bindings
+      { "<S-h>",           icon = { icon = "󰓩",  color = "cyan"   } },
+      { "<S-l>",           icon = { icon = "󰓩",  color = "cyan"   } },
+      { "<C-h>",           icon = { icon = "󱂬",  color = "azure"  } },
+      { "<C-j>",           icon = { icon = "󱂬",  color = "azure"  } },
+      { "<C-k>",           icon = { icon = "󱂬",  color = "azure"  } },
+      { "<C-l>",           icon = { icon = "󱂬",  color = "azure"  } },
+      { "<C-s>",           icon = { icon = "󰆓",  color = "green"  } },
+      { "<c-b>",           icon = { icon = "󰆍",  color = "teal"   } },
+      -- Function keys (debug)
+      { "<F1>",            icon = { icon = "󰃤",  color = "red"    } },
+      { "<F2>",            icon = { icon = "󰃤",  color = "red"    } },
+      { "<F3>",            icon = { icon = "󰃤",  color = "red"    } },
+      { "<F4>",            icon = { icon = "󰃤",  color = "red"    } },
+      { "<F5>",            icon = { icon = "󰃤",  color = "red"    } },
+      { "<F7>",            icon = { icon = "󰃤",  color = "red"    } },
+      -- Bracket navigation specifics
+      { "[h",              icon = { icon = "󱖣",  color = "orange" } },
+      { "]h",              icon = { icon = "󱖣",  color = "orange" } },
+      { "[b",              icon = { icon = "󰓩",  color = "cyan"   } },
+      { "]b",              icon = { icon = "󰓩",  color = "cyan"   } },
+      { "[d",              icon = { icon = "󰒡",  color = "red"    } },
+      { "]d",              icon = { icon = "󰒡",  color = "red"    } },
+      { "[D",              icon = { icon = "󰒡",  color = "red"    } },
+      { "]D",              icon = { icon = "󰒡",  color = "red"    } },
+      { "[q",              icon = { icon = "󰒡",  color = "orange" } },
+      { "]q",              icon = { icon = "󰒡",  color = "orange" } },
+      { "[l",              icon = { icon = "󰒡",  color = "orange" } },
+      { "]l",              icon = { icon = "󰒡",  color = "orange" } },
+      { "[t",              icon = { icon = "󰄭",  color = "yellow" } },
+      { "]t",              icon = { icon = "󰄭",  color = "yellow" } },
+      { "[p",              icon = { icon = "󰅇",  color = "yellow" } },
+      { "]p",              icon = { icon = "󰅇",  color = "yellow" } },
+      { "[P",              icon = { icon = "󰅇",  color = "yellow" } },
+      { "]P",              icon = { icon = "󰅇",  color = "yellow" } },
+      { "[y",              icon = { icon = "󰅇",  color = "yellow" } },
+      { "]y",              icon = { icon = "󰅇",  color = "yellow" } },
+      { "[<Space>",        icon = { icon = "󰆎",  color = "grey"   } },
+      { "]<Space>",        icon = { icon = "󰆎",  color = "grey"   } },
+      -- Treesitter textobject moves (plugin sets keymaps with no desc)
+      { "]m",  desc = "Next function start", icon = { icon = "󰊕", color = "grey" } },
+      { "]]",  desc = "Next class start",    icon = { icon = "󰊕", color = "grey" } },
+      { "]M",  desc = "Next function end",   icon = { icon = "󰊕", color = "grey" } },
+      { "][",  desc = "Next class end",      icon = { icon = "󰊕", color = "grey" } },
+      { "[m",  desc = "Prev function start", icon = { icon = "󰊕", color = "grey" } },
+      { "[[",  desc = "Prev class start",    icon = { icon = "󰊕", color = "grey" } },
+      { "[M",  desc = "Prev function end",   icon = { icon = "󰊕", color = "grey" } },
+      { "[]",  desc = "Prev class end",      icon = { icon = "󰊕", color = "grey" } },
+      -- g-prefix specifics
+      { "gd",              icon = { icon = "󰿙",  color = "blue"   } },
+      { "gD",              icon = { icon = "󰿙",  color = "blue"   } },
+      { "gR",              icon = { icon = "󰈇",  color = "blue"   } },
+      { "gr",              icon = { icon = "󰒋",  color = "blue"   } },
+      { "gO",              icon = { icon = "󰍉",  color = "blue"   } },
+      { "gw",              icon = { icon = "󰍉",  color = "blue"   } },
+      { "gx",              icon = { icon = "󰌷",  color = "azure"  } },
+      { "gc",              icon = { icon = "󰅩",  color = "grey"   } },
+      { "gb",              icon = { icon = "󰅩",  color = "grey"   } },
+      { "gp",              icon = { icon = "󰅇",  color = "yellow" } },
+      { "gP",              icon = { icon = "󰅇",  color = "yellow" } },
+      { "ge",              icon = { icon = "󰕞",  color = "grey"   } },
+      -- Spider subword motions / search
+      { "w",               icon = { icon = "󰕞",  color = "grey"   } },
+      { "e",               icon = { icon = "󰕞",  color = "grey"   } },
+      { "b",               icon = { icon = "󰕞",  color = "grey"   } },
+      { "n",               icon = { icon = "󰍉",  color = "blue"   } },
+      { "N",               icon = { icon = "󰍉",  color = "blue"   } },
+      { "y",               icon = { icon = "󰅇",  color = "yellow" } },
+      { "p",               icon = { icon = "󰅇",  color = "yellow" } },
+      { "P",               icon = { icon = "󰅇",  color = "yellow" } },
+      -- Treesitter swap (conflicts with Aider group — shown as individual keys)
+      { "<leader>A", desc = "Swap param back", mode = "n", icon = { icon = "󰓡", color = "yellow" } },
+    },
+  },
 })
 ```
 
@@ -2512,115 +2556,25 @@ plug({
           yanky.put(item)
         end)
       end,
-      desc = "Open Yank History"
+      desc = "Yank history"
     },
-    {
-      "y",
-      "<Plug>(YankyYank)",
-      mode = { "n", "x" },
-      desc =
-        "Yank text"
-    },
-    {
-      "p",
-      "<Plug>(YankyPutAfter)",
-      mode = { "n", "x" },
-      desc =
-        "Put yanked text after cursor"
-    },
-    {
-      "P",
-      "<Plug>(YankyPutBefore)",
-      mode = { "n", "x" },
-      desc =
-        "Put yanked text before cursor"
-    },
-    {
-      "gp",
-      "<Plug>(YankyGPutAfter)",
-      mode = { "n", "x" },
-      desc =
-        "Put yanked text after selection"
-    },
-    {
-      "gP",
-      "<Plug>(YankyGPutBefore)",
-      mode = { "n", "x" },
-      desc =
-        "Put yanked text before selection"
-    },
-    {
-      "[y",
-      "<Plug>(YankyCycleForward)",
-      desc =
-        "Cycle forward through yank history"
-    },
-    {
-      "]y",
-      "<Plug>(YankyCycleBackward)",
-      desc =
-        "Cycle backward through yank history"
-    },
-    {
-      "]p",
-      "<Plug>(YankyPutIndentAfterLinewise)",
-      desc =
-        "Put indented after cursor (linewise)"
-    },
-    {
-      "[p",
-      "<Plug>(YankyPutIndentBeforeLinewise)",
-      desc =
-        "Put indented before cursor (linewise)"
-    },
-    {
-      "]P",
-      "<Plug>(YankyPutIndentAfterLinewise)",
-      desc =
-        "Put indented after cursor (linewise)"
-    },
-    {
-      "[P",
-      "<Plug>(YankyPutIndentBeforeLinewise)",
-      desc =
-        "Put indented before cursor (linewise)"
-    },
-    {
-      ">p",
-      "<Plug>(YankyPutIndentAfterShiftRight)",
-      desc =
-        "Put and indent right"
-    },
-    {
-      "<p",
-      "<Plug>(YankyPutIndentAfterShiftLeft)",
-      desc =
-        "Put and indent left"
-    },
-    {
-      ">P",
-      "<Plug>(YankyPutIndentBeforeShiftRight)",
-      desc =
-        "Put before and indent right"
-    },
-    {
-      "<P",
-      "<Plug>(YankyPutIndentBeforeShiftLeft)",
-      desc =
-        "Put before and indent left"
-    },
-    {
-      "=p",
-      "<Plug>(YankyPutAfterFilter)",
-      desc =
-        "Put after applying a filter"
-    },
-    {
-      "=P",
-      "<Plug>(YankyPutBeforeFilter)",
-      desc =
-        "Put before applying a filter"
-    },
+    { "y",  "<Plug>(YankyYank)",                      mode = { "n", "x" }, desc = "Yank" },
+    { "p",  "<Plug>(YankyPutAfter)",                  mode = { "n", "x" }, desc = "Put after" },
+    { "P",  "<Plug>(YankyPutBefore)",                 mode = { "n", "x" }, desc = "Put before" },
+    { "gp", "<Plug>(YankyGPutAfter)",                 mode = { "n", "x" }, desc = "Put after selection" },
+    { "gP", "<Plug>(YankyGPutBefore)",                mode = { "n", "x" }, desc = "Put before selection" },
+    { "[y", "<Plug>(YankyCycleForward)",                                    desc = "Cycle yank history" },
+    { "]y", "<Plug>(YankyCycleBackward)",                                   desc = "Cycle yank history" },
+    { "]p", "<Plug>(YankyPutIndentAfterLinewise)",                          desc = "Put indented after" },
+    { "[p", "<Plug>(YankyPutIndentBeforeLinewise)",                         desc = "Put indented before" },
+    { "]P", "<Plug>(YankyPutIndentAfterLinewise)",                          desc = "Put indented after" },
+    { "[P", "<Plug>(YankyPutIndentBeforeLinewise)",                         desc = "Put indented before" },
+    { ">p", "<Plug>(YankyPutIndentAfterShiftRight)",                        desc = "Put + indent right" },
+    { "<p", "<Plug>(YankyPutIndentAfterShiftLeft)",                         desc = "Put + indent left" },
+    { ">P", "<Plug>(YankyPutIndentBeforeShiftRight)",                       desc = "Put before + indent right" },
+    { "<P", "<Plug>(YankyPutIndentBeforeShiftLeft)",                        desc = "Put before + indent left" },
+    { "=p", "<Plug>(YankyPutAfterFilter)",                                  desc = "Put (filtered)" },
+    { "=P", "<Plug>(YankyPutBeforeFilter)",                                 desc = "Put before (filtered)" },
   },
 })
 ```
@@ -2679,17 +2633,16 @@ plug({
     cmd = "Aider",
     -- Example key mappings for common actions:
     keys = {
-      { "<leader>a/", "<cmd>Aider toggle<cr>", desc = "Toggle Aider" },
-      { "<leader>as", "<cmd>Aider send<cr>", desc = "Send to Aider", mode = { "n", "v" } },
-      { "<leader>ac", "<cmd>Aider command<cr>", desc = "Aider Commands" },
-      { "<leader>ab", "<cmd>Aider buffer<cr>", desc = "Send Buffer" },
-      { "<leader>a+", "<cmd>Aider add<cr>", desc = "Add File" },
-      { "<leader>a-", "<cmd>Aider drop<cr>", desc = "Drop File" },
-      { "<leader>ar", "<cmd>Aider add readonly<cr>", desc = "Add Read-Only" },
-      { "<leader>aR", "<cmd>Aider reset<cr>", desc = "Reset Session" },
-      -- Example nvim-tree.lua integration if needed
-      { "<leader>a+", "<cmd>AiderTreeAddFile<cr>", desc = "Add File from Tree to Aider", ft = "NvimTree" },
-      { "<leader>a-", "<cmd>AiderTreeDropFile<cr>", desc = "Drop File from Tree from Aider", ft = "NvimTree" },
+      { "<leader>a/", "<cmd>Aider toggle<cr>",        desc = "Toggle",          },
+      { "<leader>as", "<cmd>Aider send<cr>",          desc = "Send",            mode = { "n", "v" } },
+      { "<leader>ac", "<cmd>Aider command<cr>",       desc = "Commands",        },
+      { "<leader>ab", "<cmd>Aider buffer<cr>",        desc = "Send buffer",     },
+      { "<leader>a+", "<cmd>Aider add<cr>",           desc = "Add file",        },
+      { "<leader>a-", "<cmd>Aider drop<cr>",          desc = "Drop file",       },
+      { "<leader>ar", "<cmd>Aider add readonly<cr>",  desc = "Add read-only",   },
+      { "<leader>aR", "<cmd>Aider reset<cr>",         desc = "Reset session",   },
+      { "<leader>a+", "<cmd>AiderTreeAddFile<cr>",    desc = "Add file (tree)", ft = "NvimTree" },
+      { "<leader>a-", "<cmd>AiderTreeDropFile<cr>",   desc = "Drop file (tree)",ft = "NvimTree" },
     },
     dependencies = {
       "folke/snacks.nvim",
@@ -2941,7 +2894,7 @@ plug({ -- virtual text context at the end of a scope
   event = "VeryLazy",
   dependencies = "nvim-treesitter/nvim-treesitter",
   opts = {
-    prefix = "󱞷",
+    prefix = "",
     highlight = "NonText",
     min_rows = 1,
     disable_ft = { "markdown" },
@@ -3003,24 +2956,24 @@ plug({ -- extend and create a/i textobjects
       { "i'", desc = "Balanced '" },
       { "i`", desc = "Balanced `" },
       { "i(", desc = "Balanced (" },
-      { "i)", desc = "Balanced ) including white-space" },
-      { "i>", desc = "Balanced > including white-space" },
+      { "i)", desc = "Balanced ) + space" },
+      { "i>", desc = "Balanced > + space" },
       { "i<", desc = "Balanced <" },
-      { "i]", desc = "Balanced ] including white-space" },
+      { "i]", desc = "Balanced ] + space" },
       { "i[", desc = "Balanced [" },
-      { "i}", desc = "Balanced } including white-space" },
+      { "i}", desc = "Balanced } + space" },
       { "i{", desc = "Balanced {" },
-      { "i?", desc = "User Prompt" },
+      { "i?", desc = "User prompt" },
       { "i_", desc = "Underscore" },
       { "ia", desc = "Argument" },
-      { "ib", desc = "Balanced ), ], }" },
+      { "ib", desc = "Bracket ), ], }" },
       { "ic", desc = "Class" },
       { "if", desc = "Function" },
-      { "io", desc = "Block, conditional, loop" },
-      { "iq", desc = "Quote `, \", '" },
+      { "io", desc = "Block/cond/loop" },
+      { "iq", desc = "Quote" },
       { "it", desc = "Tag" },
-      { "in", group = "Inside Next textobject" },
-      { "il", group = "Inside Last textobject" },
+      { "in", group = "Inside next" },
+      { "il", group = "Inside last" },
       { "a ", desc = "Whitespace" },
       { 'a"', desc = 'Balanced "' },
       { "a'", desc = "Balanced '" },
@@ -3033,17 +2986,17 @@ plug({ -- extend and create a/i textobjects
       { "a[", desc = "Balanced [" },
       { "a}", desc = "Balanced }" },
       { "a{", desc = "Balanced {" },
-      { "a?", desc = "User Prompt" },
+      { "a?", desc = "User prompt" },
       { "a_", desc = "Underscore" },
       { "aa", desc = "Argument" },
-      { "ab", desc = "Balanced ), ], }" },
+      { "ab", desc = "Bracket ), ], }" },
       { "ac", desc = "Class" },
       { "af", desc = "Function" },
-      { "ao", desc = "Block, conditional, loop" },
-      { "aq", desc = "Quote `, \", '" },
+      { "ao", desc = "Block/cond/loop" },
+      { "aq", desc = "Quote" },
       { "at", desc = "Tag" },
-      { "an", group = "Around Next textobject" },
-      { "al", group = "Around Last textobject" },
+      { "an", group = "Around next" },
+      { "al", group = "Around last" },
     })
   end,
 })
@@ -3076,7 +3029,7 @@ require('lazy').setup(plugins, {})
 
 
 -- open lazy menu
-vim.keymap.set("n", "<leader>;l", "<cmd>Lazy<cr>", { desc = "Lazy Plugin Manager" })
+vim.keymap.set("n", "<leader>;l", "<cmd>Lazy<cr>", { desc = "Lazy" })
 ```
 
 # KEYMAPS
@@ -3103,36 +3056,36 @@ map({ "n", "x" }, "j", "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = true
 map({ "n", "x" }, "k", "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = true })
 
 -- Move to window using the <ctrl> hjkl keys
-map("n", "<C-h>", "<C-w>h", { desc = "Go to left window", remap = true })
-map("n", "<C-j>", "<C-w>j", { desc = "Go to lower window", remap = true })
-map("n", "<C-k>", "<C-w>k", { desc = "Go to upper window", remap = true })
-map("n", "<C-l>", "<C-w>l", { desc = "Go to right window", remap = true })
+map("n", "<C-h>", "<C-w>h", { desc = "Left window",  remap = true })
+map("n", "<C-j>", "<C-w>j", { desc = "Lower window", remap = true })
+map("n", "<C-k>", "<C-w>k", { desc = "Upper window", remap = true })
+map("n", "<C-l>", "<C-w>l", { desc = "Right window", remap = true })
 
 -- Resize window using <ctrl> arrow keys
-map("n", "<C-Up>", "<cmd>resize +2<cr>", { desc = "Increase window height" })
-map("n", "<C-Down>", "<cmd>resize -2<cr>", { desc = "Decrease window height" })
-map("n", "<C-Left>", "<cmd>vertical resize -2<cr>", { desc = "Decrease window width" })
-map("n", "<C-Right>", "<cmd>vertical resize +2<cr>", { desc = "Increase window width" })
+map("n", "<C-Up>",    "<cmd>resize +2<cr>",          { desc = "Height +" })
+map("n", "<C-Down>",  "<cmd>resize -2<cr>",          { desc = "Height -" })
+map("n", "<C-Left>",  "<cmd>vertical resize -2<cr>", { desc = "Width -" })
+map("n", "<C-Right>", "<cmd>vertical resize +2<cr>", { desc = "Width +" })
 
 -- Move Lines
-map("n", "<A-j>", "<cmd>m .+1<cr>==", { desc = "Move down" })
-map("n", "<A-k>", "<cmd>m .-2<cr>==", { desc = "Move up" })
-map("i", "<A-j>", "<esc><cmd>m .+1<cr>==gi", { desc = "Move down" })
-map("i", "<A-k>", "<esc><cmd>m .-2<cr>==gi", { desc = "Move up" })
-map("v", "<A-j>", ":m '>+1<cr>gv=gv", { desc = "Move down" })
-map("v", "<A-k>", ":m '<-2<cr>gv=gv", { desc = "Move up" })
+map("n", "<A-j>", "<cmd>m .+1<cr>==",       { desc = "Move line down" })
+map("n", "<A-k>", "<cmd>m .-2<cr>==",       { desc = "Move line up" })
+map("i", "<A-j>", "<esc><cmd>m .+1<cr>==gi",{ desc = "Move line down" })
+map("i", "<A-k>", "<esc><cmd>m .-2<cr>==gi",{ desc = "Move line up" })
+map("v", "<A-j>", ":m '>+1<cr>gv=gv",       { desc = "Move selection down" })
+map("v", "<A-k>", ":m '<-2<cr>gv=gv",       { desc = "Move selection up" })
 
 -- Navigate through buffers
 map("n", "<S-h>", "<cmd>bprevious<cr>", { desc = "Prev buffer" })
-map("n", "<S-l>", "<cmd>bnext<cr>", { desc = "Next buffer" })
-map("n", "[b", "<cmd>bprevious<cr>", { desc = "Prev buffer" })
-map("n", "]b", "<cmd>bnext<cr>", { desc = "Next buffer" })
+map("n", "<S-l>", "<cmd>bnext<cr>",     { desc = "Next buffer" })
+map("n", "[b",    "<cmd>bprevious<cr>", { desc = "Prev buffer" })
+map("n", "]b",    "<cmd>bnext<cr>",     { desc = "Next buffer" })
 
-map("n", "<leader>bb", "<cmd>e #<cr>", { desc = "Switch to Other Buffer" })
-map("n", "<leader>`", "<cmd>e #<cr>", { desc = "Switch to Other Buffer" })
+map("n", "<leader>bb", "<cmd>e #<cr>", { desc = "Alternate buffer" })
+map("n", "<leader>`",  "<cmd>e #<cr>", { desc = "Alternate buffer" })
 
 -- Clear search with <esc>
-map({ "i", "n" }, "<esc>", "<cmd>noh<cr><esc>", { desc = "Escape and clear hlsearch" })
+map({ "i", "n" }, "<esc>", "<cmd>noh<cr><esc>", { desc = "Clear search" })
 
 -- Clear search, diff update and redraw
 -- taken from runtime/lua/_editor.lua
@@ -3140,18 +3093,18 @@ map(
   "n",
   "<leader>ur",
   "<Cmd>nohlsearch<Bar>diffupdate<Bar>normal! <C-L><CR>",
-  { desc = "Redraw / clear hlsearch / diff update" }
+  { desc = "Redraw / clear search / diff update" }
 )
 
-map({ "n", "x" }, "gw", "*N", { desc = "Search word under cursor" })
+map({ "n", "x" }, "gw", "*N", { desc = "Search word" })
 
 -- https://github.com/mhinz/vim-galore#saner-behavior-of-n-and-n
-map("n", "n", "'Nn'[v:searchforward]", { expr = true, desc = "Next search result" })
-map("x", "n", "'Nn'[v:searchforward]", { expr = true, desc = "Next search result" })
-map("o", "n", "'Nn'[v:searchforward]", { expr = true, desc = "Next search result" })
-map("n", "N", "'nN'[v:searchforward]", { expr = true, desc = "Prev search result" })
-map("x", "N", "'nN'[v:searchforward]", { expr = true, desc = "Prev search result" })
-map("o", "N", "'nN'[v:searchforward]", { expr = true, desc = "Prev search result" })
+map("n", "n", "'Nn'[v:searchforward]", { expr = true, desc = "Next match" })
+map("x", "n", "'Nn'[v:searchforward]", { expr = true, desc = "Next match" })
+map("o", "n", "'Nn'[v:searchforward]", { expr = true, desc = "Next match" })
+map("n", "N", "'nN'[v:searchforward]", { expr = true, desc = "Prev match" })
+map("x", "N", "'nN'[v:searchforward]", { expr = true, desc = "Prev match" })
+map("o", "N", "'nN'[v:searchforward]", { expr = true, desc = "Prev match" })
 
 -- Add undo break-points
 map("i", ",", ",<c-g>u")
@@ -3159,7 +3112,7 @@ map("i", ".", ".<c-g>u")
 map("i", ";", ";<c-g>u")
 
 -- save file
-map({ "i", "v", "n", "s" }, "<C-s>", "<cmd>w<cr><esc>", { desc = "Save file" })
+map({ "i", "v", "n", "s" }, "<C-s>", "<cmd>w<cr><esc>", { desc = "Save" })
 
 --keywordprg
 map("n", "<leader>K", "<cmd>norm! K<cr>", { desc = "Keywordprg" })
@@ -3169,74 +3122,57 @@ map("v", "<", "<gv")
 map("v", ">", ">gv")
 
 -- new file
-map("n", "<leader>fn", "<cmd>enew<cr>", { desc = "New File" })
+map("n", "<leader>fn", "<cmd>enew<cr>", { desc = "New file" })
 
-map("n", "<leader>xl", "<cmd>lopen<cr>", { desc = "Location List" })
-map("n", "<leader>xq", "<cmd>copen<cr>", { desc = "Quickfix List" })
+map("n", "<leader>xl", "<cmd>lopen<cr>", { desc = "Location list" })
+map("n", "<leader>xq", "<cmd>copen<cr>", { desc = "Quickfix list" })
 
 -- quit
 map("n", "<leader>qq", "<cmd>qa<cr>", { desc = "Quit all" })
 
 -- highlights under cursor
-if vim.fn.has("nvim-0.9.0") == 1 then
-  map("n", "<leader>ui", vim.show_pos, { desc = "Inspect Pos" })
-end
+map("n", "<leader>ui", vim.show_pos, { desc = "Inspect pos" })
 
 
 -- Terminal Mappings
-map("t", "<esc><esc>", "<c-\\><c-n>", { desc = "Enter Normal Mode" })
-map("t", "<c-[><c-[>", "<c-\\><c-n>", { desc = "Enter Normal Mode" })
-map("t", "<C-h>", "<cmd>wincmd h<cr>", { desc = "Go to left window" })
-map("t", "<C-j>", "<cmd>wincmd j<cr>", { desc = "Go to lower window" })
-map("t", "<C-k>", "<cmd>wincmd k<cr>", { desc = "Go to upper window" })
-map("t", "<C-l>", "<cmd>wincmd l<cr>", { desc = "Go to right window" })
-map("t", "<C-/>", "<cmd>close<cr>", { desc = "Hide Terminal" })
-map("t", "<c-_>", "<cmd>close<cr>", { desc = "which_key_ignore" })
+map("t", "<esc><esc>",  "<c-\\><c-n>",        { desc = "Normal mode" })
+map("t", "<c-[><c-[>",  "<c-\\><c-n>",        { desc = "Normal mode" })
+map("t", "<C-h>", "<cmd>wincmd h<cr>", { desc = "Left window" })
+map("t", "<C-j>", "<cmd>wincmd j<cr>", { desc = "Lower window" })
+map("t", "<C-k>", "<cmd>wincmd k<cr>", { desc = "Upper window" })
+map("t", "<C-l>", "<cmd>wincmd l<cr>", { desc = "Right window" })
+map("t", "<C-/>", "<cmd>close<cr>",    { desc = "Hide terminal" })
+map("t", "<c-_>", "<cmd>close<cr>",    { desc = "which_key_ignore" })
 
 -- windows
-map("n", "<leader>ww", "<C-W>p", { desc = "Other window", remap = true })
+map("n", "<leader>ww", "<C-W>p", { desc = "Other window",  remap = true })
 map("n", "<leader>wd", "<C-W>c", { desc = "Delete window", remap = true })
-map("n", "<leader>w-", "<C-W>s", { desc = "Split window below", remap = true })
-map("n", "<leader>w|", "<C-W>v", { desc = "Split window right", remap = true })
-map("n", "<leader>-", "<C-W>s", { desc = "Split window below", remap = true })
-map("n", "<leader>|", "<C-W>v", { desc = "Split window right", remap = true })
+map("n", "<leader>w-", "<C-W>s", { desc = "Split below",   remap = true })
+map("n", "<leader>w|", "<C-W>v", { desc = "Split right",   remap = true })
+map("n", "<leader>-",  "<C-W>s", { desc = "Split below",   remap = true })
+map("n", "<leader>|",  "<C-W>v", { desc = "Split right",   remap = true })
 
 -- tabs
-map("n", "<leader><tab>G", "<cmd>tablast<cr>", { desc = "Last Tab" })
-map("n", "<leader><tab>g", "<cmd>tabfirst<cr>", { desc = "First Tab" })
-map("n", "<leader><tab><tab>", "<cmd>tabnew<cr>", { desc = "New Tab" })
-map("n", "<leader><tab>]", "<cmd>tabnext<cr>", { desc = "Next Tab" })
-map("n", "<leader><tab>d", "<cmd>tabclose<cr>", { desc = "Close Tab" })
-map("n", "<leader><tab>[", "<cmd>tabprevious<cr>", { desc = "Previous Tab" })
-map("n", "<leader><tab>s", "<cmd>tab split<cr>", { desc = "Split Tab" })
+map("n", "<leader><tab>G",     "<cmd>tablast<cr>",   { desc = "Last tab" })
+map("n", "<leader><tab>g",     "<cmd>tabfirst<cr>",  { desc = "First tab" })
+map("n", "<leader><tab><tab>", "<cmd>tabnew<cr>",    { desc = "New tab" })
+map("n", "<leader><tab>]",     "<cmd>tabnext<cr>",   { desc = "Next tab" })
+map("n", "<leader><tab>d",     "<cmd>tabclose<cr>",  { desc = "Close tab" })
+map("n", "<leader><tab>[",     "<cmd>tabprevious<cr>",{ desc = "Prev tab" })
+map("n", "<leader><tab>s",     "<cmd>tab split<cr>", { desc = "Split tab" })
 
 -- Convenience
 map('n', '\\', ':%s//g<left><left>', { desc = "Search buffer" })
-map('v', '\\', ':s//g<Left><Left>', { desc = "Search selection" })
+map('v', '\\', ':s//g<Left><Left>',  { desc = "Search selection" })
 map("n", "<leader>S", "<cmd>set spell!<cr>", { desc = "Toggle spell" })
 
 -- Insert file name
-map("i", "<C-f>f", '<C-R>=expand("%:t")<cr>', { desc = "Insert current filename" })
-map("i", "<C-f>F", '<C-R>=expand("%:t:r")<cr>', { desc = "Insert current filename without extension" })
-map("i", "<C-f>e", '<C-R>=expand("%:e")<cr>', { desc = "Insert extendion of current file" })
-map("i", "<C-f>p", '<C-R>=expand("%:p:h")<cr>', { desc = "Insert absolute path of current directory" })
-map("i", "<C-f>P", '<C-R>=expand("%:h")<cr>', { desc = "Insert relative path of current directory" })
-map("i", "<C-f>d", '<C-R>=expand("%:p:h:t")<cr>', { desc = "Insert parent directory of current file" })
-```
-
-# HIGHLIGHTS
-
-Here I configure any highlights.
-___
-```lua
-local highlight_group = vim.api.nvim_create_augroup('YankHighlight', { clear = true })
-vim.api.nvim_create_autocmd('TextYankPost', {
-  callback = function()
-    vim.hl.on_yank()
-  end,
-  group = highlight_group,
-  pattern = '*',
-})
+map("i", "<C-f>f", '<C-R>=expand("%:t")<cr>',     { desc = "Filename" })
+map("i", "<C-f>F", '<C-R>=expand("%:t:r")<cr>',   { desc = "Filename (no ext)" })
+map("i", "<C-f>e", '<C-R>=expand("%:e")<cr>',     { desc = "Extension" })
+map("i", "<C-f>p", '<C-R>=expand("%:p:h")<cr>',   { desc = "Abs path" })
+map("i", "<C-f>P", '<C-R>=expand("%:h")<cr>',     { desc = "Rel path" })
+map("i", "<C-f>d", '<C-R>=expand("%:p:h:t")<cr>', { desc = "Parent dir" })
 ```
 
 # AUTOCOMMANDS
@@ -3349,7 +3285,7 @@ vim.api.nvim_create_autocmd({ "BufWritePre" }, {
     if event.match:match("^%w%w+://") then
       return
     end
-    local file = vim.loop.fs_realpath(event.match) or event.match
+    local file = vim.uv.fs_realpath(event.match) or event.match
     vim.fn.mkdir(vim.fn.fnamemodify(file, ":p:h"), "p")
   end,
 })
