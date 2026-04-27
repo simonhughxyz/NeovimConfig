@@ -1,37 +1,21 @@
 -- init.lua
 --
--- Only used to boostrap config and to call `lua/config.lua`
--- user config.norg to edit config and then run `:Neorg tangle` to generate `lua/config.lua`
--- Or simply run `nvim --headless -c "edit config.norg" -c "Neorg tangle current-file" -c "qa"` to bootstap
+-- Bootstrap only. The real config lives in README.md (literate source) and is
+-- tangled to lua/config.lua. To regenerate from a shell:
+--   nvim --headless -l tangle.lua
+-- Inside Neovim, run :Tangle.
 
--- NOTE: `lua/config.lua` is generated from config.norg using `tangle`
-local result, err = pcall(require, "config")
+local ok, err = pcall(require, "config")
 
--- NOTE: Will only be run once to bootstap the norg config
-if not(result) then
-  local lazypath = vim.fn.stdpath 'data' .. '/lazy/lazy.nvim'
-  if not vim.loop.fs_stat(lazypath) then
-    vim.fn.system {
-      'git',
-      'clone',
-      '--filter=blob:none',
-      'https://github.com/folke/lazy.nvim.git',
-      '--branch=stable', -- latest stable release
-      lazypath,
-    }
+if not ok then
+  -- First run (or lua/config.lua deleted): tangle README.md, then retry.
+  local tangler = vim.fn.stdpath("config") .. "/tangle.lua"
+  if vim.loop.fs_stat(tangler) then
+    dofile(tangler)
+    ok, err = pcall(require, "config")
   end
-  vim.opt.rtp:prepend(lazypath)
+end
 
-  require('lazy').setup({
-      {
-        "nvim-neorg/neorg",
-        -- build = ":Neorg sync-parsers",
-        dependencies = { "nvim-treesitter/nvim-treesitter" },
-        opts = {
-          load = {
-            ["core.defaults"] = {}, -- Loads default behaviour
-          },
-        },
-      }
-    }, {})
+if not ok then
+  vim.notify("config load failed: " .. tostring(err), vim.log.levels.ERROR)
 end
