@@ -890,10 +890,26 @@ plug({
   "AckslD/nvim-FeMaco.lua",
   ft = { "markdown" },
   cmd = "FeMaco",
-  config = true,
   keys = {
     { "<localleader>cg", "<cmd>FeMaco<cr>", desc = "Edit code block" },
   },
+  -- HACK: femaco is unmaintained (last commit 2024-04). On nvim 0.12 the
+  -- treesitter API returns `match.injection.content.node` as a table of
+  -- TSNodes, which trips edit.lua:18 ("compare number with userdata").
+  -- femaco/edit.lua caches `vim.treesitter.get_node_range` at module-load
+  -- time; we patch the global so when edit is first required (on `:FeMaco`)
+  -- it captures the tolerant version.
+  config = function()
+    local orig = vim.treesitter.get_node_range
+    vim.treesitter.get_node_range = function(node_or_range)
+      if type(node_or_range) == "table" and #node_or_range > 0
+         and type(node_or_range[1]) == "userdata" then
+        return node_or_range[1]:range(false)
+      end
+      return orig(node_or_range)
+    end
+    require("femaco").setup()
+  end,
 })
 ```
 
