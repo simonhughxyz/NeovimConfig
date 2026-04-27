@@ -3773,11 +3773,17 @@ snippet("gitcommit", {
 ## Markdown
 
 ```lua
-  vim.api.nvim_create_autocmd("BufEnter", {
+  vim.api.nvim_create_autocmd("FileType", {
   group = augroup("ftplugin"),
   pattern = "markdown",
   callback = function()
-      o.wrap = true
+      vim.opt_local.wrap = true
+      -- Close all header folds on open. Deferred so UFO has applied
+      -- treesitter fold ranges first; otherwise foldlevel=0 lands
+      -- before there are any folds to close.
+      vim.schedule(function()
+        vim.opt_local.foldlevel = 0
+      end)
   end,
   })
 ```
