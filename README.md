@@ -303,15 +303,15 @@ This plugin provides:
   
   For example, `#ff0000` will show with a red background, `rgb(0, 255, 0)` with green, and `blue` with the corresponding blue color.
 ___
-  [GitHub](https://github.com/norcalli/nvim-colorizer.lua)
+  [GitHub](https://github.com/catgoose/nvim-colorizer.lua)
 
 ```lua
 plug({
-  "norcalli/nvim-colorizer.lua",
+  "catgoose/nvim-colorizer.lua",
   enabled = true,
   event = { "BufReadPost", "BufNewFile" },
   opts = {
-    default_options = {
+    user_default_options = {
       RGB = true,
       RRGGBB = true,
       names = true,
@@ -322,7 +322,7 @@ plug({
       css_fn = true,
       mode = "background",
     },
-    "*", -- highlight all files
+    filetypes = { "*" },
   },
 })
 ```
@@ -574,15 +574,12 @@ plug({
 
       -- Function to pick the right provider for UFO
       local function provider_selector(bufnr)
-        -- Get all active LSP clients for this buffer
-        local clients = vim.lsp.get_active_clients({bufnr = bufnr})
+        local clients = vim.lsp.get_clients({ bufnr = bufnr })
         for _, client in ipairs(clients) do
-          -- Check if this client supports folding
           if client.server_capabilities.foldingRangeProvider then
             return "lsp"
           end
         end
-        -- Fallback to treesitter if no LSP supports folding
         return "treesitter"
       end
 
@@ -1218,7 +1215,7 @@ plug({
   lazy = false,
   config = function()
     require("project_nvim").setup({
-      detection_methods = { "lsp", "pattern" },
+      detection_methods = { "pattern" },
       patterns = { ".project", ".git", "_darcs", ".hg", ".bzr", ".svn", "Makefile", "package.json" },
       silent_chdir = false,
     })
