@@ -2730,14 +2730,96 @@ ___
 plug({
   -- Highlight, edit, and navigate code
   'nvim-treesitter/nvim-treesitter',
-  branch = 'master', -- legacy v0.9 API; 'main' is the v1.0 rewrite without nvim-treesitter.configs
+  branch = 'master', -- archived v0.9 API; shim below patches its handlers for nvim 0.12
   priority = 5000,
   dependencies = {
     { 'nvim-treesitter/nvim-treesitter-textobjects', branch = 'master' },
     { "JoosepAlviste/nvim-ts-context-commentstring", lazy = true }
   },
   build = ':TSUpdate',
-  main = 'nvim-treesitter.configs',
+  config = function(_, opts)
+    require('nvim-treesitter.configs').setup(opts)
+
+    -- nvim 0.12 changed treesitter directive/predicate handlers to receive
+    -- `captures` as table<int, TSNode[]> (arrays of nodes). nvim-treesitter
+    -- master is archived and still treats `match[id]` as a single node, so
+    -- markdown injections, locals, etc. crash with "attempt to call method
+    -- 'range' (a nil value)". Re-register the 6 affected handlers with the
+    -- new signature; force = true overrides the broken originals.
+    local q = require('vim.treesitter.query')
+    local function first(captures, id)
+      local v = captures[id]
+      if type(v) == 'table' then return v[1] end
+      return v
+    end
+
+    local html_script_lang = {
+      importmap = 'json',
+      module = 'javascript',
+      ['application/ecmascript'] = 'javascript',
+      ['text/ecmascript'] = 'javascript',
+    }
+    local md_lang_alias = {
+      ex = 'elixir', pl = 'perl', sh = 'bash', uxn = 'uxntal', ts = 'typescript',
+    }
+    local function md_info_to_lang(alias)
+      local m = vim.filetype.match { filename = 'a.' .. alias }
+      return m or md_lang_alias[alias] or alias
+    end
+
+    q.add_predicate('nth?', function(captures, _pat, _bufnr, pred)
+      local node = first(captures, pred[2])
+      local n = tonumber(pred[3])
+      if node and node:parent() and node:parent():named_child_count() > n then
+        return node:parent():named_child(n) == node
+      end
+      return false
+    end, { force = true })
+
+    q.add_predicate('is?', function(captures, _pat, bufnr, pred)
+      local node = first(captures, pred[2])
+      local types = { unpack(pred, 3) }
+      if not node then return true end
+      local _, _, kind = require('nvim-treesitter.locals').find_definition(node, bufnr)
+      return vim.tbl_contains(types, kind)
+    end, { force = true })
+
+    q.add_predicate('kind-eq?', function(captures, _pat, _bufnr, pred)
+      local node = first(captures, pred[2])
+      local types = { unpack(pred, 3) }
+      if not node then return true end
+      return vim.tbl_contains(types, node:type())
+    end, { force = true })
+
+    q.add_directive('set-lang-from-mimetype!', function(captures, _pat, bufnr, pred, metadata)
+      local node = first(captures, pred[2])
+      if not node then return end
+      local v = vim.treesitter.get_node_text(node, bufnr)
+      local configured = html_script_lang[v]
+      if configured then
+        metadata['injection.language'] = configured
+      else
+        local parts = vim.split(v, '/', {})
+        metadata['injection.language'] = parts[#parts]
+      end
+    end, { force = true })
+
+    q.add_directive('set-lang-from-info-string!', function(captures, _pat, bufnr, pred, metadata)
+      local node = first(captures, pred[2])
+      if not node then return end
+      local alias = vim.treesitter.get_node_text(node, bufnr):lower()
+      metadata['injection.language'] = md_info_to_lang(alias)
+    end, { force = true })
+
+    q.add_directive('downcase!', function(captures, _pat, bufnr, pred, metadata)
+      local id = pred[2]
+      local node = first(captures, id)
+      if not node then return end
+      local text = vim.treesitter.get_node_text(node, bufnr, { metadata = metadata[id] }) or ''
+      if not metadata[id] then metadata[id] = {} end
+      metadata[id].text = string.lower(text)
+    end, { force = true })
+  end,
   opts = {
     -- Add languages to be installed here that you want installed for treesitter
     ensure_installed = {
