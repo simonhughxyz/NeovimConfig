@@ -1136,7 +1136,7 @@ plug({
     {
       "<leader>e",
       function()
-        require("neo-tree.command").execute({ toggle = true, dir = vim.loop.cwd() })
+        require("neo-tree.command").execute({ toggle = true, dir = vim.uv.cwd() })
       end,
       desc = "Explorer",
     },
@@ -1199,8 +1199,7 @@ ___
 ```lua
 plug({
   "ahmedkhalf/project.nvim",
-  enabled = true,
-  lazy = false,
+  event = "VeryLazy",
   config = function()
     require("project_nvim").setup({
       detection_methods = { "pattern" },
@@ -1290,7 +1289,7 @@ ___
 ```lua
 plug({
   "chrisgrieser/nvim-spider",
-  lazy = false,
+  event = "VeryLazy",
   config = function()
     vim.keymap.set({ "n", "o", "x" }, "w",  "<cmd>lua require('spider').motion('w')<cr>",  { desc = "Word forward" })
     vim.keymap.set({ "n", "o", "x" }, "e",  "<cmd>lua require('spider').motion('e')<cr>",  { desc = "Word end" })
@@ -1896,6 +1895,7 @@ ___
 ```lua
 plug({
  'monaqa/dial.nvim',
+ event = "VeryLazy",
  config = function()
    local augend = require("dial.augend")
    require("dial.config").augends:register_group {
@@ -2038,7 +2038,7 @@ ___
 ```lua
 plug({
   "chrisgrieser/nvim-various-textobjs",
-  lazy = false,
+  event = "VeryLazy",
   opts = {
     keymaps = {
       useDefault = true,
@@ -2071,6 +2071,7 @@ ___
 ```lua
 plug({
   "johmsalas/text-case.nvim",
+  event = "VeryLazy",
   init = function()
     local casings = {
       { char = "u", arg = "upper",      desc = "UPPER CASE" },
@@ -2240,7 +2241,11 @@ Table creator & formatter allowing one to create neat tables as you type.
 ___
 [GitHub](https://github.com/dhruvasagar/vim-table-mode)
 ```lua
-plug({ "https://github.com/dhruvasagar/vim-table-mode" })
+plug({
+  "https://github.com/dhruvasagar/vim-table-mode",
+  cmd = { "TableModeToggle", "TableModeEnable", "TableModeDisable", "Tableize" },
+  ft = { "markdown", "text", "org" },
+})
 ```
 
 # TODO COMMENTS
@@ -2531,7 +2536,7 @@ ___
 ```lua
 plug({
   "kevinhwang91/nvim-hlslens",
-  enabled = true,
+  event = "VeryLazy",
   opts = {},
 })
 ```
@@ -2573,17 +2578,7 @@ plug({
   keys = {
     {
       "<leader>p",
-      function() 
-        local yanky = require("yanky")
-        local history = yanky.history()
-        Snacks.picker.pick({
-          items = history,
-          format = function(item) return item.regcontents end,
-          preview = false,
-        }, function(item)
-          yanky.put(item)
-        end)
-      end,
+      "<cmd>YankyRingHistory<cr>",
       desc = "Yank history"
     },
     { "y",  "<Plug>(YankyYank)",                      mode = { "n", "x" }, desc = "Yank" },
@@ -3221,14 +3216,16 @@ local function register_keys(spec, name)
 end
 
 -- Recursive spec processor ----------------------------------------------
-local function process(spec)
+-- `is_dep` is true when called recursively for a dependency: such specs
+-- never go into eager_queue — their parent's load_plugin handles loading.
+local function process(spec, is_dep)
   if type(spec) == "string" then spec = { spec } end
   if type(spec) ~= "table" or spec.enabled == false then return nil end
 
   -- Nested form `plug({ { "owner/repo", ... } })` — outer table is a list
   -- of specs. Recurse on each.
   if type(spec[1]) == "table" then
-    for _, sub in ipairs(spec) do process(sub) end
+    for _, sub in ipairs(spec) do process(sub, is_dep) end
     return nil
   end
 
@@ -3254,7 +3251,7 @@ local function process(spec)
         if dn and toplevel_names[dn] then
           dep_names[#dep_names + 1] = dn
         else
-          dn = process(dep)
+          dn = process(dep, true)   -- recurse with is_dep=true
           if dn then dep_names[#dep_names + 1] = dn end
         end
       end
@@ -3277,6 +3274,8 @@ local function process(spec)
   specs_by_name[name] = { spec = spec, deps = dep_names }
 
   -- Route: explicit triggers OR `lazy = true` → defer; otherwise eager.
+  -- Dep stubs (is_dep=true) never go to eager_queue: load_plugin recurses
+  -- through their parent's deps when the parent fires.
   local has_trigger = spec.event or spec.cmd or spec.ft or spec.keys
   if has_trigger or spec.lazy == true then
     lazy_pending[name] = spec
@@ -3284,7 +3283,7 @@ local function process(spec)
     if spec.cmd   then register_cmd(spec, name)   end
     if spec.ft    then register_ft(spec, name)    end
     if spec.keys  then register_keys(spec, name)  end
-  else
+  elseif not is_dep then
     eager_queue[#eager_queue + 1] = spec
   end
   return name
@@ -3321,10 +3320,42 @@ table.sort(eager_queue, function(a, b)
   return a._idx < b._idx
 end)
 
--- One batched install (parallel git fetch). load=false → no plugin/ source yet.
-vim.pack.add(install_specs, { load = false, confirm = false })
+-- Build the set of plugins that should source plugin/* at startup: eager
+-- plugins plus their transitive dependencies. Lazy plugins stay off rtp
+-- entirely until a trigger fires; load_plugin will :packadd them then.
+local eager_set = {}
+local function mark_eager(nm)
+  if eager_set[nm] then return end
+  eager_set[nm] = true
+  local rec = specs_by_name[nm]
+  if rec then
+    for _, dn in ipairs(rec.deps) do mark_eager(dn) end
+  end
+end
+for _, s in ipairs(eager_queue) do mark_eager(spec_name(s)) end
 
--- Eager plugins source now in priority order.
+-- Manual eager pin: SNIPPETS section does `require("luasnip")` at top-level
+-- (outside any plug() config function), so LuaSnip must be on rtp at startup.
+mark_eager("LuaSnip")
+
+-- Single batched install. The load callback only :packadds eager plugins
+-- (sources their plugin/* now); everything else stays installed-but-dormant.
+-- Split install_specs into two batches: eager and lazy.
+-- - Eager batch uses load=false → vim.pack runs `:packadd!` for each, which
+--   adds the dir to rtp without sourcing plugin/. Nvim's "loading rtp plugins"
+--   phase later sources plugin/* of every rtp entry — by which point all eager
+--   plugins are on rtp, so cross-plugin requires resolve correctly.
+-- - Lazy batch uses load=function (no-op) → plugin stays installed but OFF rtp;
+--   load_plugin will :packadd it (sourcing plugin/) when its trigger fires.
+local eager_install, lazy_install = {}, {}
+for _, s in ipairs(install_specs) do
+  if eager_set[s.name] then table.insert(eager_install, s)
+  else                      table.insert(lazy_install, s) end
+end
+vim.pack.add(eager_install, { confirm = false, load = false })
+vim.pack.add(lazy_install,  { confirm = false, load = function() end })
+
+-- Eager plugins run init/config now in priority order.
 for _, s in ipairs(eager_queue) do load_plugin(spec_name(s)) end
 
 -- :Pack opens the vim.pack update buffer; rebound from old <leader>;l → :Lazy.
