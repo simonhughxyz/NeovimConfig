@@ -87,32 +87,59 @@ end
 ```
 
 
-## Lazy Helper Function
+## Pack Helper Function
 
-The `plug()` function is used to add plugins to the `plugins` table.
-The `plugins` table will be used by lazy to install and load plugins.
+`plug({...})` accumulates plugin specs into the `plugins` table. The actual
+install / load / lazy-trigger registration happens in the `# PACK` section,
+which feeds these specs to `vim.pack` (Neovim 0.12's built-in package manager).
+The spec shape mirrors what lazy.nvim accepted, so per-plugin call sites are
+unchanged.
+
+`lazy_keys_index` is populated by the lazy-key trigger registrar in `# PACK`
+and consulted by the `map()` wrapper in `# KEYMAPS` to avoid clobbering keys
+that a deferred plugin will eventually claim.
 ___
 ```lua
-local plugins = {}
+local plugins         = {}
+local lazy_keys_index = {}
+
+-- Try to require the plugin's main Lua module. Repo names don't always match
+-- the module name (e.g. catgoose/nvim-colorizer.lua → require("colorizer")),
+-- so we try a few sensible variants and use the first that works.
+local function require_main(plugin)
+  if plugin.main then return require(plugin.main) end
+  local repo = plugin[1] or plugin.name or ""
+  local last = repo:match(".*/(.*)") or repo
+  local seen, candidates = {}, {}
+  local function add(c)
+    if c and c ~= "" and not seen[c] then
+      seen[c] = true
+      candidates[#candidates + 1] = c
+    end
+  end
+  add(plugin.name)
+  add(last)
+  add((last:gsub("%.nvim$", "")))
+  add((last:gsub("%.lua$", "")))
+  add((last:gsub("%.nvim$", ""):gsub("%.lua$", "")))
+  add((last:gsub("^nvim%-", ""):gsub("%.nvim$", ""):gsub("%.lua$", "")))
+  add((last:gsub("^vim%-", ""):gsub("%.nvim$", ""):gsub("%.lua$", "")))
+  for _, c in ipairs(candidates) do
+    local ok, mod = pcall(require, c)
+    if ok then return mod end
+  end
+  error(("could not require plugin '%s' (tried: %s)"):format(repo, table.concat(candidates, ", ")))
+end
 
 local function wrap_config(plugin)
   local user_config = plugin.config
 
-  -- handle `true` or `{}` (empty table)
-  if user_config == true or (type(user_config) == "table" and vim.tbl_isempty(user_config)) then
-    -- Lazy automatically does `require(MAIN).setup(opts)`
-    -- so we build that manually here
-    -- strip the .nvim if it exists also to try and guess the name
-    local main = plugin.main or plugin.name or (plugin[1] and plugin[1]:match(".*/(.*)"))
-    if main then
-      main = main:gsub("%.nvim$", "") -- strip .nvim suffix
-    end
-    user_config = function(_, opts)
-      require(main).setup(opts)
-    end
+  -- nil + opts, `true`, or `{}` → auto-setup via require(main).setup(opts).
+  if user_config == nil or user_config == true
+     or (type(user_config) == "table" and vim.tbl_isempty(user_config)) then
+    user_config = function(p, opts) require_main(p).setup(opts) end
   end
 
-  -- wrap function (if it’s a function now)
   if type(user_config) == "function" then
     plugin.config = function(...)
       local ok, err = pcall(user_config, ...)
@@ -124,10 +151,11 @@ local function wrap_config(plugin)
 end
 
 function plug(plugin)
-  if plugin.config ~= nil then
+  -- wrap_config when there's anything to set up — config OR opts.
+  if plugin.config ~= nil or plugin.opts ~= nil then
     wrap_config(plugin)
   end
-  plugins[#plugins +1] = plugin
+  plugins[#plugins + 1] = plugin
 end
 ```
 
@@ -3002,34 +3030,307 @@ plug({ -- extend and create a/i textobjects
 })
 ```
 
-# LAZY
+# PACK
 
-Set up the `lazy.nvim` plugin manager, use the `plugins` table to install and load plugins.
-See [Lazy Helper Function](#lazy-helper-function) for the `plugin()` function.
+Process the accumulated `plugins` table with Neovim's built-in `vim.pack`.
+This block reimplements the lazy.nvim features actually used in this config:
+parallel install, dependency ordering, `event`/`cmd`/`ft`/`keys` lazy-loading,
+priority, build hooks, and `config = true|fn|opts` dispatch. See [Pack Helper
+Function](#pack-helper-function) for `plug()`.
 ___
-[GitHub](https://github.com/folke/lazy.nvim)
+[`:help vim.pack`](https://neovim.io/doc/user/pack.html#vim.pack)
 
 ```lua
-local lazypath = vim.fn.stdpath 'data' .. '/lazy/lazy.nvim'
-if not vim.loop.fs_stat(lazypath) then
-  vim.fn.system {
-    'git',
-    'clone',
-    '--filter=blob:none',
-    'https://github.com/folke/lazy.nvim.git',
-    '--branch=stable', -- latest stable release
-    lazypath,
-  }
+-- State shared across the loader -----------------------------------------
+local install_specs   = {}    -- list of { src, name, version } for vim.pack.add
+local eager_queue     = {}    -- specs to load now, sorted by priority
+local lazy_pending    = {}    -- name -> spec (waiting for trigger or dep)
+local loaded          = {}    -- name -> true once :packadd has run
+local build_hooks     = {}    -- name -> string|function from spec.build
+local specs_by_name   = {}    -- name -> { spec, deps = { dep_name, ... } }
+local toplevel_names  = {}    -- name -> true for plugins registered via plug()
+local pending_dep_refs = {}   -- bare-name dep refs to resolve in pass 2
+local idx_counter     = 0     -- insertion counter for stable sort
+
+-- VeryLazy: fire `User VeryLazy` once after the UI is ready.
+vim.api.nvim_create_autocmd("UIEnter", {
+  once = true,
+  callback = function()
+    vim.schedule(function()
+      vim.api.nvim_exec_autocmds("User", { pattern = "VeryLazy" })
+    end)
+  end,
+})
+
+-- Build hooks: run on install/update of any plugin that declared `build`.
+vim.api.nvim_create_autocmd("PackChanged", {
+  callback = function(ev)
+    local d = ev.data
+    if d.kind ~= "install" and d.kind ~= "update" then return end
+    local hook = build_hooks[d.spec.name]
+    if not hook then return end
+    -- Most build steps need the plugin sourced (e.g. :TSUpdate is a plugin command).
+    pcall(vim.cmd.packadd, d.spec.name)
+    if type(hook) == "function" then
+      pcall(hook)
+    elseif type(hook) == "string" then
+      if hook:sub(1, 1) == ":" then
+        vim.cmd(hook:sub(2))
+      else
+        vim.fn.system(hook)
+      end
+    end
+  end,
+})
+
+-- Spec helpers -----------------------------------------------------------
+local function spec_name(spec)
+  return spec.name or (spec[1] and spec[1]:match(".*/(.*)"))
 end
-vim.opt.rtp:prepend(lazypath)
 
--- Plugins to be installed
--- Help with plugin setup: https://github.com/folke/lazy.nvim#-structuring-your-plugins
-require('lazy').setup(plugins, {})
+local function spec_src(spec)
+  local s = spec[1]
+  if not s then return nil end
+  if s:match("^https?://") or s:match("^git@") then return s end
+  return "https://github.com/" .. s
+end
 
+local function resolve_version(spec)
+  -- lazy `version = "*"` or `false` mean "default" → nil for vim.pack.
+  local v = spec.version
+  if v == "*" or v == false then v = nil end
+  return v or spec.tag or spec.branch
+end
 
--- open lazy menu
-vim.keymap.set("n", "<leader>;l", "<cmd>Lazy<cr>", { desc = "Lazy" })
+local function resolve_opts(spec)
+  local o = spec.opts
+  if type(o) == "function" then o = o(spec, {}) end
+  return o or {}
+end
+
+-- Idempotent loader called by every trigger and by the eager flush.
+local function load_plugin(name)
+  if loaded[name] then return end
+  loaded[name] = true
+  local rec = specs_by_name[name]
+  if not rec then return end
+  for _, dep_name in ipairs(rec.deps) do load_plugin(dep_name) end
+  if rec.spec.init then pcall(rec.spec.init) end
+  pcall(vim.cmd.packadd, name)
+  if rec.spec.config then pcall(rec.spec.config, rec.spec, resolve_opts(rec.spec)) end
+end
+
+-- Trigger registrars -----------------------------------------------------
+
+-- Dedupe re-fires: many plugins share BufReadPost / FileType, and naïvely
+-- calling nvim_exec_autocmds inside each callback causes "nesting too deep".
+local refire_pending = {}
+local function schedule_refire(events, buf)
+  local key = table.concat(events, ",") .. ":" .. (buf or 0)
+  if refire_pending[key] then return end
+  refire_pending[key] = true
+  vim.schedule(function()
+    refire_pending[key] = nil
+    pcall(vim.api.nvim_exec_autocmds, events, { buffer = buf, modeline = false })
+  end)
+end
+
+local function register_event(spec, name)
+  local raw = type(spec.event) == "table" and spec.event or { spec.event }
+  local events, patterns = {}, nil
+  for _, e in ipairs(raw) do
+    if e == "VeryLazy" then
+      events[#events + 1] = "User"
+      patterns = "VeryLazy"
+    else
+      events[#events + 1] = e
+    end
+  end
+  local id
+  id = vim.api.nvim_create_autocmd(events, {
+    pattern = patterns,
+    callback = function(args)
+      pcall(vim.api.nvim_del_autocmd, id)   -- self-delete before loading
+      load_plugin(name)
+      if patterns ~= "VeryLazy" then
+        schedule_refire(events, args.buf)
+      end
+    end,
+  })
+end
+
+local function register_cmd(spec, name)
+  local cmds = type(spec.cmd) == "table" and spec.cmd or { spec.cmd }
+  for _, c in ipairs(cmds) do
+    vim.api.nvim_create_user_command(c, function(a)
+      vim.api.nvim_del_user_command(c)
+      load_plugin(name)
+      vim.cmd({
+        cmd = c,
+        args = a.fargs,
+        bang = a.bang,
+        range = (a.range > 0) and { a.line1, a.line2 } or nil,
+        mods = a.smods,
+      })
+    end, { nargs = "*", bang = true, range = true, complete = "file" })
+  end
+end
+
+local function register_ft(spec, name)
+  local fts = type(spec.ft) == "table" and spec.ft or { spec.ft }
+  local id
+  id = vim.api.nvim_create_autocmd("FileType", {
+    pattern = fts,
+    callback = function(args)
+      pcall(vim.api.nvim_del_autocmd, id)   -- self-delete before loading
+      load_plugin(name)
+      schedule_refire({ "FileType" }, args.buf)
+    end,
+  })
+end
+
+local function register_keys(spec, name)
+  for _, k in ipairs(spec.keys) do
+    local lhs, rhs, mode, desc, expr, silent, remap
+    if type(k) == "string" then
+      lhs, mode = k, "n"
+    else
+      lhs, rhs = k[1], k[2]
+      mode = k.mode or "n"
+      desc, expr, silent, remap = k.desc, k.expr, k.silent, k.remap
+    end
+    local modes = type(mode) == "table" and mode or { mode }
+    for _, m in ipairs(modes) do lazy_keys_index[m .. ":" .. lhs] = true end
+
+    if rhs then
+      vim.keymap.set(mode, lhs, function()
+        load_plugin(name)
+        if type(rhs) == "function" then return rhs() end
+        local keys = vim.api.nvim_replace_termcodes(rhs, true, true, true)
+        vim.api.nvim_feedkeys(keys, "m", false)
+      end, { desc = desc, silent = silent ~= false, expr = expr, remap = remap })
+    else
+      vim.keymap.set(mode, lhs, function()
+        for _, m in ipairs(modes) do pcall(vim.keymap.del, m, lhs) end
+        load_plugin(name)
+        local keys = vim.api.nvim_replace_termcodes(lhs, true, true, true)
+        vim.api.nvim_feedkeys(keys, "m", false)
+      end, { desc = desc, silent = silent ~= false, remap = remap })
+    end
+  end
+end
+
+-- Recursive spec processor ----------------------------------------------
+local function process(spec)
+  if type(spec) == "string" then spec = { spec } end
+  if type(spec) ~= "table" or spec.enabled == false then return nil end
+
+  -- Nested form `plug({ { "owner/repo", ... } })` — outer table is a list
+  -- of specs. Recurse on each.
+  if type(spec[1]) == "table" then
+    for _, sub in ipairs(spec) do process(sub) end
+    return nil
+  end
+
+  local name = spec_name(spec)
+  if not name then return nil end
+  if specs_by_name[name] then return name end
+
+  -- Recurse dependencies first so they install/load before the parent.
+  -- Accept: string (single dep), list of strings/tables, or nested specs.
+  -- Bare-name string deps (no "/") are name references resolved in pass 2.
+  -- Deps that match a top-level plug() call are not recursed here — the main
+  -- loop will process the full spec; we only record the dep_name for ordering.
+  local dep_names = {}
+  if spec.dependencies then
+    local deps = spec.dependencies
+    if type(deps) == "string" then deps = { deps } end
+    for _, dep in ipairs(deps) do
+      if type(dep) == "string" and not dep:find("/") then
+        pending_dep_refs[#pending_dep_refs + 1] = { parent = name, ref = dep }
+      else
+        local dep_spec = type(dep) == "string" and { dep } or dep
+        local dn = spec_name(dep_spec)
+        if dn and toplevel_names[dn] then
+          dep_names[#dep_names + 1] = dn
+        else
+          dn = process(dep)
+          if dn then dep_names[#dep_names + 1] = dn end
+        end
+      end
+    end
+  end
+
+  idx_counter = idx_counter + 1
+  spec._idx = idx_counter
+
+  local src = spec_src(spec)
+  if src then
+    install_specs[#install_specs + 1] = {
+      src = src,
+      name = name,
+      version = resolve_version(spec),
+    }
+  end
+
+  if spec.build then build_hooks[name] = spec.build end
+  specs_by_name[name] = { spec = spec, deps = dep_names }
+
+  -- Route: explicit triggers OR `lazy = true` → defer; otherwise eager.
+  local has_trigger = spec.event or spec.cmd or spec.ft or spec.keys
+  if has_trigger or spec.lazy == true then
+    lazy_pending[name] = spec
+    if spec.event then register_event(spec, name) end
+    if spec.cmd   then register_cmd(spec, name)   end
+    if spec.ft    then register_ft(spec, name)    end
+    if spec.keys  then register_keys(spec, name)  end
+  else
+    eager_queue[#eager_queue + 1] = spec
+  end
+  return name
+end
+
+-- Pass 1a: collect names of all top-level plug() calls so dep recursion
+-- defers to the full spec when a dep references a top-level plugin.
+local function collect_toplevel(spec)
+  if type(spec) == "string" then spec = { spec } end
+  if type(spec) ~= "table" or spec.enabled == false then return end
+  if type(spec[1]) == "table" then
+    for _, sub in ipairs(spec) do collect_toplevel(sub) end
+    return
+  end
+  local nm = spec_name(spec)
+  if nm then toplevel_names[nm] = true end
+end
+for _, spec in ipairs(plugins) do collect_toplevel(spec) end
+
+-- Pass 1b: process each top-level spec.
+for _, spec in ipairs(plugins) do process(spec) end
+
+-- Pass 2: resolve bare-name dep references (e.g. mini.ai → "nvim-treesitter-textobjects").
+for _, r in ipairs(pending_dep_refs) do
+  if specs_by_name[r.ref] and specs_by_name[r.parent] then
+    table.insert(specs_by_name[r.parent].deps, r.ref)
+  end
+end
+
+-- Sort eager queue: priority desc, insertion order asc on ties.
+table.sort(eager_queue, function(a, b)
+  local pa, pb = a.priority or 50, b.priority or 50
+  if pa ~= pb then return pa > pb end
+  return a._idx < b._idx
+end)
+
+-- One batched install (parallel git fetch). load=false → no plugin/ source yet.
+vim.pack.add(install_specs, { load = false, confirm = false })
+
+-- Eager plugins source now in priority order.
+for _, s in ipairs(eager_queue) do load_plugin(spec_name(s)) end
+
+-- :Pack opens the vim.pack update buffer; rebound from old <leader>;l → :Lazy.
+vim.api.nvim_create_user_command("Pack", function() vim.pack.update() end,
+  { desc = "Update plugins via vim.pack" })
+vim.keymap.set("n", "<leader>;l", "<cmd>Pack<cr>", { desc = "Pack update" })
 ```
 
 # KEYMAPS
@@ -3038,17 +3339,17 @@ Here I configure my native neovim keybindings, these are any key binds not invol
 ___
 ```lua
 local function map(mode, lhs, rhs, opts)
-  local keys = require("lazy.core.handler").handlers.keys
-  ---@cast keys LazyKeysHandler
-  -- do not create the keymap if a lazy keys handler exists
-  if not keys.active[keys.parse({ lhs, mode = mode }).id] then
-    opts = opts or {}
-    opts.silent = opts.silent ~= false
-    if opts.remap and not vim.g.vscode then
-      opts.remap = nil
-    end
-    vim.keymap.set(mode, lhs, rhs, opts)
+  -- Skip if a deferred plugin has already claimed this lhs via `keys = {...}`.
+  local modes = type(mode) == "table" and mode or { mode }
+  for _, m in ipairs(modes) do
+    if lazy_keys_index[m .. ":" .. lhs] then return end
   end
+  opts = opts or {}
+  opts.silent = opts.silent ~= false
+  if opts.remap and not vim.g.vscode then
+    opts.remap = nil
+  end
+  vim.keymap.set(mode, lhs, rhs, opts)
 end
 
 -- better up/down
