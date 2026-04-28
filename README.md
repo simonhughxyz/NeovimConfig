@@ -1635,7 +1635,11 @@ ___
 ```lua
 plug({
   "hrsh7th/nvim-cmp",
-  event = { "InsertEnter", "CmdlineEnter" },
+  -- NOTE: eager. CmdlineEnter event-lazy is unreliable: by the time
+  -- our once-autocmd has loaded cmp and our schedule_refire fires
+  -- another CmdlineEnter, the user is already typing characters that
+  -- cmp's handler missed, so completion stays blank for the first
+  -- ":" / "/" of the session. ~5ms startup cost is worth the reliability.
   dependencies = {
     "hrsh7th/cmp-nvim-lsp",
     "hrsh7th/cmp-nvim-lua",
