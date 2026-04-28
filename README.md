@@ -858,6 +858,10 @@ plug({
   config = function(_, opts)
     vim.cmd [[highlight Headline1 guibg=#1e2718]]
     vim.cmd [[highlight Headline2 guibg=#21262d]]
+    -- Subtle dark inset for code blocks: slightly darker than bg, distinct
+    -- without glare. Inline `code` gets the Headline2 tone for visual unity.
+    vim.cmd [[highlight RenderMarkdownCode       guibg=#1c2026]]
+    vim.cmd [[highlight RenderMarkdownCodeInline guibg=#21262d]]
     require("render-markdown").setup(opts)
   end,
 })
