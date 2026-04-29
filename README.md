@@ -1662,8 +1662,18 @@ plug({
       snippet = { expand = function(args) luasnip.lsp_expand(args.body) end },
       mapping = cmp.mapping.preset.insert({
         ["<CR>"]  = cmp.mapping.confirm({ select = false }),
-        ["<C-u>"] = cmp.mapping.scroll_docs(-4),
-        ["<C-d>"] = cmp.mapping.scroll_docs(4),
+        -- NOTE: <C-d>/<C-u> cycle the active LuaSnip choice node when one is
+        -- active, otherwise fall back to scrolling cmp's docs popup. Mode list
+        -- must include "s" — luasnip parks the cursor in select mode while a
+        -- choice/insert node is active.
+        ["<C-d>"] = cmp.mapping(function(fallback)
+          if luasnip.choice_active() then luasnip.change_choice(1)
+          else cmp.scroll_docs(4) end
+        end, { "i", "s" }),
+        ["<C-u>"] = cmp.mapping(function(fallback)
+          if luasnip.choice_active() then luasnip.change_choice(-1)
+          else cmp.scroll_docs(-4) end
+        end, { "i", "s" }),
         ["<C-l>"] = cmp.mapping(function(fallback)
           if luasnip.expand_or_jumpable() then luasnip.expand_or_jump() else fallback() end
         end, { "i", "s" }),
@@ -3766,10 +3776,8 @@ shm.name = {
 shm.initials = 'SHM'
 
 shm.email = 'simon@simonhugh.xyz'
-shm.workemail = 'simonm@vigoitsolutions.com'
 
 shm.signiture = "Simon H Moore <simon@simonhugh.xyz>"
-shm.worksigniture = "Simon H Moore <simonm@vigoitsolutions.com>"
 ```
 
 
@@ -3798,7 +3806,7 @@ end
 
 util.datef = function(datestr, date)
   local date = date or os.date("*t", os.time())
-  local datestr = string.gsub(datestr, "%%o", M.number_ordinal(date.day))
+  local datestr = string.gsub(datestr, "%%o", util.number_ordinal(date.day))
   return os.date(datestr, os.time(date))
 end
 ```
@@ -3850,19 +3858,24 @@ snip_utils.shebang = {
 }
 
 
-snip_utils.get_date_choice = function (arg)
-  return c(arg and arg or 1, {
-        f(function() return utils.datef("%d%o %B %Y") end),
-        f(function() return utils.datef(os.date "%d%o %b %Y") end),
-        f(function() return utils.datef(os.date "%a %d%o %b %Y") end),
-        f(function() return utils.datef(os.date "%A %d%o %b %Y") end),
-        f(function() return utils.datef(os.date "%a %d%o %B %Y") end),
-        f(function() return utils.datef(os.date "%A %d%o %B %Y") end),
-        f(function() return os.date "%d-%m-%Y" end),
-        f(function() return os.date "%d/%m/%Y" end),
-        f(function() return os.date "%d-%m-%y" end),
-        f(function() return os.date "%d/%m/%y" end),
-      })
+snip_utils.get_date_choice = function(arg)
+  local formats = {
+    "%d%o %B %Y",      -- 29th April 2026
+    "%d%o %b %Y",      -- 29th Apr 2026
+    "%a %d%o %b %Y",   -- Wed 29th Apr 2026
+    "%A %d%o %b %Y",   -- Wednesday 29th Apr 2026
+    "%a %d%o %B %Y",   -- Wed 29th April 2026
+    "%A %d%o %B %Y",   -- Wednesday 29th April 2026
+    "%d-%m-%Y",        -- 29-04-2026
+    "%d/%m/%Y",
+    "%d-%m-%y",
+    "%d/%m/%y",
+  }
+  local nodes = {}
+  for _, format in ipairs(formats) do
+    nodes[#nodes + 1] = f(function() return util.datef(format) end)
+  end
+  return c(arg or 1, nodes)
 end
 
 snip_utils.get_header = function(opts)
@@ -3875,8 +3888,8 @@ snip_utils.get_header = function(opts)
           f(function() return vim.fn.expand("%:h:t") .. "/" .. vim.fn.expand("%:t") end),
           f(function() return vim.fn.expand("%:t:r") end),
         }),
-      author = c(2, {t(shm.signiture), t(shm.worksigniture)}),
-      date = M.get_date_choice(3),
+      author = t(shm.signiture),
+      date = snip_utils.get_date_choice(3),
       desc = i(4, "Description"),
   }
 
@@ -3894,29 +3907,6 @@ snip_utils.get_header = function(opts)
 
   return fmt(table.concat(formattable, "\n"), sntable, {dedent = true})
 end
-```
-
-## Snippets
-
-```lua
-local greeting_choice = function(arg)
-  return c(arg and arg or 1, {
-    t("Hope you are well."),
-    t("I hope you are having a nice day."),
-    t("I hope you are having a good morning."),
-    t("I hope you are having a nice end to the week."),
-    t("Nice speaking to you on the phone the other day."),
-  })
-end
-
-local message_end = function(arg)
-  return c(arg and arg or 1, {
-    t("Thank you"),
-    t("Kind Regards"),
-  })
-end
-
-
 ```
 
 ### All
@@ -3938,18 +3928,7 @@ snippet("all", {
       desc = 'My email'
     },
     {
-      c(1, {
-        t("simon@simonhugh.xyz"),
-        t("simonm@vigoitsolutions.com"),
-      }),
-    }),
-  s({
-      trig = 'workemail',
-      priority = 10000,
-      desc = 'Work Email'
-    },
-    {
-      t(shm.workemail)
+      t(shm.email),
     }),
   s({
       trig = 'sign',
@@ -3957,18 +3936,7 @@ snippet("all", {
       desc = 'My signiture'
     },
     {
-      c(1, {
-        t(shm.signiture),
-        t(shm.worksigniture),
-      }),
-    }),
-  s({
-      trig = 'worksign',
-      priority = 10000,
-      desc = 'Work Sign'
-    },
-    {
-      t("Simon H Moore <simonm@vigoitsolutions.com>")
+      t(shm.signiture),
     }),
   s({
       trig = 'date',
@@ -4003,101 +3971,6 @@ snippet("all", {
         f(function() return os.date "%I:%M:%S %p" end),
       })
     }),
-  s({
-    trig = 'vigogreeting',
-    desc = 'A greeting for vigo email'
-  }, fmt([[
-      Hi {name},
-
-      {greeting}
-      ]], {
-          name = i(1, "Name"),
-          greeting = greeting_choice(2),
-        }
-    )
-  ),
-  s({
-    trig = "vigopass",
-    desc = "Complete builds message"
-  }, fmt([[
-      Hi {name},
-
-      {greeting}
-
-      I am currently setting up your {device} and I need your password to continue. Could you send it to me please?
-      If you feel uncomfortable sharing your password over email{passmsg}
-
-      Could you also send me a list of apps you would like to see installed?
-
-      {outmsg},
-      Simon
-      ]], {
-          name = i(1, "Name"),
-          --NOTE: Could separate out the greeting to be reused
-          greeting = greeting_choice(2),
-          device = c(3,{
-            t("new laptop"),
-            t("laptop"),
-            t("new desktop"),
-            t("desktop"),
-            i(1, "device"),
-          }),
-          passmsg = c(4,{
-            t(", you can call our office, or we can reset your password to a temporary one."),
-            t(" you can also call our office."),
-          }),
-          outmsg = message_end(5),
-        }
-    )
-  ),
-  s({
-    trig = "vigoPassReset",
-    desc = "Email client for password reset"
-  }, fmt([[
-      Hi {name},
-
-      {greeting}
-
-      I will reset your password to: {password}
-
-      Please confirm you have read and taken note of this password by replying to this email. We will only proceed with the password reset once you have replied.
-
-      Important: Once we reset your password, you may be signed out of all sessions you are currently logged in. You can log back in using the new password mentioned above.
-
-      {outmsg},
-      Simon
-      ]], {
-          name = i(1, "Name"),
-          --NOTE: Could separate out the greeting to be reused
-          greeting = greeting_choice(2),
-          password = i(3, "PASSWORD"),
-          outmsg = message_end(4),
-        }
-    )
-  ),
-  s({
-    trig = "vigocomplete",
-    desc = "Complete builds message"
-  }, fmt([[
-      Hi {name},
-
-      {greeting}
-
-      We have completed setting up {name2} {device} and it is ready for collection, we are open Monday to Friday 9am to 5pm.
-      Alternatively, I can arrange to have one of our mobile engineers drop the laptop of for you.
-
-      {outmsg},
-      Simon
-      ]], {
-          name = i(1, "Name"),
-          --NOTE: Could separate out the greeting to be reused
-          greeting = greeting_choice(2),
-          name2 = i(3, "Name"),
-          device = c(4, {t("laptop"), t("desktop")}),
-          outmsg = message_end(5),
-        }
-    )
-  ),
 })
 ```
 
