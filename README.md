@@ -1598,10 +1598,10 @@ plug({
         end
 
         -- Navigation
-        map("gd", vim.lsp.buf.definition,  " Definition")
-        map("gD", vim.lsp.buf.declaration, " Declaration")
-        map("[d",  function() vim.diagnostic.jump({ count = -1 }) end, "← Prev diagnostic")
-        map("]d",  function() vim.diagnostic.jump({ count = 1 })  end, "→ Next diagnostic")
+        -- NOTE: gd/gD/grr/gri/grn/grt/gO/<C-S> are bound automatically by
+        -- nvim 0.11+ on LspAttach — no explicit map needed.
+        map("[d", function() vim.diagnostic.jump({ count = -1 }) end, "← Prev diagnostic")
+        map("]d", function() vim.diagnostic.jump({ count = 1 })  end, "→ Next diagnostic")
 
         -- Actions
         map("<localleader>lf", function() vim.lsp.buf.format({ async = false, timeout_ms = 10000 }) end, "Format buffer", { "n", "x" })
