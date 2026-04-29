@@ -1548,6 +1548,23 @@ plug({
     "folke/which-key.nvim",
   },
   config = function()
+    -- NOTE: 0.12 made vim.diagnostic.config({signs=...}) the only way to set
+    -- diagnostic signs; the old :sign-define DiagnosticSign* path is dead.
+    vim.diagnostic.config({
+      severity_sort = true,
+      signs = {
+        text = {
+          [vim.diagnostic.severity.ERROR] = "\u{f057}",   -- 
+          [vim.diagnostic.severity.WARN]  = "\u{f071}",   -- 
+          [vim.diagnostic.severity.INFO]  = "\u{f05a}",   -- 
+          [vim.diagnostic.severity.HINT]  = "\u{f0336}",  -- 󰌶
+        },
+      },
+      virtual_text  = { spacing = 2, prefix = "●" },
+      virtual_lines = { current_line = true },
+      float         = { border = "rounded", source = "if_many" },
+    })
+
     -- Global capabilities merged into every server
     vim.lsp.config("*", {
       capabilities = vim.tbl_deep_extend("force",
