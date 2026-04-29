@@ -212,10 +212,8 @@ o.wildmode = "longest:full,full" -- Command-line completion mode
 o.winminwidth = 5            -- Minimum window width
 o.wrap = false               -- Disable line wrap
 
-if vim.fn.has("nvim-0.9.0") == 1 then
-  o.splitkeep = "screen"
-  o.shortmess:append({ C = true })
-end
+o.splitkeep = "screen"
+o.shortmess:append({ C = true })
 
 -- use powershell on windows
 if vim.fn.has("win32") == 1 then
