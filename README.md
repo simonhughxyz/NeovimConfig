@@ -1514,6 +1514,21 @@ plug({
 ```
 
 
+# DIFFTOOL
+
+Side-by-side diff for any two paths. Ships as an opt-in builtin in Neovim 0.12
+(`:packadd nvim.difftool`); no third-party plugin required. `<leader>D` loads
+the plugin and drops you in cmdline with `:DiffTool ` so you can tab-complete
+the two paths.
+___
+```lua
+vim.keymap.set('n', '<leader>D', function()
+  vim.cmd.packadd('nvim.difftool')
+  vim.api.nvim_feedkeys(':DiffTool ', 'n', false)
+end, { desc = "DiffTool…" })
+```
+
+
 # LSP
 
 ## Mason
@@ -2690,6 +2705,21 @@ plug({
 })
 ```
 @end
+
+
+# UNDOTREE
+
+Visual undo-history navigator. Ships as an opt-in builtin in Neovim 0.12
+(`:packadd nvim.undotree`); no third-party plugin required. `<leader>U`
+toggles the tree on first press and after.
+___
+```lua
+vim.keymap.set('n', '<leader>U', function()
+  vim.cmd.packadd('nvim.undotree')
+  vim.cmd.Undotree()
+end, { desc = "Toggle Undotree" })
+```
+
 
 # MINI SESSIONS
 
