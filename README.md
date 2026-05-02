@@ -3954,6 +3954,158 @@ snip_utils.get_header = function(opts)
 end
 ```
 
+### Password / Passphrase
+
+Crypto-secure random password and passphrase generators.
+
+- `password` — random password. Prompts for length (default 24). `<C-d>` / `<C-u>` cycle charset (mixed alphanum → alphanum + symbols → lowercase → UPPERCASE → mixed alpha) and re-roll.
+- `passphrase` — diceware-style passphrase. Prompts for word count (default 5). `<C-d>` / `<C-u>` cycle separator style (camelCase → kebab → snake → dot → space → plain) and re-roll.
+
+Random bytes come from `/dev/urandom`; modulo bias is avoided via rejection sampling on 32-bit reads. Passphrases use the EFF short wordlist 1 (1295 of 1296 entries; `yo-yo` filtered out so kebab/snake/dot variants don't end up with stray hyphens). Wordlist file: `data/eff_short_words.txt`.
+
+___
+```lua
+-- Wordlist lives outside README.md (it's bulk data; lua/ is gitignored anyway).
+-- Loaded lazily on first use.
+local eff_short_path = vim.fn.stdpath("config") .. "/data/eff_short_words.txt"
+local eff_short_words
+local function get_eff_short()
+  if not eff_short_words then
+    local fh, err = io.open(eff_short_path, "r")
+    if not fh then error("eff_short wordlist missing at " .. eff_short_path .. ": " .. tostring(err)) end
+    eff_short_words = {}
+    for line in fh:lines() do
+      if line ~= "" then eff_short_words[#eff_short_words + 1] = line end
+    end
+    fh:close()
+  end
+  return eff_short_words
+end
+
+-- Read `n` uniformly random integers in [0, max) from /dev/urandom.
+-- Rejection sampling on 32-bit reads avoids modulo bias.
+local function rand_indices(n, max)
+  assert(max > 0 and max <= 0x100000000)
+  local fh, err = io.open("/dev/urandom", "rb")
+  if not fh then error("urandom unavailable: " .. tostring(err)) end
+  local limit = math.floor(0x100000000 / max) * max
+  local out = {}
+  while #out < n do
+    local b = fh:read(4)
+    local v = b:byte(1) * 0x1000000 + b:byte(2) * 0x10000 + b:byte(3) * 0x100 + b:byte(4)
+    if v < limit then out[#out + 1] = v % max end
+  end
+  fh:close()
+  return out
+end
+
+-- NOTE: alphanum_symbols / symbols deliberately exclude quote/backtick/
+-- backslash/semicolon so the result pastes cleanly into shells.
+local pw_charsets = {
+  alphanum_mixed   = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+  alphanum_symbols = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()-_=+[]{}",
+  alpha_lower      = "abcdefghijklmnopqrstuvwxyz",
+  alpha_upper      = "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+  alpha_mixed      = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
+  digits           = "0123456789",
+  symbols          = "!@#$%^&*()-_=+[]{}",
+}
+
+snip_utils.gen_password = function(len, mode)
+  local chars = pw_charsets[mode] or pw_charsets.alphanum_mixed
+  local idx = rand_indices(len, #chars)
+  local out = {}
+  for k, v in ipairs(idx) do out[k] = chars:sub(v + 1, v + 1) end
+  return table.concat(out)
+end
+
+snip_utils.gen_passphrase = function(n_words, sep_mode)
+  local words = get_eff_short()
+  local picked = {}
+  for k, v in ipairs(rand_indices(n_words, #words)) do picked[k] = words[v + 1] end
+  if sep_mode == "camel" then
+    for k, w in ipairs(picked) do
+      picked[k] = w:sub(1, 1):upper() .. w:sub(2)
+    end
+    return table.concat(picked)
+  elseif sep_mode == "kebab" then return table.concat(picked, "-")
+  elseif sep_mode == "snake" then return table.concat(picked, "_")
+  elseif sep_mode == "dot"   then return table.concat(picked, ".")
+  elseif sep_mode == "space" then return table.concat(picked, " ")
+  else                            return table.concat(picked)
+  end
+end
+
+-- Prompt synchronously at expansion time. vim.fn.input is sync (vim.ui.input
+-- is async and would not work inside a dynamic-node generator).
+-- Returns the parsed integer, or `default` if the user accepted/cancelled.
+local function prompt_count(prompt_text, default)
+  local raw = vim.fn.input({ prompt = prompt_text, default = tostring(default), cancelreturn = tostring(default) })
+  return tonumber(raw) or default
+end
+
+-- NOTE: choice nodes must be at the top level of the snippet body for the
+-- cursor to land inside them on expand (so `<C-d>` / `<C-u>` cycle works).
+-- Wrapping the choice in an outer `d()` parks the cursor at i(0) instead.
+-- The count is therefore captured via a snippet pre_expand callback that
+-- writes into a per-snippet state table; each choice option's `d()` closes
+-- over that table and reads the latest value when it renders.
+local ls_events = require("luasnip.util.events")
+
+snip_utils.password_state = { n = 24 }
+snip_utils.passphrase_state = { n = 5 }
+
+-- NOTE: choice options are f() not d() — same shape as the `time` / `date`
+-- snippets. d() children park the cursor inside the child snippet, so the
+-- enclosing c() reports choice_active = false and <C-d>/<C-u> stop working.
+-- f() keeps c() as the active node. Trade-off: f() reruns the first time an
+-- option becomes active (so each variant is fresh on first reveal) but
+-- caches once seen — cycling all the way back to the first option does NOT
+-- re-roll. Re-expand the snippet for a fresh draw.
+snip_utils.password_choice = function(state, modes)
+  modes = modes or { "alphanum_mixed", "alphanum_symbols", "alpha_lower", "alpha_upper", "alpha_mixed" }
+  local nodes = {}
+  for _, mode in ipairs(modes) do
+    nodes[#nodes + 1] = f(function() return snip_utils.gen_password(state.n, mode) end)
+  end
+  -- Wrap single-mode in c() too so the snippet shape is uniform — cycling is
+  -- a no-op but the cursor still lands on a valid choice node.
+  return c(1, nodes)
+end
+
+snip_utils.passphrase_choice = function(state)
+  local modes = { "camel", "kebab", "snake", "dot", "space", "plain" }
+  local nodes = {}
+  for _, mode in ipairs(modes) do
+    nodes[#nodes + 1] = f(function() return snip_utils.gen_passphrase(state.n, mode) end)
+  end
+  return c(1, nodes)
+end
+
+-- Snippet-level pre_expand callback: prompts before the body is laid down,
+-- stashes the parsed integer in the shared state table.
+snip_utils.password_callbacks = function(default_len)
+  return {
+    [-1] = {
+      [ls_events.pre_expand] = function()
+        snip_utils.password_state.n = prompt_count("Length: ", default_len)
+      end,
+    },
+  }
+end
+
+snip_utils.passphrase_callbacks = function(default_words)
+  return {
+    [-1] = {
+      [ls_events.pre_expand] = function()
+        snip_utils.passphrase_state.n = prompt_count("Words: ", default_words)
+      end,
+    },
+  }
+end
+```
+
+
 ### All
 
 Common snippets for all file types.
@@ -4016,6 +4168,43 @@ snippet("all", {
         f(function() return os.date "%I:%M:%S %p" end),
       })
     }),
+  s({
+      trig = "password",
+      priority = 10000,
+      desc = "Crypto-secure random password. Prompts for length (default 24). Cycle <C-d>/<C-u> for charset/case.",
+    },
+    { snip_utils.password_choice(snip_utils.password_state) },
+    { callbacks = snip_utils.password_callbacks(24) }),
+  s({
+      trig = "passphrase",
+      priority = 10000,
+      desc = "Crypto-secure passphrase from EFF short wordlist. Prompts for word count (default 5). Cycle <C-d>/<C-u> for separator.",
+    },
+    { snip_utils.passphrase_choice(snip_utils.passphrase_state) },
+    { callbacks = snip_utils.passphrase_callbacks(5) }),
+  -- NOTE: passalpha / passnumeric / passsymbol share password_state — only
+  -- one is being expanded at a time, and pre_expand always overwrites n.
+  s({
+      trig = "passalpha",
+      priority = 10000,
+      desc = "Crypto-secure alphabetic password. Prompts for length (default 24). Cycle <C-d>/<C-u> for case (mixed/lower/upper).",
+    },
+    { snip_utils.password_choice(snip_utils.password_state, { "alpha_mixed", "alpha_lower", "alpha_upper" }) },
+    { callbacks = snip_utils.password_callbacks(24) }),
+  s({
+      trig = "passnumeric",
+      priority = 10000,
+      desc = "Crypto-secure numeric password (digits only). Prompts for length (default 8).",
+    },
+    { snip_utils.password_choice(snip_utils.password_state, { "digits" }) },
+    { callbacks = snip_utils.password_callbacks(8) }),
+  s({
+      trig = "passsymbol",
+      priority = 10000,
+      desc = "Crypto-secure symbol-only password (shell-safe set). Prompts for length (default 16).",
+    },
+    { snip_utils.password_choice(snip_utils.password_state, { "symbols" }) },
+    { callbacks = snip_utils.password_callbacks(16) }),
 })
 ```
 
