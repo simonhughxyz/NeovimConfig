@@ -2755,44 +2755,37 @@ The goal of nvim-treesitter is both to provide a simple and easy way to use the 
 ___
 [GitHub](https://github.com/nvim-treesitter/nvim-treesitter)
 ```lua
--- nvim-treesitter `master` was archived 2026-04-03; the new `main` branch is a
--- slim parser installer that delegates highlighting to `vim.treesitter.start()`
--- and indenting to a single `indentexpr`. Requires the `tree-sitter` CLI on PATH.
+-- nvim-treesitter (both branches) was archived 2026-04-03. tree-sitter-manager
+-- is a small actively-maintained parser installer that registers a FileType
+-- autocmd to call `vim.treesitter.start()` for every installed parser when
+-- `highlight = true`. nvim 0.12's bundled queries cover everything we need —
+-- this plugin only needs to fetch parsers + queries and prepend their dirs
+-- to runtimepath. Requires `tree-sitter` CLI, git, and a C compiler.
 plug({
-  'nvim-treesitter/nvim-treesitter',
-  branch = 'main',
+  'romus204/tree-sitter-manager.nvim',
   priority = 5000,
-  build = ':TSUpdate',
   dependencies = {
     { 'nvim-treesitter/nvim-treesitter-textobjects', branch = 'main' },
     { 'JoosepAlviste/nvim-ts-context-commentstring', lazy = true },
   },
   config = function()
-    local nts = require('nvim-treesitter')
-    nts.setup({ install_dir = vim.fn.stdpath('data') .. '/site' })
-
-    nts.install({
-      'bash', 'c', 'comment', 'cpp', 'css', 'gitattributes', 'gitignore',
-      'go', 'html', 'http', 'javascript', 'json', 'lua', 'make',
-      'markdown', 'markdown_inline', 'php', 'python', 'r', 'regex',
-      'sql', 'toml', 'typescript', 'vim', 'vimdoc', 'yaml',
+    require('tree-sitter-manager').setup({
+      auto_install = true,
+      highlight = true,
+      ensure_installed = {
+        'bash', 'c', 'comment', 'cpp', 'css', 'gitattributes', 'gitignore',
+        'go', 'html', 'http', 'javascript', 'json', 'lua', 'make',
+        'markdown', 'markdown_inline', 'php', 'python', 'r', 'regex',
+        'sql', 'toml', 'typescript', 'vim', 'vimdoc', 'yaml',
+      },
+      parser_dir = vim.fn.stdpath('data') .. '/site/parser',
+      query_dir  = vim.fn.stdpath('data') .. '/site/queries',
     })
 
     -- Markdown info-string aliases (~~~ts → typescript, ~~~ex → elixir, …).
-    -- Replaces the old custom `set-lang-from-info-string!` directive.
     vim.treesitter.language.register('typescript', { 'ts' })
     vim.treesitter.language.register('elixir',     { 'ex' })
     vim.treesitter.language.register('perl',       { 'pl' })
-
-    -- NOTE: main branch doesn't auto-attach. Start TS + indentexpr per buffer.
-    -- nvim-ufo handles foldexpr so we don't set it here.
-    vim.api.nvim_create_autocmd('FileType', {
-      group = vim.api.nvim_create_augroup('user_treesitter', { clear = true }),
-      callback = function(args)
-        if not pcall(vim.treesitter.start, args.buf) then return end
-        vim.bo[args.buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
-      end,
-    })
 
     -- nvim-treesitter-textobjects (main): select / move / swap.
     require('nvim-treesitter-textobjects').setup({
