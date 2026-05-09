@@ -834,10 +834,7 @@ ___
 ```lua
 plug({
   "MeanderingProgrammer/render-markdown.nvim",
-  dependencies = {
-    "nvim-treesitter/nvim-treesitter",
-    "nvim-tree/nvim-web-devicons",
-  },
+  dependencies = { "nvim-tree/nvim-web-devicons" },
   ft = { "markdown" },
   opts = {
     heading = {
@@ -873,10 +870,7 @@ ___
 ```lua
 plug({
   "jmbuhr/otter.nvim",
-  dependencies = {
-    "nvim-treesitter/nvim-treesitter",
-    "hrsh7th/nvim-cmp",
-  },
+  dependencies = { "hrsh7th/nvim-cmp" },
   ft = { "markdown" },
   config = true,
 })
@@ -2159,7 +2153,6 @@ ___
 ```lua
 plug({
   "Wansmer/treesj",
-  dependencies = "nvim-treesitter/nvim-treesitter",
   keys = {
     { "<leader>j", function() require("treesj").toggle() end, desc = "Split-join lines" },
   },
@@ -2841,8 +2834,6 @@ ___
 ```lua
 plug({ -- basically autopair, but for keywords
   "RRethy/nvim-treesitter-endwise",
-  -- event = "InsertEnter",
-  dependencies = "nvim-treesitter/nvim-treesitter",
 })
 ```
 
@@ -2855,7 +2846,6 @@ ___
 plug({ -- virtual text context at the end of a scope
   "haringsrob/nvim_context_vt",
   event = "VeryLazy",
-  dependencies = "nvim-treesitter/nvim-treesitter",
   opts = {
     prefix = "",
     highlight = "NonText",
