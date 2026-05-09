@@ -2500,7 +2500,6 @@ plug({
       { "<leader>;",       group = "Command",          icon = { icon = "󰞷",  color = "cyan"   } },
       { "<leader><Tab>",   group = "Tabs",             icon = { icon = "󰓩",  color = "cyan"   } },
       { "<leader><Space>", icon = { icon = "󰘳",  color = "purple" } },
-      { "<leader>a",       group = "Aider",            icon = { icon = "󰧑",  color = "purple" } },
       { "<leader>b",       group = "Buffer",           icon = { icon = "󰓩",  color = "cyan"   } },
       { "<leader>c",       group = "Case",             icon = { icon = "󰬴",  color = "yellow" } },
       { "<leader>C",       group = "Case (LSP rename)",icon = { icon = "󰬴",  color = "yellow" } },
@@ -2623,7 +2622,6 @@ plug({
       { "y",               icon = { icon = "󰅇",  color = "yellow" } },
       { "p",               icon = { icon = "󰅇",  color = "yellow" } },
       { "P",               icon = { icon = "󰅇",  color = "yellow" } },
-      -- Treesitter swap (conflicts with Aider group — shown as individual keys)
       { "<leader>A", desc = "Swap param back", mode = "n", icon = { icon = "󰓡", color = "yellow" } },
     },
   },
@@ -2746,72 +2744,6 @@ plug({
       { nargs = 1 }
     )
   end,
-})
-```
-
-# AI
-
-## Aider
-
-AI-powered coding assistant that helps you edit code in your terminal. Aider can make coordinated edits across multiple files, understand your codebase, and work with you to implement features, fix bugs, and refactor code using various AI models.
-
-This plugin provides:
-- **AI-powered code editing**: Get intelligent suggestions and automated code changes
-- **Multi-file coordination**: Make changes across multiple files in a single session
-- **Git integration**: Automatically commits changes with descriptive commit messages
-- **Multiple AI models**: Support for GPT-4, Claude, and other leading AI models
-- **Context awareness**: Understands your entire codebase for better suggestions
-- **Interactive sessions**: Chat with AI about your code and get real-time assistance
-
-**Usage**: Use the configured keybindings to toggle Aider, send code selections, add/drop files, and manage your AI coding sessions. The plugin integrates seamlessly with your existing workflow.
-
-**Help**: Aider works best when you provide clear, specific instructions about what you want to accomplish. It can help with everything from small bug fixes to large feature implementations.
-
-For example, you can ask Aider to "refactor this function to use async/await" or "add error handling to this API call" and it will make the appropriate changes across your codebase.
-___
-[GitHub](https://github.com/GeorgesAlkhouri/nvim-aider)
-```lua
-plug({
-    "GeorgesAlkhouri/nvim-aider",
-    cmd = "Aider",
-    -- Example key mappings for common actions:
-    keys = {
-      { "<leader>a/", "<cmd>Aider toggle<cr>",        desc = "Toggle",          },
-      { "<leader>as", "<cmd>Aider send<cr>",          desc = "Send",            mode = { "n", "v" } },
-      { "<leader>ac", "<cmd>Aider command<cr>",       desc = "Commands",        },
-      { "<leader>ab", "<cmd>Aider buffer<cr>",        desc = "Send buffer",     },
-      { "<leader>a+", "<cmd>Aider add<cr>",           desc = "Add file",        },
-      { "<leader>a-", "<cmd>Aider drop<cr>",          desc = "Drop file",       },
-      { "<leader>ar", "<cmd>Aider add readonly<cr>",  desc = "Add read-only",   },
-      { "<leader>aR", "<cmd>Aider reset<cr>",         desc = "Reset session",   },
-      { "<leader>a+", "<cmd>AiderTreeAddFile<cr>",    desc = "Add file (tree)", ft = "NvimTree" },
-      { "<leader>a-", "<cmd>AiderTreeDropFile<cr>",   desc = "Drop file (tree)",ft = "NvimTree" },
-    },
-    dependencies = {
-      "folke/snacks.nvim",
-      --- The below dependencies are optional
-      "catppuccin/nvim",
-      "nvim-tree/nvim-tree.lua",
-      --- Neo-tree integration
-      {
-        "nvim-neo-tree/neo-tree.nvim",
-        opts = function(_, opts)
-          -- Example mapping configuration (already set by default)
-          -- opts.window = {
-          --   mappings = {
-          --     ["+"] = { "nvim_aider_add", desc = "add to aider" },
-          --     ["-"] = { "nvim_aider_drop", desc = "drop from aider" }
-          --     ["="] = { "nvim_aider_add_read_only", desc = "add read-only to aider" }
-          --   }
-          -- }
-          require("nvim_aider.neo_tree").setup(opts)
-        end,
-      },
-    },
-    config = true,
-    opts = {
-      auto_reload = true,
-    },
 })
 ```
 
