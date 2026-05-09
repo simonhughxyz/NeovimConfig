@@ -1540,6 +1540,27 @@ plug({
     ensure_installed = { "lua_ls", "bashls", "pyright", "html", "clangd", "marksman" },
   },
 })
+
+-- Auto-install formatters/linters/DAP adapters via Mason. mason-lspconfig
+-- only handles LSP servers; this fills the gap for everything else.
+plug({
+  "WhoIsSethDaniel/mason-tool-installer.nvim",
+  dependencies = { "williamboman/mason.nvim" },
+  opts = {
+    ensure_installed = {
+      -- formatters (used by conform)
+      "stylua",
+      "shfmt",
+      "prettierd",
+      "taplo",
+      "ruff",
+      "goimports",
+      "sql-formatter",
+    },
+    auto_update = false,
+    run_on_start = true,
+  },
+})
 ```
 
 ## LSP
