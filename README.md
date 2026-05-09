@@ -1732,6 +1732,70 @@ plug({
 })
 ```
 
+## Format
+
+`conform.nvim` runs external formatters (stylua, ruff, shfmt, prettier, …)
+that LSP servers don't provide, and falls back to LSP formatting otherwise.
+Format on save is async (non-blocking) and can be toggled per-buffer or
+globally with `:FormatDisable[!]` / `:FormatEnable`.
+
+External tools must be on PATH — install via Mason (`:Mason` → `i` on the
+formatter) or your system package manager.
+___
+[GitHub](https://github.com/stevearc/conform.nvim)
+```lua
+plug({
+  "stevearc/conform.nvim",
+  event = { "BufWritePre" },
+  cmd = { "ConformInfo", "FormatDisable", "FormatEnable" },
+  keys = {
+    { "<localleader>F", function() require("conform").format({ async = true, lsp_format = "fallback" }) end,
+      mode = { "n", "x" }, desc = "Format buffer/range" },
+  },
+  opts = {
+    formatters_by_ft = {
+      lua        = { "stylua" },
+      python     = { "ruff_organize_imports", "ruff_format" },
+      sh         = { "shfmt" },
+      bash       = { "shfmt" },
+      zsh        = { "shfmt" },
+      json       = { "prettierd", "prettier", stop_after_first = true },
+      jsonc      = { "prettierd", "prettier", stop_after_first = true },
+      yaml       = { "prettierd", "prettier", stop_after_first = true },
+      toml       = { "taplo" },
+      markdown   = { "prettierd", "prettier", stop_after_first = true },
+      html       = { "prettierd", "prettier", stop_after_first = true },
+      css        = { "prettierd", "prettier", stop_after_first = true },
+      javascript = { "prettierd", "prettier", stop_after_first = true },
+      typescript = { "prettierd", "prettier", stop_after_first = true },
+      go         = { "goimports", "gofmt" },
+      sql        = { "sql_formatter" },
+      -- Run on every filetype as a final pass: trim trailing whitespace +
+      -- enforce a final newline. Cheap and idempotent.
+      ["_"]      = { "trim_whitespace", "trim_newlines" },
+    },
+    -- Async (non-blocking) format on save. lsp_fallback gets us clangd /
+    -- gopls / rust-analyzer formatting on filetypes without a CLI tool above.
+    format_after_save = function(bufnr)
+      if vim.g.disable_autoformat or vim.b[bufnr].disable_autoformat then return end
+      return { lsp_format = "fallback" }
+    end,
+    notify_on_error = true,
+  },
+  init = function()
+    -- :FormatDisable / :FormatDisable! / :FormatEnable
+    vim.api.nvim_create_user_command("FormatDisable", function(args)
+      if args.bang then vim.b.disable_autoformat = true
+      else vim.g.disable_autoformat = true end
+    end, { desc = "Disable autoformat (! = buffer-local)", bang = true })
+    vim.api.nvim_create_user_command("FormatEnable", function()
+      vim.b.disable_autoformat = false
+      vim.g.disable_autoformat = false
+    end, { desc = "Re-enable autoformat" })
+  end,
+})
+```
+
 
 # DEBUG
 
