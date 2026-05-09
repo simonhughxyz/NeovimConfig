@@ -2650,6 +2650,11 @@ Improve yank and put functionalities for Neovim.
 ___
 [GitHub](https://github.com/gbprod/yanky.nvim)
 ```lua
+-- NOTE: do NOT lazy-load yanky via the `keys` trampoline. Mapping `y` through
+-- the lazy-key wrapper breaks operator+motion composition (`y$`, `yiw`, `yy`)
+-- because the trampoline feeds `<Plug>(YankyYank)` via nvim_feedkeys, which
+-- doesn't compose with subsequent motion keys the way a real `<Plug>` map does.
+-- Load on `VeryLazy` and register `<Plug>` maps directly instead.
 plug({
   "gbprod/yanky.nvim",
   dependencies = {
@@ -2658,6 +2663,7 @@ plug({
       enabled = not jit.os:find("Windows")
     },
   },
+  event = "VeryLazy",
   config = function()
     require("yanky").setup({
       ring = {
@@ -2677,31 +2683,27 @@ plug({
         enabled = true,
       },
     })
+
+    local map = vim.keymap.set
+    map({ "n", "x" }, "y",  "<Plug>(YankyYank)",        { desc = "Yank" })
+    map({ "n", "x" }, "p",  "<Plug>(YankyPutAfter)",    { desc = "Put after" })
+    map({ "n", "x" }, "P",  "<Plug>(YankyPutBefore)",   { desc = "Put before" })
+    map({ "n", "x" }, "gp", "<Plug>(YankyGPutAfter)",   { desc = "Put after selection" })
+    map({ "n", "x" }, "gP", "<Plug>(YankyGPutBefore)",  { desc = "Put before selection" })
+    map("n", "<leader>p",   "<cmd>YankyRingHistory<cr>", { desc = "Yank history" })
+    map("n", "[y", "<Plug>(YankyCycleForward)",          { desc = "Cycle yank history" })
+    map("n", "]y", "<Plug>(YankyCycleBackward)",         { desc = "Cycle yank history" })
+    map("n", "]p", "<Plug>(YankyPutIndentAfterLinewise)",  { desc = "Put indented after" })
+    map("n", "[p", "<Plug>(YankyPutIndentBeforeLinewise)", { desc = "Put indented before" })
+    map("n", "]P", "<Plug>(YankyPutIndentAfterLinewise)",  { desc = "Put indented after" })
+    map("n", "[P", "<Plug>(YankyPutIndentBeforeLinewise)", { desc = "Put indented before" })
+    map("n", ">p", "<Plug>(YankyPutIndentAfterShiftRight)",  { desc = "Put + indent right" })
+    map("n", "<p", "<Plug>(YankyPutIndentAfterShiftLeft)",   { desc = "Put + indent left" })
+    map("n", ">P", "<Plug>(YankyPutIndentBeforeShiftRight)", { desc = "Put before + indent right" })
+    map("n", "<P", "<Plug>(YankyPutIndentBeforeShiftLeft)",  { desc = "Put before + indent left" })
+    map("n", "=p", "<Plug>(YankyPutAfterFilter)",            { desc = "Put (filtered)" })
+    map("n", "=P", "<Plug>(YankyPutBeforeFilter)",           { desc = "Put before (filtered)" })
   end,
-  keys = {
-    {
-      "<leader>p",
-      "<cmd>YankyRingHistory<cr>",
-      desc = "Yank history"
-    },
-    { "y",  "<Plug>(YankyYank)",                      mode = { "n", "x" }, desc = "Yank" },
-    { "p",  "<Plug>(YankyPutAfter)",                  mode = { "n", "x" }, desc = "Put after" },
-    { "P",  "<Plug>(YankyPutBefore)",                 mode = { "n", "x" }, desc = "Put before" },
-    { "gp", "<Plug>(YankyGPutAfter)",                 mode = { "n", "x" }, desc = "Put after selection" },
-    { "gP", "<Plug>(YankyGPutBefore)",                mode = { "n", "x" }, desc = "Put before selection" },
-    { "[y", "<Plug>(YankyCycleForward)",                                    desc = "Cycle yank history" },
-    { "]y", "<Plug>(YankyCycleBackward)",                                   desc = "Cycle yank history" },
-    { "]p", "<Plug>(YankyPutIndentAfterLinewise)",                          desc = "Put indented after" },
-    { "[p", "<Plug>(YankyPutIndentBeforeLinewise)",                         desc = "Put indented before" },
-    { "]P", "<Plug>(YankyPutIndentAfterLinewise)",                          desc = "Put indented after" },
-    { "[P", "<Plug>(YankyPutIndentBeforeLinewise)",                         desc = "Put indented before" },
-    { ">p", "<Plug>(YankyPutIndentAfterShiftRight)",                        desc = "Put + indent right" },
-    { "<p", "<Plug>(YankyPutIndentAfterShiftLeft)",                         desc = "Put + indent left" },
-    { ">P", "<Plug>(YankyPutIndentBeforeShiftRight)",                       desc = "Put before + indent right" },
-    { "<P", "<Plug>(YankyPutIndentBeforeShiftLeft)",                        desc = "Put before + indent left" },
-    { "=p", "<Plug>(YankyPutAfterFilter)",                                  desc = "Put (filtered)" },
-    { "=P", "<Plug>(YankyPutBeforeFilter)",                                 desc = "Put before (filtered)" },
-  },
 })
 ```
 @end
